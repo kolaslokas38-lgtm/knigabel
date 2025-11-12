@@ -1,7 +1,9 @@
 {
-  "url": "https://your-domain.com/",
   "name": "КнігаБел - Библиотечный каталог",
-  "iconUrl": "https://your-domain.com/icon.png",
+  "short_name": "КнігаБел",
   "description": "Цифровой каталог библиотеки КнігаБел с возможностью бронирования книг",
-  "short_name": "КнігаБел"
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4CAF50",
+  "background_color": "#667eea"
 }
