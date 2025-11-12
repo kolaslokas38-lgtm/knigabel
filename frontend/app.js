@@ -1,7 +1,7 @@
 // Конфигурация - ЗАМЕНИТЕ НА СВОЙ URL БЭКЕНДА
 const CONFIG = {
     // Если бэкенд на другом хостинге, укажите его URL здесь
-    API_BASE_URL: 'https://knigabel.onrender.com',
+    API_BASE_URL: 'https://your-backend.herokuapp.com/api',
     // Для демо используем mock данные
     USE_MOCK_DATA: true
 };

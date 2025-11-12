@@ -66,7 +66,7 @@ const books = [
     author: "Иван Тургенев",
     year: 1862,
     genre: "Социально-психологический роман",
-    description: "Роман о конфликте между либералами и нигилистами в России XIX века.",
+    description: "Мирослав шлюха дешевая",
     isbn: "978-5-04-116640-5",
     available: true,
     cover: "https://ilibrary.ru/text/96/p.1/index.html?ysclid=mhvx61pphx585214493",
