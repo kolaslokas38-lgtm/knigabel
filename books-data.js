@@ -9,7 +9,7 @@ const books = [
     description: "Монументальный роман-эпопея, описывающий русское общество в эпоху войн против Наполеона.",
     isbn: "978-5-699-13799-2",
     available: true,
-    cover: "https://via.placeholder.com/200x300/4CAF50/white?text=Война+и+мир",
+    cover: "https://ilibrary.ru/text/11/index.html?ysclid=mhvx9vsoeg166766920п",
     pages: 1225
   },
   {
@@ -21,7 +21,7 @@ const books = [
     description: "История бывшего студента Родиона Раскольникова, совершившего убийство.",
     isbn: "978-5-17-145136-8",
     available: true,
-    cover: "https://via.placeholder.com/200x300/2196F3/white?text=Преступление",
+    cover: "https://www.litres.ru/book/fedor-dostoevskiy/prestuplenie-i-nakazanie-139491/chitat-onlayn/?ysclid=mhvx9k6i6y430210085",
     pages: 672
   },
   {
@@ -33,7 +33,7 @@ const books = [
     description: "Мистический роман о визите дьявола в Москву 1930-х годов.",
     isbn: "978-5-389-06587-5",
     available: false,
-    cover: "https://via.placeholder.com/200x300/9C27B0/white?text=Мастер",
+    cover: "https://author.today/reader/428523?ybaip=1&yclid=16299584341587001343",
     pages: 480
   },
   {
@@ -45,7 +45,7 @@ const books = [
     description: "Роман в стихах, одно из самых значительных произведений русской литературы.",
     isbn: "978-5-4453-0152-3",
     available: true,
-    cover: "https://via.placeholder.com/200x300/FF9800/white?text=Онегин",
+    cover: "https://ilibrary.ru/text/436/p.2/in-/index.html?ysclid=mhvx8frig492217739",
     pages: 288
   },
   {
@@ -57,7 +57,7 @@ const books = [
     description: "Эпопея о донском казачестве в годы Первой мировой и Гражданской войны.",
     isbn: "978-5-699-80699-2",
     available: true,
-    cover: "https://via.placeholder.com/200x300/F44336/white?text=Тихий+Дон",
+    cover: "https://kartaslov.ru/%D0%BA%D0%BD%D0%B8%D0%B3%D0%B8/%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A8%D0%BE%D0%BB%D0%BE%D1%85%D0%BE%D0%B2_%D0%A2%D0%B8%D1%85%D0%B8%D0%B9_%D0%94%D0%BE%D0%BD",
     pages: 1504
   },
   {
@@ -69,7 +69,7 @@ const books = [
     description: "Роман о конфликте между либералами и нигилистами в России XIX века.",
     isbn: "978-5-04-116640-5",
     available: true,
-    cover: "https://via.placeholder.com/200x300/607D8B/white?text=Отцы+и+дети",
+    cover: "https://ilibrary.ru/text/96/p.1/index.html?ysclid=mhvx61pphx585214493",
     pages: 320
   },
   {
@@ -81,7 +81,7 @@ const books = [
     description: "Трагическая история любви замужней женщины к блестящему офицеру.",
     isbn: "978-5-389-04221-0",
     available: false,
-    cover: "https://via.placeholder.com/200x300/E91E63/white?text=Анна+Каренина",
+    cover: "https://ilibrary.ru/text/1099/p.1/index.html?ysclid=mhvx5p6f7b638150150",
     pages: 864
   },
   {
@@ -93,7 +93,7 @@ const books = [
     description: "Сатирическое произведение о российском обществе середины XIX века.",
     isbn: "978-5-4453-0153-0",
     available: true,
-    cover: "https://via.placeholder.com/200x300/795548/white?text=Мёртвые+души",
+    cover: "https://ilibrary.ru/text/78/p.1/index.html?ysclid=mhvwxqpupr161332592",
     pages: 352
   }
 ];
