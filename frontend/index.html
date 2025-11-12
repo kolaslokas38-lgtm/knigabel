@@ -9,7 +9,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
             <div class="header-content">
                 <h1>📚 КнігаБел</h1>
@@ -27,7 +26,6 @@
             </div>
         </header>
 
-        <!-- Search Section -->
         <section class="search-section">
             <div class="search-container">
                 <input 
@@ -36,7 +34,7 @@
                     placeholder="Поиск по названию, автору или жанру..."
                     class="search-input"
                 >
-                <button onclick="searchBooks()" class="search-btn">🔍</button>
+                <button onclick="searchBooks()" class="search-btn">🔍 Поиск</button>
             </div>
             
             <div class="filter-container">
@@ -46,7 +44,6 @@
             </div>
         </section>
 
-        <!-- Books Container -->
         <section class="books-section">
             <div class="section-header">
                 <h2 id="sectionTitle">Каталог книг</h2>
@@ -54,7 +51,7 @@
             </div>
             
             <div class="books-container" id="booksContainer">
-                <!-- Books will be loaded here -->
+                <!-- Книги будут загружены через JavaScript -->
             </div>
             
             <div class="loading" id="loading">
@@ -70,7 +67,6 @@
             </div>
         </section>
 
-        <!-- Book Modal -->
         <div class="modal hidden" id="bookModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -78,7 +74,7 @@
                     <button onclick="closeModal()" class="close-btn">×</button>
                 </div>
                 <div class="modal-body" id="modalBody">
-                    <!-- Modal content will be loaded here -->
+                    <!-- Детали книги будут загружены здесь -->
                 </div>
             </div>
         </div>
