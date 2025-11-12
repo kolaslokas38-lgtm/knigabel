@@ -1,5 +1,6 @@
 // Конфигурация - ТОЛЬКО MOCK ДАННЫЕ
 const CONFIG = {
+    API_BASE_URL: 'https://kolaslokas38-lgtm.github.io/knigabel',
     USE_MOCK_DATA: true
 };
 
