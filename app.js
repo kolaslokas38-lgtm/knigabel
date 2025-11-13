@@ -490,6 +490,259 @@ function escapeHtml(unsafe) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+// Добавь в глобальные переменные
+let userData = {
+    name: 'Пользователь',
+    avatar: '👤',
+    registrationDate: new Date().toLocaleDateString('ru-RU'),
+    borrowedBooks: [],
+    favorites: []
+};
+
+// Функции для вкладок
+function showTab(tabName) {
+    // Скрыть все вкладки
+    document.querySelectorAll('.tab-pane').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Показать выбранную вкладку
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+}
+
+// Функция для бронирования книги (обнови существующую)
+async function borrowBook(bookId) {
+    try {
+        const book = MOCK_BOOKS.find(b => b.id === bookId);
+        if (book && book.available) {
+            // Обновляем статус книги
+            book.available = false;
+            
+            // Добавляем в список пользователя
+            const borrowRecord = {
+                bookId: book.id,
+                bookTitle: book.title,
+                borrowDate: new Date().toLocaleDateString('ru-RU'),
+                returnDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU'), // +14 дней
+                status: 'active'
+            };
+            
+            userData.borrowedBooks.push(borrowRecord);
+            
+            // Обновляем статистику
+            MOCK_STATS.availableBooks--;
+            MOCK_STATS.borrowedBooks++;
+            
+            tg.showPopup({
+                title: 'Успех! 🎉',
+                message: `Книга "${book.title}" успешно забронирована!\nВерните до ${borrowRecord.returnDate}`,
+                buttons: [{ type: 'ok' }]
+            });
+            
+            // Обновляем отображение
+            updateBooksDisplay(currentBooks);
+            updateStats(MOCK_STATS);
+            updateProfileDisplay();
+            closeModal();
+            
+        } else {
+            throw new Error('Книга недоступна для бронирования');
+        }
+    } catch (error) {
+        console.error('Ошибка бронирования:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: error.message || 'Не удалось забронировать книгу',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Функция обновления профиля
+function updateProfileDisplay() {
+    // Обновляем информацию пользователя
+    document.getElementById('userName').textContent = userData.name;
+    document.getElementById('userStats').textContent = `Зарегистрирован: ${userData.registrationDate}`;
+    
+    // Обновляем статистику
+    document.getElementById('totalBorrowed').textContent = userData.borrowedBooks.length;
+    document.getElementById('activeBorrows').textContent = userData.borrowedBooks.filter(b => b.status === 'active').length;
+    document.getElementById('favoritesCount').textContent = userData.favorites.length;
+    
+    // Обновляем список книг
+    const myBooksList = document.getElementById('myBooksList');
+    const activeBooks = userData.borrowedBooks.filter(b => b.status === 'active');
+    
+    if (activeBooks.length === 0) {
+        myBooksList.innerHTML = `
+            <div class="empty-borrows">
+                <div class="empty-icon">📚</div>
+                <h4>Нет активных бронирований</h4>
+                <p>Найдите интересные книги в каталоге</p>
+            </div>
+        `;
+    } else {
+        myBooksList.innerHTML = activeBooks.map(borrow => `
+            <div class="borrowed-book-item">
+                <div class="book-info">
+                    <div class="book-title">${borrow.bookTitle}</div>
+                    <div class="borrow-dates">
+                        <span>Взята: ${borrow.borrowDate}</span>
+                        <span>Вернуть до: ${borrow.returnDate}</span>
+                    </div>
+                </div>
+                <button class="return-btn" onclick="returnBook(${borrow.bookId})">
+                    🔄 Вернуть
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+// Функция возврата книги
+function returnBook(bookId) {
+    const book = MOCK_BOOKS.find(b => b.id === bookId);
+    const borrowIndex = userData.borrowedBooks.findIndex(b => b.bookId === bookId && b.status === 'active');
+    
+    if (book && borrowIndex !== -1) {
+        // Обновляем статус книги
+        book.available = true;
+        userData.borrowedBooks[borrowIndex].status = 'returned';
+        
+        // Обновляем статистику
+        MOCK_STATS.availableBooks++;
+        MOCK_STATS.borrowedBooks--;
+        
+        tg.showPopup({
+            title: 'Книга возвращена! 📚',
+            message: `"${book.title}" успешно возвращена в библиотеку`,
+            buttons: [{ type: 'ok' }]
+        });
+        
+        // Обновляем отображение
+        updateBooksDisplay(currentBooks);
+        updateStats(MOCK_STATS);
+        updateProfileDisplay();
+    }
+}
+
+// Обнови функцию initializeTelegramApp для получения данных пользователя
+function initializeTelegramApp() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        tg.BackButton.onClick(handleBackButton);
+        
+        // Получаем данные пользователя из Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const tgUser = tg.initDataUnsafe.user;
+            userData.name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
+            userData.avatar = tgUser.first_name ? tgUser.first_name[0] : '👤';
+            
+            if (tgUser.photo_url) {
+                document.getElementById('userAvatar').innerHTML = `<img src="${tgUser.photo_url}" alt="${userData.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                document.getElementById('userAvatar').textContent = userData.avatar;
+            }
+        }
+        
+        console.log('Telegram Web App инициализирован');
+    } else {
+        // Режим браузера для тестирования
+        tg = {
+            showPopup: (params) => {
+                alert(params.title + ": " + params.message);
+            },
+            showAlert: (message) => alert(message),
+            BackButton: {
+                show: () => console.log('BackButton show'),
+                hide: () => console.log('BackButton hide'),
+                onClick: (cb) => console.log('BackButton onClick')
+            }
+        };
+        console.log('Режим браузера - Telegram Web App не доступен');
+    }
+}
+
+// Обнови loadInitialData чтобы инициализировать профиль
+async function loadInitialData() {
+    try {
+        showLoading(true);
+        
+        // Имитируем задержку сети
+        setTimeout(() => {
+            updateBooksDisplay(MOCK_BOOKS);
+            populateGenreFilter(MOCK_GENRES);
+            updateStats(MOCK_STATS);
+            updateProfileDisplay(); // Добавляем инициализацию профиля
+            showLoading(false);
+        }, 800);
+        
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        showError('Не удалось загрузить данные. Используются демо-данные.');
+        
+        // Fallback на mock данные
+        updateBooksDisplay(MOCK_BOOKS);
+        populateGenreFilter(MOCK_GENRES);
+        updateStats(MOCK_STATS);
+        updateProfileDisplay();
+        showLoading(false);
+    }
+}
+
+// Добавь стили для элементов личного кабинета в CSS
+const profileStyles = `
+.borrowed-book-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.borrowed-book-item .book-title {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.borrow-dates {
+    font-size: 0.8em;
+    color: var(--text-light);
+}
+
+.borrow-dates span {
+    display: block;
+}
+
+.return-btn {
+    padding: 8px 15px;
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.return-btn:hover {
+    background: #1976d2;
+}
+`;
+
+// Добавь стили в страницу
+const styleSheet = document.createElement('style');
+styleSheet.textContent = profileStyles;
+document.head.appendChild(styleSheet);
 
 // Глобальные функции для HTML
 window.searchBooks = searchBooks;
