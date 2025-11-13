@@ -1,10 +1,9 @@
-// Конфигурация - ТОЛЬКО MOCK ДАННЫЕ
+// Конфигурация
 const CONFIG = {
-    API_BASE_URL: 'https://kolaslokas38-lgtm.github.io/knigabel',
     USE_MOCK_DATA: true
 };
 
-// Mock данные из вашего backend
+// Mock данные книг
 const MOCK_BOOKS = [
   {
     id: 1,
@@ -15,7 +14,8 @@ const MOCK_BOOKS = [
     description: "Монументальный роман-эпопея, описывающий русское общество в эпоху войн против Наполеона.",
     isbn: "978-5-699-13799-2",
     available: true,
-    cover: "https://ilibrary.ru/text/11/index.html?ysclid=mhvx9vsoeg166766920",
+    cover: "https://cv6.litres.ru/pub/c/cover_415/66809843.jpg",
+    readLink: "https://ilibrary.ru/text/11/index.html",
     pages: 1225
   },
   {
@@ -27,7 +27,8 @@ const MOCK_BOOKS = [
     description: "История бывшего студента Родиона Раскольникова, совершившего убийство.",
     isbn: "978-5-17-145136-8",
     available: true,
-    cover: "https://www.litres.ru/book/fedor-dostoevskiy/prestuplenie-i-nakazanie-139491/chitat-onlayn/?ysclid=mhvx9k6i6y430210085",
+    cover: "https://cv0.litres.ru/pub/c/cover_415/10235628.jpg",
+    readLink: "https://www.litres.ru/book/fedor-dostoevskiy/prestuplenie-i-nakazanie-139491/chitat-onlayn/",
     pages: 672
   },
   {
@@ -39,7 +40,8 @@ const MOCK_BOOKS = [
     description: "Мистический роман о визите дьявола в Москву 1930-х годов.",
     isbn: "978-5-389-06587-5",
     available: false,
-    cover: "https://author.today/reader/428523?ybaip=1&yclid=16299584341587001343",
+    cover: "https://cv5.litres.ru/pub/c/cover_415/17829610.jpg",
+    readLink: "https://author.today/reader/428523",
     pages: 480
   },
   {
@@ -51,7 +53,8 @@ const MOCK_BOOKS = [
     description: "Роман в стихах, одно из самых значительных произведений русской литературы.",
     isbn: "978-5-4453-0152-3",
     available: true,
-    cover: "https://ilibrary.ru/text/436/p.2/in-/index.html?ysclid=mhvx8frig492217739",
+    cover: "https://cv8.litres.ru/pub/c/cover_415/69495660.jpg",
+    readLink: "https://ilibrary.ru/text/436/p.2/in-/index.html",
     pages: 288
   },
   {
@@ -63,44 +66,9 @@ const MOCK_BOOKS = [
     description: "Эпопея о донском казачестве в годы Первой мировой и Гражданской войны.",
     isbn: "978-5-699-80699-2",
     available: true,
-    cover: "https://kartaslov.ru/%D0%BA%D0%BD%D0%B8%D0%B3%D0%B8/%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A8%D0%BE%D0%BB%D0%BE%D1%85%D0%BE%D0%B2_%D0%A2%D0%B8%D1%85%D0%B8%D0%B9_%D0%94%D0%BE%D0%BD",
+    cover: "https://cv5.litres.ru/pub/c/cover_415/10321963.jpg",
+    readLink: "https://kartaslov.ru/%D0%BA%D0%BD%D0%B8%D0%B3%D0%B8/%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A8%D0%BE%D0%BB%D0%BE%D1%85%D0%BE%D0%B2_%D0%A2%D0%B8%D1%85%D0%B8%D0%B9_%D0%94%D0%BE%D0%BD",
     pages: 1504
-  },
-  {
-    id: 6,
-    title: "Отцы и дети",
-    author: "Иван Тургенев",
-    year: 1862,
-    genre: "Социально-психологический роман",
-    description: "Роман о конфликте между либералами и нигилистами в России XIX века.",
-    isbn: "978-5-04-116640-5",
-    available: true,
-    cover: "https://ilibrary.ru/text/96/p.1/index.html?ysclid=mhvx61pphx585214493",
-    pages: 320
-  },
-  {
-    id: 7,
-    title: "Анна Каренина",
-    author: "Лев Толстой",
-    year: 1877,
-    genre: "Реализм",
-    description: "Трагическая история любви замужней женщины к блестящему офицеру.",
-    isbn: "978-5-389-04221-0",
-    available: false,
-    cover: "https://ilibrary.ru/text/1099/p.1/index.html?ysclid=mhvx5p6f7b638150150",
-    pages: 864
-  },
-  {
-    id: 8,
-    title: "Мёртвые души",
-    author: "Николай Гоголь",
-    year: 1842,
-    genre: "Поэма",
-    description: "Сатирическое произведение о российском обществе середины XIX века.",
-    isbn: "978-5-4453-0153-0",
-    available: true,
-    cover: "https://ilibrary.ru/text/78/p.1/index.html?ysclid=mhvwxqpupr161332592",
-    pages: 352
   }
 ];
 
@@ -109,19 +77,61 @@ const MOCK_GENRES = [
   "Роман в стихах", "Реализм", "Поэма", "Социально-психологический роман"
 ];
 
-// Рассчитываем статистику на основе данных
+// Глобальные переменные
+let currentBooks = [];
+let currentSearchQuery = '';
+let currentGenre = '';
+let tg = null;
+
+// Данные пользователя
+let userData = {
+    name: 'Пользователь',
+    avatar: '👤',
+    registrationDate: new Date().toLocaleDateString('ru-RU'),
+    borrowedBooks: [
+        {
+            id: 1,
+            bookId: 3,
+            bookTitle: "Мастер и Маргарита",
+            borrowDate: "2024-01-10",
+            returnDate: "2024-01-24",
+            status: "active"
+        }
+    ],
+    history: [
+        {
+            id: 1,
+            bookId: 1,
+            bookTitle: "Война и мир",
+            borrowDate: "2023-12-01",
+            returnDate: "2023-12-15",
+            status: "returned"
+        },
+        {
+            id: 2,
+            bookId: 2,
+            bookTitle: "Преступление и наказание",
+            borrowDate: "2023-11-15",
+            returnDate: "2023-11-29",
+            status: "returned"
+        }
+    ],
+    favorites: [1, 2],
+    stats: {
+        totalBooks: 3,
+        activeBorrows: 1,
+        totalRead: 2,
+        readingDays: 45
+    }
+};
+
+// Рассчитываем статистику библиотеки
 const MOCK_STATS = {
     totalBooks: MOCK_BOOKS.length,
     availableBooks: MOCK_BOOKS.filter(book => book.available).length,
     borrowedBooks: MOCK_BOOKS.filter(book => !book.available).length,
     totalGenres: MOCK_GENRES.length - 1
 };
-
-// Глобальные переменные
-let currentBooks = [];
-let currentSearchQuery = '';
-let currentGenre = '';
-let tg = null;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -137,6 +147,20 @@ function initializeTelegramApp() {
         tg.expand();
         tg.enableClosingConfirmation();
         tg.BackButton.onClick(handleBackButton);
+        
+        // Получаем данные пользователя из Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const tgUser = tg.initDataUnsafe.user;
+            userData.name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
+            
+            if (tgUser.photo_url) {
+                document.getElementById('userAvatar').innerHTML = 
+                    `<img src="${tgUser.photo_url}" alt="${userData.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                document.getElementById('userAvatar').querySelector('.avatar-placeholder').textContent = 
+                    tgUser.first_name ? tgUser.first_name[0] : '👤';
+            }
+        }
         
         console.log('Telegram Web App инициализирован');
     } else {
@@ -184,6 +208,31 @@ function setupEventListeners() {
     });
 }
 
+// Навигация по разделам
+function showSection(sectionName) {
+    // Скрыть все секции
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Скрыть/показать поиск
+    document.getElementById('searchSection').classList.toggle('hidden', sectionName !== 'catalog');
+    
+    // Показать выбранную секцию
+    document.getElementById(sectionName + 'Section').classList.add('active');
+    
+    // Обновить навигационные кнопки
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
+    
+    // Если открыли профиль - обновить данные
+    if (sectionName === 'profile') {
+        updateProfileDisplay();
+    }
+}
+
 // Загрузка начальных данных
 async function loadInitialData() {
     try {
@@ -194,6 +243,7 @@ async function loadInitialData() {
             updateBooksDisplay(MOCK_BOOKS);
             populateGenreFilter(MOCK_GENRES);
             updateStats(MOCK_STATS);
+            updateUserProfile();
             showLoading(false);
         }, 800);
         
@@ -205,6 +255,7 @@ async function loadInitialData() {
         updateBooksDisplay(MOCK_BOOKS);
         populateGenreFilter(MOCK_GENRES);
         updateStats(MOCK_STATS);
+        updateUserProfile();
         showLoading(false);
     }
 }
@@ -286,14 +337,17 @@ function updateBooksDisplay(books) {
     
     emptyState.classList.add('hidden');
     
-    container.innerHTML = books.map(book => `
+    container.innerHTML = books.map(book => {
+        const isFavorite = userData.favorites.includes(book.id);
+        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        
+        return `
         <div class="book-card" onclick="showBookDetails(${book.id})">
             <div class="book-header">
                 <div class="book-cover">
                     ${book.cover ? 
-                        `<div class="book-cover-img-container">
-                            <img src="${book.cover}" alt="${book.title}" class="book-cover-img" onerror="this.style.display='none'; this.parentNode.innerHTML='📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}';">
-                         </div>` : 
+                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-img" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖';">` : 
                         `📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}`
                     }
                 </div>
@@ -308,15 +362,24 @@ function updateBooksDisplay(books) {
                     </div>
                 </div>
             </div>
-            <button 
-                class="borrow-btn" 
-                onclick="event.stopPropagation(); borrowBook(${book.id})"
-                ${!book.available ? 'disabled' : ''}
-            >
-                ${book.available ? '📚 Забронировать' : 'Недоступна'}
-            </button>
+            <div class="book-actions">
+                <button 
+                    class="borrow-btn" 
+                    onclick="event.stopPropagation(); borrowBook(${book.id})"
+                    ${!book.available || isBorrowed ? 'disabled' : ''}
+                >
+                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                </button>
+                <button 
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
+                >
+                    ${isFavorite ? '★' : '☆'}
+                </button>
+            </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     
     updateBooksCount(books.length);
 }
@@ -326,22 +389,23 @@ async function showBookDetails(bookId) {
     try {
         showLoading(true);
         
-        // Mock данные
         const book = MOCK_BOOKS.find(b => b.id === bookId);
         
         if (!book) {
             throw new Error('Книга не найдена');
         }
         
+        const isFavorite = userData.favorites.includes(book.id);
+        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
             <div class="book-details">
                 <div class="book-cover-large">
                     ${book.cover ? 
-                        `<div class="book-cover-large-container">
-                            <img src="${book.cover}" alt="${book.title}" class="book-cover-large-img" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=\\'width: 150px; height: 220px; background: linear-gradient(135deg, #f0f0f0, #e0e0e0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; text-align: center; padding: 10px;\\'>📖<br>${escapeHtml(book.title)}</div>';">
-                         </div>` : 
-                        `<div style="width: 150px; height: 220px; background: linear-gradient(135deg, #f0f0f0, #e0e0e0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; text-align: center; padding: 10px;">📖<br>${escapeHtml(book.title)}</div>`
+                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-large-img"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x300/4CAF50/white?text=📖\\n${escapeHtml(book.title)}';">` : 
+                        `<div class="book-cover-large-placeholder">📖<br>${escapeHtml(book.title)}</div>`
                     }
                 </div>
                 <div class="book-info-detailed">
@@ -353,27 +417,43 @@ async function showBookDetails(bookId) {
                     <p><strong>Страниц:</strong> ${book.pages}</p>
                     <p><strong>Статус:</strong> 
                         <span class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
-                            ${book.available ? '✅ Доступна' : '❌ Выдана'}
+                            ${isBorrowed ? '📖 У вас' : (book.available ? '✅ Доступна' : '❌ Выдана')}
                         </span>
                     </p>
                     <div class="book-description">
                         <strong>Описание:</strong>
                         <p>${escapeHtml(book.description || 'Описание отсутствует.')}</p>
                     </div>
-                    ${book.cover ? `<div style="margin-top: 15px; font-size: 0.9em; color: var(--secondary-color);">
-                        <strong>Ссылка на книгу:</strong> 
-                        <a href="${book.cover}" target="_blank" style="color: var(--secondary-color); word-break: break-all;">${book.cover.substring(0, 50)}...</a>
-                    </div>` : ''}
+                    
+                    ${book.readLink ? `
+                    <div class="read-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                        <a href="${book.readLink}" target="_blank" class="read-btn">
+                            📖 Читать книгу онлайн
+                        </a>
+                        <p style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
+                            Откроется в новом окне
+                        </p>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
-            <button 
-                class="borrow-btn" 
-                onclick="borrowBook(${book.id})"
-                ${!book.available ? 'disabled' : ''}
-                style="margin-top: 20px;"
-            >
-                ${book.available ? '📚 Забронировать эту книгу' : 'Книга недоступна для бронирования'}
-            </button>
+            <div class="modal-actions">
+                <button 
+                    class="borrow-btn" 
+                    onclick="borrowBook(${book.id})"
+                    ${!book.available || isBorrowed ? 'disabled' : ''}
+                    style="flex: 1; margin-right: 10px;"
+                >
+                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                </button>
+                <button 
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                    onclick="toggleFavorite(${book.id})"
+                    style="padding: 12px;"
+                >
+                    ${isFavorite ? '★' : '☆'}
+                </button>
+            </div>
         `;
         
         document.getElementById('modalTitle').textContent = book.title;
@@ -396,19 +476,34 @@ async function borrowBook(bookId) {
             // Обновляем статус книги
             book.available = false;
             
-            // Обновляем статистику
+            // Добавляем в список пользователя
+            const borrowRecord = {
+                id: Date.now(),
+                bookId: book.id,
+                bookTitle: book.title,
+                borrowDate: new Date().toISOString().split('T')[0],
+                returnDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                status: 'active'
+            };
+            
+            userData.borrowedBooks.push(borrowRecord);
+            userData.stats.totalBooks++;
+            userData.stats.activeBorrows++;
+            
+            // Обновляем статистику библиотеки
             MOCK_STATS.availableBooks--;
             MOCK_STATS.borrowedBooks++;
             
             tg.showPopup({
                 title: 'Успех! 🎉',
-                message: `Книга "${book.title}" успешно забронирована!`,
+                message: `Книга "${book.title}" успешно забронирована!\nВерните до ${formatDate(borrowRecord.returnDate)}`,
                 buttons: [{ type: 'ok' }]
             });
             
             // Обновляем отображение
             updateBooksDisplay(currentBooks);
             updateStats(MOCK_STATS);
+            updateUserProfile();
             closeModal();
             
         } else {
@@ -421,6 +516,210 @@ async function borrowBook(bookId) {
             message: error.message || 'Не удалось забронировать книгу',
             buttons: [{ type: 'ok' }]
         });
+    }
+}
+
+// Возврат книги
+function returnBook(bookId) {
+    const book = MOCK_BOOKS.find(b => b.id === bookId);
+    const borrowIndex = userData.borrowedBooks.findIndex(b => b.bookId === bookId && b.status === 'active');
+    
+    if (book && borrowIndex !== -1) {
+        // Обновляем статус книги
+        book.available = true;
+        userData.borrowedBooks[borrowIndex].status = 'returned';
+        
+        // Добавляем в историю
+        userData.history.unshift({
+            ...userData.borrowedBooks[borrowIndex],
+            status: 'returned'
+        });
+        
+        // Обновляем статистику
+        userData.stats.activeBorrows--;
+        userData.stats.totalRead++;
+        
+        MOCK_STATS.availableBooks++;
+        MOCK_STATS.borrowedBooks--;
+        
+        tg.showPopup({
+            title: 'Книга возвращена! 📚',
+            message: `"${book.title}" успешно возвращена в библиотеку`,
+            buttons: [{ type: 'ok' }]
+        });
+        
+        // Обновляем отображение
+        updateBooksDisplay(currentBooks);
+        updateStats(MOCK_STATS);
+        updateUserProfile();
+    }
+}
+
+// Добавить/удалить из избранного
+function toggleFavorite(bookId) {
+    const favoriteIndex = userData.favorites.indexOf(bookId);
+    
+    if (favoriteIndex === -1) {
+        // Добавляем в избранное
+        userData.favorites.push(bookId);
+        tg.showPopup({
+            title: 'Добавлено в избранное ★',
+            message: 'Книга добавлена в ваш список избранных',
+            buttons: [{ type: 'ok' }]
+        });
+    } else {
+        // Удаляем из избранного
+        userData.favorites.splice(favoriteIndex, 1);
+        tg.showPopup({
+            title: 'Удалено из избранного',
+            message: 'Книга удалена из вашего списка избранных',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+    
+    // Обновляем отображение
+    updateBooksDisplay(currentBooks);
+    updateUserProfile();
+    
+    // Если открыто модальное окно - обновляем его
+    if (!document.getElementById('bookModal').classList.contains('hidden')) {
+        const modalTitle = document.getElementById('modalTitle').textContent;
+        const book = MOCK_BOOKS.find(b => b.title === modalTitle);
+        if (book) {
+            showBookDetails(book.id);
+        }
+    }
+}
+
+// Удалить из избранного
+function removeFavorite(bookId) {
+    const favoriteIndex = userData.favorites.indexOf(bookId);
+    if (favoriteIndex !== -1) {
+        userData.favorites.splice(favoriteIndex, 1);
+        updateUserProfile();
+        
+        tg.showPopup({
+            title: 'Удалено из избранного',
+            message: 'Книга удалена из вашего списка избранных',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Обновление профиля пользователя
+function updateUserProfile() {
+    // Основная информация
+    document.getElementById('userName').textContent = userData.name;
+    document.getElementById('userRegistration').textContent = `Зарегистрирован: ${userData.registrationDate}`;
+    
+    // Статистика
+    document.getElementById('userTotalBooks').textContent = userData.stats.totalBooks;
+    document.getElementById('userFavorites').textContent = userData.favorites.length;
+    document.getElementById('activeBorrows').textContent = userData.stats.activeBorrows;
+    document.getElementById('totalRead').textContent = userData.stats.totalRead;
+    document.getElementById('readingTime').textContent = userData.stats.readingDays;
+    
+    // Активные книги
+    updateActiveBooksList();
+    
+    // История
+    updateHistoryList();
+    
+    // Избранное
+    updateFavoritesList();
+}
+
+// Обновление списка активных книг
+function updateActiveBooksList() {
+    const activeBooksList = document.getElementById('activeBooksList');
+    const activeBooks = userData.borrowedBooks.filter(b => b.status === 'active');
+    
+    document.getElementById('activeBooksCount').textContent = activeBooks.length;
+    
+    if (activeBooks.length === 0) {
+        activeBooksList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">📚</div>
+                <h4>Нет активных книг</h4>
+                <p>Найдите интересные книги в каталоге</p>
+            </div>
+        `;
+    } else {
+        activeBooksList.innerHTML = activeBooks.map(borrow => `
+            <div class="borrowed-book-item">
+                <div class="book-info">
+                    <div class="book-title">${borrow.bookTitle}</div>
+                    <div class="borrow-dates">
+                        <span>Взята: ${formatDate(borrow.borrowDate)}</span>
+                        <span class="return-date">Вернуть до: ${formatDate(borrow.returnDate)}</span>
+                    </div>
+                </div>
+                <button class="return-btn" onclick="returnBook(${borrow.bookId})">
+                    🔄 Вернуть
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+// Обновление истории
+function updateHistoryList() {
+    const historyList = document.getElementById('historyList');
+    
+    document.getElementById('historyCount').textContent = userData.history.length;
+    
+    if (userData.history.length === 0) {
+        historyList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">🕐</div>
+                <h4>История пуста</h4>
+                <p>Здесь появятся ваши завершенные бронирования</p>
+            </div>
+        `;
+    } else {
+        historyList.innerHTML = userData.history.map(record => `
+            <div class="history-item">
+                <div class="history-info">
+                    <div class="book-title">${record.bookTitle}</div>
+                    <div class="history-dates">
+                        <span>${formatDate(record.borrowDate)} - ${formatDate(record.returnDate)}</span>
+                    </div>
+                </div>
+                <div class="history-status ${record.status === 'returned' ? 'status-returned' : 'status-expired'}">
+                    ${record.status === 'returned' ? 'Возвращена' : 'Просрочена'}
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Обновление избранного
+function updateFavoritesList() {
+    const favoritesList = document.getElementById('favoritesList');
+    const favoriteBooks = MOCK_BOOKS.filter(book => userData.favorites.includes(book.id));
+    
+    document.getElementById('favoritesCount').textContent = favoriteBooks.length;
+    
+    if (favoriteBooks.length === 0) {
+        favoritesList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">⭐</div>
+                <h4>Нет избранных книг</h4>
+                <p>Добавляйте книги в избранное, нажимая на звездочку</p>
+            </div>
+        `;
+    } else {
+        favoritesList.innerHTML = favoriteBooks.map(book => `
+            <div class="favorite-item" onclick="showBookDetails(${book.id})">
+                <div class="favorite-info">
+                    <div class="book-title">${book.title}</div>
+                    <div class="favorite-author">${book.author}</div>
+                </div>
+                <button class="remove-favorite" onclick="event.stopPropagation(); removeFavorite(${book.id})">
+                    ✕
+                </button>
+            </div>
+        `).join('');
     }
 }
 
@@ -449,6 +748,11 @@ function getBookWord(count) {
     if (count % 10 === 1 && count % 100 !== 11) return 'книга';
     if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'книги';
     return 'книг';
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
 }
 
 function showLoading(show) {
@@ -490,277 +794,104 @@ function escapeHtml(unsafe) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-// Добавь в глобальные переменные
-let userData = {
-    name: 'Пользователь',
-    avatar: '👤',
-    registrationDate: new Date().toLocaleDateString('ru-RU'),
-    borrowedBooks: [],
-    favorites: []
-};
 
-// Функции для вкладок
-function showTab(tabName) {
-    // Скрыть все вкладки
-    document.querySelectorAll('.tab-pane').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Показать выбранную вкладку
-    document.getElementById(`${tabName}-tab`).classList.add('active');
-    document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
-}
-
-// Функция для бронирования книги (обнови существующую)
-async function borrowBook(bookId) {
-    try {
-        const book = MOCK_BOOKS.find(b => b.id === bookId);
-        if (book && book.available) {
-            // Обновляем статус книги
-            book.available = false;
-            
-            // Добавляем в список пользователя
-            const borrowRecord = {
-                bookId: book.id,
-                bookTitle: book.title,
-                borrowDate: new Date().toLocaleDateString('ru-RU'),
-                returnDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU'), // +14 дней
-                status: 'active'
-            };
-            
-            userData.borrowedBooks.push(borrowRecord);
-            
-            // Обновляем статистику
-            MOCK_STATS.availableBooks--;
-            MOCK_STATS.borrowedBooks++;
-            
-            tg.showPopup({
-                title: 'Успех! 🎉',
-                message: `Книга "${book.title}" успешно забронирована!\nВерните до ${borrowRecord.returnDate}`,
-                buttons: [{ type: 'ok' }]
-            });
-            
-            // Обновляем отображение
-            updateBooksDisplay(currentBooks);
-            updateStats(MOCK_STATS);
-            updateProfileDisplay();
-            closeModal();
-            
-        } else {
-            throw new Error('Книга недоступна для бронирования');
-        }
-    } catch (error) {
-        console.error('Ошибка бронирования:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: error.message || 'Не удалось забронировать книгу',
-            buttons: [{ type: 'ok' }]
-        });
-    }
-}
-
-// Функция обновления профиля
-function updateProfileDisplay() {
-    // Обновляем информацию пользователя
-    document.getElementById('userName').textContent = userData.name;
-    document.getElementById('userStats').textContent = `Зарегистрирован: ${userData.registrationDate}`;
-    
-    // Обновляем статистику
-    document.getElementById('totalBorrowed').textContent = userData.borrowedBooks.length;
-    document.getElementById('activeBorrows').textContent = userData.borrowedBooks.filter(b => b.status === 'active').length;
-    document.getElementById('favoritesCount').textContent = userData.favorites.length;
-    
-    // Обновляем список книг
-    const myBooksList = document.getElementById('myBooksList');
-    const activeBooks = userData.borrowedBooks.filter(b => b.status === 'active');
-    
-    if (activeBooks.length === 0) {
-        myBooksList.innerHTML = `
-            <div class="empty-borrows">
-                <div class="empty-icon">📚</div>
-                <h4>Нет активных бронирований</h4>
-                <p>Найдите интересные книги в каталоге</p>
-            </div>
-        `;
-    } else {
-        myBooksList.innerHTML = activeBooks.map(borrow => `
-            <div class="borrowed-book-item">
-                <div class="book-info">
-                    <div class="book-title">${borrow.bookTitle}</div>
-                    <div class="borrow-dates">
-                        <span>Взята: ${borrow.borrowDate}</span>
-                        <span>Вернуть до: ${borrow.returnDate}</span>
-                    </div>
-                </div>
-                <button class="return-btn" onclick="returnBook(${borrow.bookId})">
-                    🔄 Вернуть
-                </button>
-            </div>
-        `).join('');
-    }
-}
-
-// Функция возврата книги
-function returnBook(bookId) {
-    const book = MOCK_BOOKS.find(b => b.id === bookId);
-    const borrowIndex = userData.borrowedBooks.findIndex(b => b.bookId === bookId && b.status === 'active');
-    
-    if (book && borrowIndex !== -1) {
-        // Обновляем статус книги
-        book.available = true;
-        userData.borrowedBooks[borrowIndex].status = 'returned';
-        
-        // Обновляем статистику
-        MOCK_STATS.availableBooks++;
-        MOCK_STATS.borrowedBooks--;
-        
-        tg.showPopup({
-            title: 'Книга возвращена! 📚',
-            message: `"${book.title}" успешно возвращена в библиотеку`,
-            buttons: [{ type: 'ok' }]
-        });
-        
-        // Обновляем отображение
-        updateBooksDisplay(currentBooks);
-        updateStats(MOCK_STATS);
-        updateProfileDisplay();
-    }
-}
-
-// Обнови функцию initializeTelegramApp для получения данных пользователя
-function initializeTelegramApp() {
-    if (window.Telegram && window.Telegram.WebApp) {
-        tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
-        tg.BackButton.onClick(handleBackButton);
-        
-        // Получаем данные пользователя из Telegram
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const tgUser = tg.initDataUnsafe.user;
-            userData.name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
-            userData.avatar = tgUser.first_name ? tgUser.first_name[0] : '👤';
-            
-            if (tgUser.photo_url) {
-                document.getElementById('userAvatar').innerHTML = `<img src="${tgUser.photo_url}" alt="${userData.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-            } else {
-                document.getElementById('userAvatar').textContent = userData.avatar;
-            }
-        }
-        
-        console.log('Telegram Web App инициализирован');
-    } else {
-        // Режим браузера для тестирования
-        tg = {
-            showPopup: (params) => {
-                alert(params.title + ": " + params.message);
-            },
-            showAlert: (message) => alert(message),
-            BackButton: {
-                show: () => console.log('BackButton show'),
-                hide: () => console.log('BackButton hide'),
-                onClick: (cb) => console.log('BackButton onClick')
-            }
-        };
-        console.log('Режим браузера - Telegram Web App не доступен');
-    }
-}
-
-// Обнови loadInitialData чтобы инициализировать профиль
-async function loadInitialData() {
-    try {
-        showLoading(true);
-        
-        // Имитируем задержку сети
-        setTimeout(() => {
-            updateBooksDisplay(MOCK_BOOKS);
-            populateGenreFilter(MOCK_GENRES);
-            updateStats(MOCK_STATS);
-            updateProfileDisplay(); // Добавляем инициализацию профиля
-            showLoading(false);
-        }, 800);
-        
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        showError('Не удалось загрузить данные. Используются демо-данные.');
-        
-        // Fallback на mock данные
-        updateBooksDisplay(MOCK_BOOKS);
-        populateGenreFilter(MOCK_GENRES);
-        updateStats(MOCK_STATS);
-        updateProfileDisplay();
-        showLoading(false);
-    }
-}
-
-// Добавь стили для элементов личного кабинета в CSS
-const profileStyles = `
-.borrowed-book-item {
+// Добавляем стили для новых элементов
+const additionalStyles = `
+.book-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: white;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
+    gap: 10px;
+    margin-top: 10px;
 }
 
-.borrowed-book-item .book-title {
-    font-weight: 500;
-    margin-bottom: 5px;
+.favorite-btn {
+    padding: 12px;
+    background: var(--bg-light);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    min-width: 50px;
 }
 
-.borrow-dates {
-    font-size: 0.8em;
-    color: var(--text-light);
+.favorite-btn:hover {
+    background: var(--border-color);
 }
 
-.borrow-dates span {
-    display: block;
+.favorite-active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
 }
 
-.return-btn {
-    padding: 8px 15px;
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.read-btn {
+    display: inline-block;
     background: var(--secondary-color);
     color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    white-space: nowrap;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.return-btn:hover {
+.read-btn:hover {
     background: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.book-cover-img, .book-cover-large-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.book-cover-large {
+    width: 150px;
+    height: 220px;
+    margin: 0 auto 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+}
+
+.book-cover-large-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
 }
 `;
 
-// Добавь стили в страницу
+// Добавляем стили в страницу
 const styleSheet = document.createElement('style');
-styleSheet.textContent = profileStyles;
+styleSheet.textContent = additionalStyles;
 document.head.appendChild(styleSheet);
-function showProfile() {
-    const app = document.getElementById('app');
-    app.innerHTML = `
-        <div class="profile-container">
-            <h1>Личный кабинет</h1>
-            <p><strong>Дата регистрации:</strong> ${userData.registrationDate}</p>
-            <p><strong>Отзывов написано:</strong> ${userData.reviewsCount}</p>
-            <!-- Остальной контент личного кабинета -->
-        </div>
-    `;
-}
 
-// Обработчики событий
-document.getElementById('profileLink').addEventListener('click', showProfile);
 // Глобальные функции для HTML
 window.searchBooks = searchBooks;
 window.filterByGenre = filterByGenre;
 window.showBookDetails = showBookDetails;
 window.borrowBook = borrowBook;
+window.returnBook = returnBook;
+window.toggleFavorite = toggleFavorite;
+window.removeFavorite = removeFavorite;
+window.showSection = showSection;
 window.closeModal = closeModal;
 window.clearFilters = clearFilters;

@@ -9,17 +9,12 @@
 </head>
 <body>
     <div class="container">
-        <!-- Шапка с навигацией -->
+        <!-- Header -->
         <header class="header">
-            <div class="header-top">
-                <div class="header-content">
-                    <h1>📚 КнігаБел</h1>
-                    <p>Ваша цифровая библиотека</p>
-                </div>
-                <!-- Кнопка личного кабинета в правом верхнем углу -->
-                <button class="profile-btn" onclick="showProfile()">👤 Личный кабинет</button>
+            <div class="header-content">
+                <h1>📚 КнігаБел</h1>
+                <p>Ваша цифровая библиотека</p>
             </div>
-            
             <div class="stats" id="stats">
                 <div class="stat-item">
                     <span class="stat-number" id="totalBooks">0</span>
@@ -29,112 +24,142 @@
                     <span class="stat-number" id="availableBooks">0</span>
                     <span class="stat-label">Доступно</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="favoriteBooks">0</span>
-                    <span class="stat-label">В избранном</span>
-                </div>
             </div>
         </header>
 
-        <!-- Основной контент - Каталог книг -->
-        <main class="main-content" id="mainContent">
-            <section class="search-section">
-                <div class="search-container">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        placeholder="Поиск по названию, автору или жанру..."
-                        class="search-input"
-                        onkeypress="handleSearchKeypress(event)"
-                    >
-                    <button onclick="searchBooks()" class="search-btn">🔍 Поиск</button>
-                </div>
-                
-                <div class="filter-container">
-                    <select id="genreFilter" class="genre-filter" onchange="filterByGenre()">
-                        <option value="">Все жанры</option>
-                    </select>
-                    <button onclick="clearFilters()" class="clear-filters-btn">🗑️ Сбросить</button>
-                </div>
-            </section>
+        <!-- Navigation Tabs -->
+        <section class="navigation-section">
+            <div class="nav-tabs">
+                <button class="nav-btn active" onclick="showSection('catalog')">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">Каталог</span>
+                </button>
+                <button class="nav-btn" onclick="showSection('profile')">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Мой профиль</span>
+                </button>
+            </div>
+        </section>
 
-            <section class="books-section">
-                <div class="section-header">
-                    <h2 id="sectionTitle">Каталог книг</h2>
-                    <span class="books-count" id="booksCount">0 книг</span>
-                </div>
-                
-                <div class="books-container" id="booksContainer">
-                    <!-- Книги будут загружены через JavaScript -->
-                </div>
-                
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>Загрузка каталога...</p>
-                </div>
-                
-                <div class="empty-state hidden" id="emptyState">
-                    <div class="empty-icon">📚</div>
-                    <h3>Книги не найдены</h3>
-                    <p>Попробуйте изменить поисковый запрос или фильтр</p>
-                    <button onclick="clearFilters()" class="clear-btn">Сбросить фильтры</button>
-                </div>
-            </section>
-        </main>
+        <!-- Search Section (только для каталога) -->
+        <section class="search-section" id="searchSection">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Поиск по названию, автору или жанру..."
+                    class="search-input"
+                >
+                <button onclick="searchBooks()" class="search-btn">🔍</button>
+            </div>
+            
+            <div class="filter-container">
+                <select id="genreFilter" class="genre-filter" onchange="filterByGenre()">
+                    <option value="">Загрузка жанров...</option>
+                </select>
+            </div>
+        </section>
 
-        <!-- Контент личного кабинета (скрыт по умолчанию) -->
-        <main class="profile-content hidden" id="profileContent">
+        <!-- Catalog Section -->
+        <section class="content-section active" id="catalogSection">
+            <div class="section-header">
+                <h2 id="sectionTitle">Каталог книг</h2>
+                <span class="books-count" id="booksCount">0 книг</span>
+            </div>
+            
+            <div class="books-container" id="booksContainer">
+                <!-- Books will be loaded here -->
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Загрузка каталога...</p>
+            </div>
+            
+            <div class="empty-state hidden" id="emptyState">
+                <div class="empty-icon">📚</div>
+                <h3>Книги не найдены</h3>
+                <p>Попробуйте изменить поисковый запрос или фильтр</p>
+                <button onclick="clearFilters()" class="clear-btn">Сбросить фильтры</button>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section class="content-section" id="profileSection">
             <div class="profile-header">
-                <button class="back-btn" onclick="showCatalog()">← Назад к каталогу</button>
-                <h2>👤 Личный кабинет</h2>
-            </div>
-
-            <div class="profile-info">
-                <div class="user-card">
-                    <div class="user-avatar">👤</div>
-                    <div class="user-details">
-                        <h3>Пользователь</h3>
-                        <p><strong>Зарегистрирован:</strong> <span id="registrationDate">13.11.2025</span></p>
-                        <p><strong>Написано отзывов:</strong> <span id="reviewsCount">0</span></p>
+                <div class="user-avatar" id="userAvatar">
+                    <div class="avatar-placeholder">👤</div>
+                </div>
+                <div class="user-info">
+                    <h2 id="userName">Пользователь</h2>
+                    <p class="user-registration" id="userRegistration">Зарегистрирован: ...</p>
+                    <div class="user-stats">
+                        <span class="user-stat">📚 <span id="userTotalBooks">0</span> книг</span>
+                        <span class="user-stat">⭐ <span id="userFavorites">0</span> избранных</span>
                     </div>
                 </div>
             </div>
 
-            <div class="profile-sections">
-                <!-- Активные бронирования -->
-                <section class="profile-section">
-                    <h3>📖 Мои активные бронирования</h3>
-                    <div class="bookings-list" id="activeBookings">
-                        <div class="no-bookings">
-                            <p>Нет активных бронирований</p>
-                            <button onclick="showCatalog()" class="find-books-btn">Найти интересные книги</button>
-                        </div>
+            <!-- Profile Stats -->
+            <div class="profile-stats">
+                <div class="stat-card profile-stat">
+                    <div class="stat-icon">📖</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="activeBorrows">0</div>
+                        <div class="stat-label">Активные книги</div>
                     </div>
-                </section>
-
-                <!-- Избранные книги -->
-                <section class="profile-section">
-                    <h3>❤️ Избранные книги</h3>
-                    <div class="favorites-list" id="favoritesList">
-                        <div class="no-favorites">
-                            <p>У вас пока нет избранных книг</p>
-                        </div>
+                </div>
+                <div class="stat-card profile-stat">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalRead">0</div>
+                        <div class="stat-label">Прочитано</div>
                     </div>
-                </section>
-
-                <!-- История бронирований -->
-                <section class="profile-section">
-                    <h3>📚 История бронирований</h3>
-                    <div class="history-list" id="bookingHistory">
-                        <div class="no-history">
-                            <p>История бронирований пуста</p>
-                        </div>
+                </div>
+                <div class="stat-card profile-stat">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="readingTime">0</div>
+                        <div class="stat-label">Дней с нами</div>
                     </div>
-                </section>
+                </div>
             </div>
-        </main>
 
-        <!-- Модальное окно деталей книги -->
+            <!-- Active Borrows -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>📚 Мои активные книги</h3>
+                    <span class="section-badge" id="activeBooksCount">0</span>
+                </div>
+                <div class="borrowed-books-list" id="activeBooksList">
+                    <!-- Active books will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Borrowing History -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>🕐 История бронирований</h3>
+                    <span class="section-badge" id="historyCount">0</span>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- History will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Favorites -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>⭐ Избранные книги</h3>
+                    <span class="section-badge" id="favoritesCount">0</span>
+                </div>
+                <div class="favorites-list" id="favoritesList">
+                    <!-- Favorites will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Book Modal -->
         <div class="modal hidden" id="bookModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -142,36 +167,12 @@
                     <button onclick="closeModal()" class="close-btn">×</button>
                 </div>
                 <div class="modal-body" id="modalBody">
-                    <!-- Детали книги будут загружены здесь -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно для отзыва -->
-        <div class="modal hidden" id="reviewModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>✍️ Оставить отзыв</h3>
-                    <button onclick="closeReviewModal()" class="close-btn">×</button>
-                </div>
-                <div class="modal-body">
-                    <p>Книга: "<span id="reviewBookTitle"></span>"</p>
-                    <textarea 
-                        id="reviewText" 
-                        placeholder="Поделитесь вашим мнением о книге..." 
-                        rows="6"
-                        maxlength="500"
-                    ></textarea>
-                    <div class="review-actions">
-                        <button onclick="submitReview()" class="submit-review-btn">📤 Отправить отзыв</button>
-                        <button onclick="closeReviewModal()" class="cancel-btn">❌ Отмена</button>
-                    </div>
+                    <!-- Modal content will be loaded here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="js/books-data.js"></script>
-    <script src="js/app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
