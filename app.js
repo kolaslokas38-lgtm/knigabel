@@ -743,7 +743,20 @@ const profileStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = profileStyles;
 document.head.appendChild(styleSheet);
+function showProfile() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <div class="profile-container">
+            <h1>Личный кабинет</h1>
+            <p><strong>Дата регистрации:</strong> ${userData.registrationDate}</p>
+            <p><strong>Отзывов написано:</strong> ${userData.reviewsCount}</p>
+            <!-- Остальной контент личного кабинета -->
+        </div>
+    `;
+}
 
+// Обработчики событий
+document.getElementById('profileLink').addEventListener('click', showProfile);
 // Глобальные функции для HTML
 window.searchBooks = searchBooks;
 window.filterByGenre = filterByGenre;

@@ -503,5 +503,26 @@ body {
     cursor: pointer;
     min-height: 200px; /* Минимальная высота для карточки */
 }
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Стили для личного кабинета */
+.profile-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+}
 }

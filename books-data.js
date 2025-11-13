@@ -97,7 +97,28 @@ const books = [
     pages: 352
   }
 ];
+const books = [
+    {
+        id: 1,
+        title: "Мастер и Маргарита",
+        author: "Михаил Булгаков",
+        available: true
+    },
+    {
+        id: 2, 
+        title: "1984",
+        author: "Джордж Оруэлл",
+        available: false
+    }
+    // ... остальные книги
+];
 
+// Данные пользователя
+const userData = {
+    registrationDate: "13.11.2025",
+    reviewsCount: 5,
+    favoriteBooks: 3
+};
 // Жанры для фильтрации
 const genres = [
   "Все жанры", "Роман-эпопея", "Психологический роман", "Фантастика", 
