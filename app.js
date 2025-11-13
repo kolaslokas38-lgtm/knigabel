@@ -1141,7 +1141,509 @@ const additionalStyles = `
     padding: 20px;
 }
 `;
+// Добавим в глобальные переменные
+let bookReviews = {
+    1: [
+        { userId: 1, userName: "Анна", rating: 5, text: "Великолепная книга! Перечитываю каждый год.", date: "2024-01-15", likes: 12 },
+        { userId: 2, userName: "Михаил", rating: 4, text: "Классика, которую должен прочитать каждый.", date: "2024-01-10", likes: 8 }
+    ],
+    2: [
+        { userId: 3, userName: "Екатерина", rating: 5, text: "Потрясающая глубина психологического анализа.", date: "2024-01-12", likes: 15 }
+    ],
+    3: [
+        { userId: 4, userName: "Дмитрий", rating: 5, text: "Мистика, философия и юмор - идеальное сочетание!", date: "2024-01-08", likes: 20 }
+    ]
+};
 
+let popularBooks = [
+    { id: 3, title: "Мастер и Маргарита", author: "Михаил Булгаков", rating: 4.8, reviews: 45, cover: "https://cv5.litres.ru/pub/c/cover_415/17829610.jpg" },
+    { id: 1, title: "Война и мир", author: "Лев Толстой", rating: 4.7, reviews: 38, cover: "https://cv6.litres.ru/pub/c/cover_415/66809843.jpg" },
+    { id: 2, title: "Преступление и наказание", author: "Федор Достоевский", rating: 4.6, reviews: 42, cover: "https://cv0.litres.ru/pub/c/cover_415/10235628.jpg" },
+    { id: 7, title: "Анна Каренина", author: "Лев Толстой", rating: 4.5, reviews: 35, cover: "https://cv8.litres.ru/pub/c/cover_415/10235657.jpg" },
+    { id: 10, title: "Братья Карамазовы", author: "Федор Достоевский", rating: 4.4, reviews: 28, cover: "https://cv1.litres.ru/pub/c/cover_415/10235641.jpg" }
+];
+
+// Добавим в userData
+userData.reviews = [
+    { bookId: 1, bookTitle: "Война и мир", rating: 5, text: "Одна из лучших книг в моей жизни!", date: "2024-01-05" },
+    { bookId: 2, bookTitle: "Преступление и наказание", rating: 4, text: "Сильное произведение, заставляет задуматься.", date: "2023-12-20" }
+];
+
+// Функция для показа отзывов о книге
+function showBookReviews(bookId) {
+    const reviews = bookReviews[bookId] || [];
+    const book = MOCK_BOOKS.find(b => b.id === bookId);
+    
+    let reviewsHTML = `
+        <div class="reviews-header">
+            <h4>💬 Отзывы о книге</h4>
+            <div class="average-rating">
+                Средняя оценка: <strong>${calculateAverageRating(reviews)}/5</strong>
+            </div>
+        </div>
+    `;
+    
+    if (reviews.length === 0) {
+        reviewsHTML += `
+            <div class="empty-reviews">
+                <div class="empty-icon">💬</div>
+                <p>Пока нет отзывов</p>
+                <p>Будьте первым, кто оставит отзыв!</p>
+            </div>
+        `;
+    } else {
+        reviewsHTML += reviews.map(review => `
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="review-user">${review.userName}</div>
+                    <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                </div>
+                <div class="review-text">${review.text}</div>
+                <div class="review-footer">
+                    <span class="review-likes">👍 ${review.likes}</span>
+                    <span class="review-date">${formatDate(review.date)}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Форма для добавления отзыва
+    const userReview = userData.reviews.find(r => r.bookId === bookId);
+    if (userReview) {
+        reviewsHTML += `
+            <div class="user-review">
+                <h5>Ваш отзыв:</h5>
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="review-user">Вы</div>
+                        <div class="review-rating">${'★'.repeat(userReview.rating)}${'☆'.repeat(5-userReview.rating)}</div>
+                    </div>
+                    <div class="review-text">${userReview.text}</div>
+                    <div class="review-date">${formatDate(userReview.date)}</div>
+                </div>
+            </div>
+        `;
+    } else {
+        reviewsHTML += `
+            <div class="review-form">
+                <h5>Оставить отзыв:</h5>
+                <div class="rating-stars" id="ratingStars">
+                    <span class="star" onclick="setRating(1)">☆</span>
+                    <span class="star" onclick="setRating(2)">☆</span>
+                    <span class="star" onclick="setRating(3)">☆</span>
+                    <span class="star" onclick="setRating(4)">☆</span>
+                    <span class="star" onclick="setRating(5)">☆</span>
+                </div>
+                <textarea class="review-textarea" id="reviewText" placeholder="Поделитесь вашим мнением о книге..."></textarea>
+                <div class="review-actions">
+                    <button class="clear-btn" onclick="clearReviewForm()">Отмена</button>
+                    <button class="borrow-btn" onclick="submitReview(${bookId})">Отправить</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    return reviewsHTML;
+}
+
+// Функции для работы с отзывами
+let currentRating = 0;
+
+function setRating(rating) {
+    currentRating = rating;
+    const stars = document.querySelectorAll('#ratingStars .star');
+    stars.forEach((star, index) => {
+        star.textContent = index < rating ? '★' : '☆';
+        star.classList.toggle('active', index < rating);
+    });
+}
+
+function submitReview(bookId) {
+    const reviewText = document.getElementById('reviewText').value.trim();
+    
+    if (currentRating === 0) {
+        tg.showAlert('Пожалуйста, поставьте оценку');
+        return;
+    }
+    
+    if (reviewText.length < 10) {
+        tg.showAlert('Отзыв должен содержать минимум 10 символов');
+        return;
+    }
+    
+    const book = MOCK_BOOKS.find(b => b.id === bookId);
+    const newReview = {
+        bookId: bookId,
+        bookTitle: book.title,
+        rating: currentRating,
+        text: reviewText,
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    userData.reviews.push(newReview);
+    
+    // Добавляем в общие отзывы
+    if (!bookReviews[bookId]) {
+        bookReviews[bookId] = [];
+    }
+    bookReviews[bookId].push({
+        userId: 999, // ID текущего пользователя
+        userName: userData.name,
+        rating: currentRating,
+        text: reviewText,
+        date: newReview.date,
+        likes: 0
+    });
+    
+    tg.showPopup({
+        title: 'Отзыв добавлен! ★',
+        message: 'Спасибо за ваш отзыв!',
+        buttons: [{ type: 'ok' }]
+    });
+    
+    // Обновляем отображение
+    updateUserProfile();
+    
+    // Если открыто модальное окно - обновляем его
+    if (!document.getElementById('bookModal').classList.contains('hidden')) {
+        const modalTitle = document.getElementById('modalTitle').textContent;
+        const currentBook = MOCK_BOOKS.find(b => b.title === modalTitle);
+        if (currentBook && currentBook.id === bookId) {
+            showBookDetails(bookId);
+        }
+    }
+}
+
+function clearReviewForm() {
+    currentRating = 0;
+    document.getElementById('reviewText').value = '';
+    const stars = document.querySelectorAll('#ratingStars .star');
+    stars.forEach(star => {
+        star.textContent = '☆';
+        star.classList.remove('active');
+    });
+}
+
+function calculateAverageRating(reviews) {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+}
+
+// Обновим функцию showBookDetails - добавим вкладку с отзывами
+// В функции showBookDetails заменим modalBody.innerHTML на:
+async function showBookDetails(bookId) {
+    try {
+        showLoading(true);
+        
+        const book = MOCK_BOOKS.find(b => b.id === bookId);
+        if (!book) throw new Error('Книга не найдена');
+
+        const isFavorite = userData.favorites.includes(book.id);
+        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        const userReview = userData.reviews.find(r => r.bookId === book.id);
+        const reviews = bookReviews[book.id] || [];
+        const averageRating = calculateAverageRating(reviews);
+
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+            <div class="book-tabs">
+                <button class="book-tab active" onclick="showBookTab('details', ${book.id})">📖 О книге</button>
+                <button class="book-tab" onclick="showBookTab('reviews', ${book.id})">💬 Отзывы (${reviews.length})</button>
+            </div>
+            
+            <div class="book-tab-content">
+                <div class="book-tab-pane active" id="details-tab">
+                    <div class="book-details">
+                        <div class="book-cover-large">
+                            ${book.cover ? 
+                                `<img src="${book.cover}" alt="${book.title}" class="book-cover-large-img"
+                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/200x300/4CAF50/white?text=📖\\n${escapeHtml(book.title)}';">` : 
+                                `<div class="book-cover-large-placeholder">📖<br>${escapeHtml(book.title)}</div>`
+                            }
+                        </div>
+                        <div class="book-info-detailed">
+                            <div class="book-header-info">
+                                <h4>${escapeHtml(book.title)}</h4>
+                                <div class="book-rating">
+                                    ${averageRating > 0 ? `
+                                        <span class="rating-stars-small">
+                                            ${'★'.repeat(Math.round(averageRating))}${'☆'.repeat(5-Math.round(averageRating))}
+                                        </span>
+                                        <span class="rating-value">${averageRating}</span>
+                                        <span class="reviews-count">(${reviews.length} отзывов)</span>
+                                    ` : '<span class="no-reviews">Нет оценок</span>'}
+                                </div>
+                            </div>
+                            <p><strong>Автор:</strong> ${escapeHtml(book.author)}</p>
+                            <p><strong>Год издания:</strong> ${book.year}</p>
+                            <p><strong>Жанр:</strong> ${book.genre}</p>
+                            <p><strong>ISBN:</strong> ${book.isbn || 'Не указан'}</p>
+                            <p><strong>Страниц:</strong> ${book.pages}</p>
+                            <p><strong>Статус:</strong> 
+                                <span class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
+                                    ${isBorrowed ? '📖 У вас' : (book.available ? '✅ Доступна' : '❌ Выдана')}
+                                </span>
+                            </p>
+                            <div class="book-description">
+                                <strong>Описание:</strong>
+                                <p>${escapeHtml(book.description || 'Описание отсутствует.')}</p>
+                            </div>
+                            
+                            ${book.readLink ? `
+                            <div class="read-section">
+                                <a href="${book.readLink}" target="_blank" class="read-btn">
+                                    📖 Читать книгу онлайн
+                                </a>
+                                <p style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
+                                    Откроется в новом окне
+                                </p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="book-tab-pane" id="reviews-tab">
+                    ${showBookReviews(book.id)}
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button 
+                    class="borrow-btn" 
+                    onclick="borrowBook(${book.id})"
+                    ${!book.available || isBorrowed ? 'disabled' : ''}
+                    style="flex: 1; margin-right: 10px;"
+                >
+                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                </button>
+                <button 
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                    onclick="toggleFavorite(${book.id})"
+                    style="padding: 12px;"
+                >
+                    ${isFavorite ? '★' : '☆'}
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('modalTitle').textContent = book.title;
+        document.getElementById('bookModal').classList.remove('hidden');
+        tg.BackButton.show();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки деталей книги:', error);
+        showError('Не удалось загрузить информацию о книге');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Функция переключения вкладок в модальном окне
+function showBookTab(tabName, bookId) {
+    // Скрыть все вкладки
+    document.querySelectorAll('.book-tab-pane').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.book-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Показать выбранную вкладку
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    document.querySelector(`[onclick="showBookTab('${tabName}', ${bookId})"]`).classList.add('active');
+}
+
+// Обновим функцию updateUserProfile - добавим отзывы
+function updateUserProfile() {
+    // ... существующий код ...
+    
+    // Обновляем отзывы пользователя
+    updateUserReviewsList();
+    
+    // Обновляем популярные книги
+    updatePopularBooksList();
+}
+
+function updateUserReviewsList() {
+    const userReviewsList = document.getElementById('userReviewsList');
+    
+    document.getElementById('reviewsCount').textContent = userData.reviews.length;
+    
+    if (userData.reviews.length === 0) {
+        userReviewsList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">💬</div>
+                <h4>Нет отзывов</h4>
+                <p>Оставляйте отзывы к прочитанным книгам</p>
+            </div>
+        `;
+    } else {
+        userReviewsList.innerHTML = userData.reviews.map(review => `
+            <div class="review-item" onclick="showBookDetails(${review.bookId})">
+                <div class="review-header">
+                    <div class="review-book-title">${review.bookTitle}</div>
+                    <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                </div>
+                <div class="review-text">${review.text}</div>
+                <div class="review-date">${formatDate(review.date)}</div>
+            </div>
+        `).join('');
+    }
+}
+
+function updatePopularBooksList() {
+    const popularBooksList = document.getElementById('popularBooksList');
+    
+    popularBooksList.innerHTML = popularBooks.map((book, index) => `
+        <div class="popular-book-item" onclick="showBookDetails(${book.id})">
+            <div class="popular-book-rank">${index + 1}</div>
+            <img src="${book.cover}" alt="${book.title}" class="popular-book-cover"
+                 onerror="this.src='https://via.placeholder.com/50x70/4CAF50/white?text=📖'">
+            <div class="popular-book-info">
+                <div class="popular-book-title">${book.title}</div>
+                <div class="popular-book-author">${book.author}</div>
+                <div class="popular-book-rating">
+                    <span>★ ${book.rating}</span>
+                    <span>(${book.reviews} отзывов)</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Добавим стили для новых элементов
+const socialStyles = `
+.book-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.book-tab {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg-light);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.book-tab.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.book-tab-content {
+    min-height: 300px;
+}
+
+.book-tab-pane {
+    display: none;
+}
+
+.book-tab-pane.active {
+    display: block;
+}
+
+.book-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.rating-stars-small {
+    color: var(--accent-color);
+}
+
+.rating-value {
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+.reviews-count {
+    color: var(--text-light);
+}
+
+.no-reviews {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.reviews-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.average-rating {
+    font-size: 0.9em;
+    color: var(--text-dark);
+}
+
+.empty-reviews {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+}
+
+.empty-reviews .empty-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.user-review {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.review-likes {
+    color: var(--secondary-color);
+    font-size: 0.9em;
+}
+
+.review-user {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+`;
+
+// Добавляем стили
+const socialStyleSheet = document.createElement('style');
+socialStyleSheet.textContent = socialStyles;
+document.head.appendChild(socialStyleSheet);
+
+// Добавляем глобальные функции
+window.showBookTab = showBookTab;
+window.setRating = setRating;
+window.submitReview = submitReview;
+window.clearReviewForm = clearReviewForm;
 // Добавляем стили в страницу
 const styleSheet = document.createElement('style');
 styleSheet.textContent = additionalStyles;
