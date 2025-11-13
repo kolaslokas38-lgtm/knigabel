@@ -79,6 +79,57 @@
             </div>
         </div>
     </div>
+    <section class="user-section">
+    <div class="user-tabs">
+        <button class="tab-btn active" onclick="showTab('catalog')">📚 Каталог</button>
+        <button class="tab-btn" onclick="showTab('profile')">👤 Мой профиль</button>
+    </div>
+</section>
+
+<!-- Оберни books-section в контейнер вкладок -->
+<div class="tab-content">
+    <div class="tab-pane active" id="catalog-tab">
+        <!-- Существующий books-section -->
+        <section class="books-section">
+            <!-- ... существующий код ... -->
+        </section>
+    </div>
+    
+    <div class="tab-pane" id="profile-tab">
+        <!-- Новый личный кабинет -->
+        <section class="profile-section">
+            <div class="profile-header">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <div class="user-info">
+                    <h3 id="userName">Пользователь</h3>
+                    <p id="userStats">Зарегистрирован: ...</p>
+                </div>
+            </div>
+            
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBorrowed">0</div>
+                    <div class="stat-label">Всего книг</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeBorrows">0</div>
+                    <div class="stat-label">Активных</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="favoritesCount">0</div>
+                    <div class="stat-label">В избранном</div>
+                </div>
+            </div>
+            
+            <div class="borrowed-books" id="borrowedBooks">
+                <h4>📚 Мои книги</h4>
+                <div class="books-list" id="myBooksList">
+                    <!-- Список забронированных книг -->
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 
     <script src="app.js"></script>
 </body>
