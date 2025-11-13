@@ -27,22 +27,8 @@
             </div>
         </header>
 
-        <!-- Navigation Tabs -->
-        <section class="navigation-section">
-            <div class="nav-tabs">
-                <button class="nav-btn active" onclick="showSection('catalog')">
-                    <span class="nav-icon">📚</span>
-                    <span class="nav-text">Каталог</span>
-                </button>
-                <button class="nav-btn" onclick="showSection('profile')">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-text">Мой профиль</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Search Section (только для каталога) -->
-        <section class="search-section" id="searchSection">
+        <!-- Search Section -->
+        <section class="search-section">
             <div class="search-container">
                 <input 
                     type="text" 
@@ -50,7 +36,7 @@
                     placeholder="Поиск по названию, автору или жанру..."
                     class="search-input"
                 >
-                <button onclick="searchBooks()" class="search-btn">🔍</button>
+                <button onclick="searchBooks()" class="search-btn">🔍 Поиск</button>
             </div>
             
             <div class="filter-container">
@@ -60,8 +46,29 @@
             </div>
         </section>
 
-        <!-- Catalog Section -->
-        <section class="content-section active" id="catalogSection">
+        <!-- Книга дня -->
+        <div class="featured-section">
+            <div class="section-header">
+                <h2>📖 Книга дня</h2>
+            </div>
+            <div class="book-of-day" id="bookOfDay">
+                <!-- Книга дня будет загружена здесь -->
+            </div>
+        </div>
+
+        <!-- Популярные книги недели -->
+        <div class="featured-section">
+            <div class="section-header">
+                <h2>🔥 Книги недели</h2>
+                <span class="books-count">5 книг</span>
+            </div>
+            <div class="weekly-books" id="weeklyBooks">
+                <!-- Книги недели будут загружены здесь -->
+            </div>
+        </div>
+
+        <!-- Основной каталог -->
+        <div class="featured-section">
             <div class="section-header">
                 <h2 id="sectionTitle">Каталог книг</h2>
                 <span class="books-count" id="booksCount">0 книг</span>
@@ -82,103 +89,7 @@
                 <p>Попробуйте изменить поисковый запрос или фильтр</p>
                 <button onclick="clearFilters()" class="clear-btn">Сбросить фильтры</button>
             </div>
-        </section>
-
-        <!-- Profile Section -->
-        <section class="content-section" id="profileSection">
-            <div class="profile-header">
-                <div class="user-avatar" id="userAvatar">
-                    <div class="avatar-placeholder">👤</div>
-                </div>
-                <div class="user-info">
-                    <h2 id="userName">Пользователь</h2>
-                    <p class="user-registration" id="userRegistration">Зарегистрирован: ...</p>
-                    <div class="user-stats">
-                        <span class="user-stat">📚 <span id="userTotalBooks">0</span> книг</span>
-                        <span class="user-stat">⭐ <span id="userFavorites">0</span> избранных</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Profile Stats -->
-            <div class="profile-stats">
-                <div class="stat-card profile-stat">
-                    <div class="stat-icon">📖</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="activeBorrows">0</div>
-                        <div class="stat-label">Активные книги</div>
-                    </div>
-                </div>
-                <div class="stat-card profile-stat">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="totalRead">0</div>
-                        <div class="stat-label">Прочитано</div>
-                    </div>
-                </div>
-                <div class="stat-card profile-stat">
-                    <div class="stat-icon">⏰</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="readingTime">0</div>
-                        <div class="stat-label">Дней с нами</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Borrows -->
-            <div class="profile-section-card">
-                <div class="section-title">
-                    <h3>📚 Мои активные книги</h3>
-                    <span class="section-badge" id="activeBooksCount">0</span>
-                </div>
-                <div class="borrowed-books-list" id="activeBooksList">
-                    <!-- Active books will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Borrowing History -->
-            <div class="profile-section-card">
-                <div class="section-title">
-                    <h3>🕐 История бронирований</h3>
-                    <span class="section-badge" id="historyCount">0</span>
-                </div>
-                <div class="history-list" id="historyList">
-                    <!-- History will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Favorites -->
-            <div class="profile-section-card">
-                <div class="section-title">
-                    <h3>⭐ Избранные книги</h3>
-                    <span class="section-badge" id="favoritesCount">0</span>
-                </div>
-                <div class="favorites-list" id="favoritesList">
-                    <!-- Favorites will be loaded here -->
-                     <!-- Reviews Section -->
-<div class="profile-section-card">
-    <div class="section-title">
-        <h3>💬 Мои отзывы</h3>
-        <span class="section-badge" id="reviewsCount">0</span>
-    </div>
-    <div class="reviews-list" id="userReviewsList">
-        <!-- User reviews will be loaded here -->
-    </div>
-</div>
-
-<!-- Popular Books -->
-<div class="profile-section-card">
-    <div class="section-title">
-        <h3>🔥 Популярные книги</h3>
-        <span class="section-badge">Топ-5</span>
-    </div>
-    <div class="popular-books-list" id="popularBooksList">
-        <!-- Popular books will be loaded here -->
-    </div>
-</div>
-                </div>
-            </div>
-        </section>
+        </div>
 
         <!-- Book Modal -->
         <div class="modal hidden" id="bookModal">
