@@ -3,222 +3,341 @@ const CONFIG = {
     USE_MOCK_DATA: true
 };
 
-// Данные для Красной книги Беларуси
-const RED_BOOK_ANIMALS = [
-    {
-        id: 1,
-        name: "Зубр",
-        latinName: "Bison bonasus",
-        status: "vulnerable",
-        description: "Крупнейшее наземное млекопитающее Европы. Символ Беларуси. Восстановлен благодаря программе реинтродукции.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/European_bison_photo.jpg/800px-European_bison_photo.jpg",
-        population: "~2000 особей",
-        habitat: "Беловежская пуща, другие заповедники"
-    },
-    {
-        id: 2,
-        name: "Рысь",
-        latinName: "Lynx lynx",
-        status: "rare",
-        description: "Крупная хищная кошка. Обитает в глухих лесах. Ведут одиночный образ жизни.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Lynx_lynx2.jpg/800px-Lynx_lynx2.jpg",
-        population: "~500 особей",
-        habitat: "Леса северной и центральной Беларуси"
-    },
-    {
-        id: 3,
-        name: "Чёрный аист",
-        latinName: "Ciconia nigra",
-        status: "endangered",
-        description: "Редкая птица, более осторожная чем белый аист. Гнездится в глухих лесах near водоёмов.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Black_Stork_%28Ciconia_nigra%29.jpg/800px-Black_Stork_%28Ciconia_nigra%29.jpg",
-        population: "~400 пар",
-        habitat: "Заболоченные леса"
-    },
-    {
-        id: 4,
-        name: "Беркут",
-        latinName: "Aquila chrysaetos",
-        status: "endangered",
-        description: "Крупный орёл, мощный хищник. Размах крыльев до 2,5 метров.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Golden_Eagle_in_flight_2.jpg/800px-Golden_Eagle_in_flight_2.jpg",
-        population: "~30 пар",
-        habitat: "Лесистые районы с открытыми пространствами"
-    },
-    {
-        id: 5,
-        name: "Бурый медведь",
-        latinName: "Ursus arctos",
-        status: "endangered",
-        description: "Крупный хищник, сохранился только в самых глухих уголках страны.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/2010-kodiak-bear-1.jpg/800px-2010-kodiak-bear-1.jpg",
-        population: "~100 особей",
-        habitat: "Беловежская пуща"
-    },
-    {
-        id: 6,
-        name: "Выдра",
-        latinName: "Lutra lutra",
-        status: "vulnerable",
-        description: "Хищное млекопитающее, отличный пловец. Обитает near чистых рек и озёр.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Lutra_lutra2.jpg/800px-Lutra_lutra2.jpg",
-        population: "~2000 особей",
-        habitat: "Реки и озёра по всей стране"
-    },
-    {
-        id: 7,
-        name: "Барсук",
-        latinName: "Meles meles",
-        status: "rare",
-        description: "Крупный представитель куньих. Строит сложные подземные норы.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Meles_meles.jpg/800px-Meles_meles.jpg",
-        population: "~5000 особей",
-        habitat: "Леса по всей территории"
-    },
-    {
-        id: 8,
-        name: "Филин",
-        latinName: "Bubo bubo",
-        status: "rare",
-        description: "Крупнейшая сова Европы. Ночной хищник с великолепным слухом.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Eagle_Owl.jpg/800px-Eagle_Owl.jpg",
-        population: "~200 пар",
-        habitat: "Глухие леса, скалистые местности"
-    },
-    {
-        id: 9,
-        name: "Волк",
-        latinName: "Canis lupus",
-        status: "vulnerable",
-        description: "Крупный хищник, играет важную роль в экосистеме.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Kolm%C3%A5rden_Wolf.jpg/800px-Kolm%C3%A5rden_Wolf.jpg",
-        population: "~1500 особей",
-        habitat: "Леса по всей стране"
-    },
-    {
-        id: 10,
-        name: "Лось",
-        latinName: "Alces alces",
-        status: "vulnerable",
-        description: "Крупнейший представитель оленевых. Обитает в лесах и болотах.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Moose_superior.jpg/800px-Moose_superior.jpg",
-        population: "~10000 особей",
-        habitat: "Леса и болотистые местности"
-    },
-    {
-        id: 11,
-        name: "Орлан-белохвост",
-        latinName: "Haliaeetus albicilla",
-        status: "rare",
-        description: "Крупная хищная птица, обитает near водоёмов.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/White-tailed_Eagle_-_Haliaeetus_albicilla_%28cropped%29.jpg/800px-White-tailed_Eagle_-_Haliaeetus_albicilla_%28cropped%29.jpg",
-        population: "~100 пар",
-        habitat: "Побережья крупных озёр и рек"
-    },
-    {
-        id: 12,
-        name: "Серый журавль",
-        latinName: "Grus grus",
-        status: "vulnerable",
-        description: "Крупная перелётная птица, известная своими танцами.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Grus_grus_1_%28Lukasz_Lukasik%29.jpg/800px-Grus_grus_1_%28Lukasz_Lukasik%29.jpg",
-        population: "~2000 пар",
-        habitat: "Болота и заболоченные леса"
-    },
-    {
-        id: 13,
-        name: "Бобр",
-        latinName: "Castor fiber",
-        status: "vulnerable",
-        description: "Крупный грызун, известный своими плотинами.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Beaver_pho34.jpg/800px-Beaver_pho34.jpg",
-        population: "~50000 особей",
-        habitat: "Реки и озёра"
-    },
-    {
-        id: 14,
-        name: "Косуля",
-        latinName: "Capreolus capreolus",
-        status: "rare",
-        description: "Небольшой олень, обитатель лесов и полей.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Roe_deer.jpg/800px-Roe_deer.jpg",
-        population: "~80000 особей",
-        habitat: "Леса и лесостепи"
-    },
-    {
-        id: 15,
-        name: "Ушастая сова",
-        latinName: "Asio otus",
-        status: "vulnerable",
-        description: "Среднего размера сова с характерными 'ушками'.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Asio_otus_-_Long-eared_Owl_XC109273.mp3.jpg/800px-Asio_otus_-_Long-eared_Owl_XC109273.mp3.jpg",
-        population: "~1000 пар",
-        habitat: "Леса и парки"
-    },
-    {
-        id: 16,
-        name: "Зелёный дятел",
-        latinName: "Picus viridis",
-        status: "rare",
-        description: "Крупный дятел с зелёным оперением.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Groene_specht.jpg/800px-Groene_specht.jpg",
-        population: "~500 пар",
-        habitat: "Старые лиственные леса"
-    },
-    {
-        id: 17,
-        name: "Гадюка обыкновенная",
-        latinName: "Vipera berus",
-        status: "vulnerable",
-        description: "Единственная ядовитая змея Беларуси.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Vipera_berus_%281%29.jpg/800px-Vipera_berus_%281%29.jpg",
-        population: "~10000 особей",
-        habitat: "Леса, болота, луга"
-    },
-    {
-        id: 18,
-        name: "Жук-олень",
-        latinName: "Lucanus cervus",
-        status: "endangered",
-        description: "Крупный жук с характерными 'рогами' у самцов.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Male_stag_beetle_%28cropped%29.jpg/800px-Male_stag_beetle_%28cropped%29.jpg",
-        population: "~1000 особей",
-        habitat: "Старые дубравы"
-    },
-    {
-        id: 19,
-        name: "Белый аист",
-        latinName: "Ciconia ciconia",
-        status: "vulnerable",
-        description: "Символ Беларуси, гнездится near человеческого жилья.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Wei%C3%9Fstorch_%28Ciconia_ciconia%29.jpg/800px-Wei%C3%9Fstorch_%28Ciconia_ciconia%29.jpg",
-        population: "~20000 пар",
-        habitat: "Сельская местность"
-    },
-    {
-        id: 20,
-        name: "Обыкновенная гагара",
-        latinName: "Gavia immer",
-        status: "rare",
-        description: "Крупная водоплавающая птица, отличный ныряльщик.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Common_Loon_%2871516%29.jpg/800px-Common_Loon_%2871516%29.jpg",
-        population: "~50 пар",
-        habitat: "Крупные озёра"
-    }
-];
-
 // Mock данные книг
 const MOCK_BOOKS = [
-    // ... (все предыдущие 25 книг остаются без изменений)
-    // Для экономии места оставляю структуру, ты можешь вставить свои 25 книг
+  {
+    id: 1,
+    title: "Война и мир",
+    author: "Лев Толстой",
+    year: 1869,
+    genre: "Роман-эпопея",
+    description: "Монументальный роман-эпопея, описывающий русское общество в эпоху войн против Наполеона.",
+    isbn: "978-5-699-13799-2",
+    available: true,
+    cover: "https://cv6.litres.ru/pub/c/cover_415/66809843.jpg",
+    readLink: "https://ilibrary.ru/text/11/index.html",
+    pages: 1225
+  },
+  {
+    id: 2,
+    title: "Преступление и наказание",
+    author: "Федор Достоевский",
+    year: 1866,
+    genre: "Психологический роман",
+    description: "История бывшего студента Родиона Раскольникова, совершившего убийство.",
+    isbn: "978-5-17-145136-8",
+    available: true,
+    cover: "https://cv0.litres.ru/pub/c/cover_415/10235628.jpg",
+    readLink: "https://www.litres.ru/book/fedor-dostoevskiy/prestuplenie-i-nakazanie-139491/chitat-onlayn/",
+    pages: 672
+  },
+  {
+    id: 3,
+    title: "Мастер и Маргарита",
+    author: "Михаил Булгаков",
+    year: 1967,
+    genre: "Фантастика",
+    description: "Мистический роман о визите дьявола в Москву 1930-х годов.",
+    isbn: "978-5-389-06587-5",
+    available: false,
+    cover: "https://cv5.litres.ru/pub/c/cover_415/17829610.jpg",
+    readLink: "https://author.today/reader/428523",
+    pages: 480
+  },
+  {
+    id: 4,
+    title: "Евгений Онегин",
+    author: "Александр Пушкин",
+    year: 1833,
+    genre: "Роман в стихах",
+    description: "Роман в стихах, одно из самых значительных произведений русской литературы.",
+    isbn: "978-5-4453-0152-3",
+    available: true,
+    cover: "https://cv8.litres.ru/pub/c/cover_415/69495660.jpg",
+    readLink: "https://ilibrary.ru/text/436/p.2/in-/index.html",
+    pages: 288
+  },
+  {
+    id: 5,
+    title: "Тихий Дон",
+    author: "Михаил Шолохов",
+    year: 1940,
+    genre: "Роман-эпопея",
+    description: "Эпопея о донском казачестве в годы Первой мировой и Гражданской войны.",
+    isbn: "978-5-699-80699-2",
+    available: true,
+    cover: "https://cv5.litres.ru/pub/c/cover_415/10321963.jpg",
+    readLink: "https://kartaslov.ru/%D0%BA%D0%BD%D0%B8%D0%B3%D0%B8/%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A8%D0%BE%D0%BB%D0%BE%D1%85%D0%BE%D0%B2_%D0%A2%D0%B8%D1%85%D0%B8%D0%B9_%D0%94%D0%BE%D0%BD",
+    pages: 1504
+  },
+  {
+    id: 6,
+    title: "Отцы и дети",
+    author: "Иван Тургенев",
+    year: 1862,
+    genre: "Социально-психологический роман",
+    description: "Роман о конфликте между либералами и нигилистами в России XIX века.",
+    isbn: "978-5-04-116640-5",
+    available: true,
+    cover: "https://cv9.litres.ru/pub/c/cover_415/10235779.jpg",
+    readLink: "https://ilibrary.ru/text/96/p.1/index.html",
+    pages: 320
+  },
+  {
+    id: 7,
+    title: "Анна Каренина",
+    author: "Лев Толстой",
+    year: 1877,
+    genre: "Реализм",
+    description: "Трагическая история любви замужней женщины к блестящему офицеру.",
+    isbn: "978-5-389-04221-0",
+    available: false,
+    cover: "https://cv8.litres.ru/pub/c/cover_415/10235657.jpg",
+    readLink: "https://ilibrary.ru/text/1099/p.1/index.html",
+    pages: 864
+  },
+  {
+    id: 8,
+    title: "Мёртвые души",
+    author: "Николай Гоголь",
+    year: 1842,
+    genre: "Поэма",
+    description: "Сатирическое произведение о российском обществе середины XIX века.",
+    isbn: "978-5-4453-0153-0",
+    available: true,
+    cover: "https://cv5.litres.ru/pub/c/cover_415/10235746.jpg",
+    readLink: "https://ilibrary.ru/text/78/p.1/index.html",
+    pages: 352
+  },
+  {
+    id: 9,
+    title: "Герой нашего времени",
+    author: "Михаил Лермонтов",
+    year: 1840,
+    genre: "Психологический роман",
+    description: "Первый в русской прозе лирико-психологический роман.",
+    isbn: "978-5-389-04222-7",
+    available: true,
+    cover: "https://cv6.litres.ru/pub/c/cover_415/10235713.jpg",
+    readLink: "https://ilibrary.ru/text/71/p.1/index.html",
+    pages: 224
+  },
+  {
+    id: 10,
+    title: "Братья Карамазовы",
+    author: "Федор Достоевский",
+    year: 1880,
+    genre: "Философский роман",
+    description: "Последний роман Достоевского, затрагивающий глубокие философские вопросы.",
+    isbn: "978-5-389-04223-4",
+    available: true,
+    cover: "https://cv1.litres.ru/pub/c/cover_415/10235641.jpg",
+    readLink: "https://ilibrary.ru/text/1045/p.1/index.html",
+    pages: 824
+  },
+  {
+    id: 11,
+    title: "Капитанская дочка",
+    author: "Александр Пушкин",
+    year: 1836,
+    genre: "Исторический роман",
+    description: "Исторический роман о событиях крестьянского восстания под предводительством Емельяна Пугачёва.",
+    isbn: "978-5-4453-0154-7",
+    available: true,
+    cover: "https://cv7.litres.ru/pub/c/cover_415/10235760.jpg",
+    readLink: "https://ilibrary.ru/text/359/p.1/index.html",
+    pages: 320
+  },
+  {
+    id: 12,
+    title: "Обломов",
+    author: "Иван Гончаров",
+    year: 1859,
+    genre: "Социально-психологический роман",
+    description: "Роман о жизни Ильи Ильича Обломова, воплощающий тип «лишнего человека».",
+    isbn: "978-5-04-116641-2",
+    available: true,
+    cover: "https://cv2.litres.ru/pub/c/cover_415/10235734.jpg",
+    readLink: "https://ilibrary.ru/text/110/p.1/index.html",
+    pages: 480
+  },
+  {
+    id: 13,
+    title: "Вишнёвый сад",
+    author: "Антон Чехов",
+    year: 1904,
+    genre: "Драма",
+    description: "Лирическая пьеса в четырёх действиях о вынужденной продаже родового имения.",
+    isbn: "978-5-4453-0155-4",
+    available: true,
+    cover: "https://cv4.litres.ru/pub/c/cover_415/10235694.jpg",
+    readLink: "https://ilibrary.ru/text/1190/p.1/index.html",
+    pages: 96
+  },
+  {
+    id: 14,
+    title: "Ревизор",
+    author: "Николай Гоголь",
+    year: 1836,
+    genre: "Комедия",
+    description: "Комедия в пяти действиях о чиновничьем произволе и страхе перед высшей властью.",
+    isbn: "978-5-4453-0156-1",
+    available: true,
+    cover: "https://cv3.litres.ru/pub/c/cover_415/10235727.jpg",
+    readLink: "https://ilibrary.ru/text/74/p.1/index.html",
+    pages: 128
+  },
+  {
+    id: 15,
+    title: "Горе от ума",
+    author: "Александр Грибоедов",
+    year: 1825,
+    genre: "Комедия",
+    description: "Комедия в стихах, сатира на аристократическое московское общество первой половины XIX века.",
+    isbn: "978-5-4453-0157-8",
+    available: true,
+    cover: "https://cv0.litres.ru/pub/c/cover_415/10235675.jpg",
+    readLink: "https://ilibrary.ru/text/60/p.1/index.html",
+    pages: 160
+  },
+  {
+    id: 16,
+    title: "Доктор Живаго",
+    author: "Борис Пастернак",
+    year: 1957,
+    genre: "Роман",
+    description: "Роман о жизни русской интеллигенции в период революции и Гражданской войны.",
+    isbn: "978-5-699-80700-5",
+    available: true,
+    cover: "https://cv8.litres.ru/pub/c/cover_415/10235788.jpg",
+    readLink: "https://ilibrary.ru/text/1120/p.1/index.html",
+    pages: 592
+  },
+  {
+    id: 17,
+    title: "Идиот",
+    author: "Федор Достоевский",
+    year: 1869,
+    genre: "Психологический роман",
+    description: "Роман о князе Мышкине, «положительно прекрасном человеке», пытающемся принести добро в жестокий мир.",
+    isbn: "978-5-17-145137-5",
+    available: true,
+    cover: "https://cv9.litres.ru/pub/c/cover_415/10235662.jpg",
+    readLink: "https://ilibrary.ru/text/1030/p.1/index.html",
+    pages: 640
+  },
+  {
+    id: 18,
+    title: "Бесы",
+    author: "Федор Достоевский",
+    year: 1872,
+    genre: "Политический роман",
+    description: "Роман-предупреждение о разрушительной силе революционных идей.",
+    isbn: "978-5-17-145138-2",
+    available: true,
+    cover: "https://cv6.litres.ru/pub/c/cover_415/10235701.jpg",
+    readLink: "https://ilibrary.ru/text/1040/p.1/index.html",
+    pages: 768
+  },
+  {
+    id: 19,
+    title: "Двенадцать стульев",
+    author: "Илья Ильф, Евгений Петров",
+    year: 1928,
+    genre: "Сатирический роман",
+    description: "Сатирический роман о поисках бриллиантов, спрятанных в одном из двенадцати стульев гостиного гарнитура.",
+    isbn: "978-5-699-80701-2",
+    available: true,
+    cover: "https://cv1.litres.ru/pub/c/cover_415/10235795.jpg",
+    readLink: "https://ilibrary.ru/text/1130/p.1/index.html",
+    pages: 416
+  },
+  {
+    id: 20,
+    title: "Золотой телёнок",
+    author: "Илья Ильф, Евгений Петров",
+    year: 1931,
+    genre: "Сатирический роман",
+    description: "Продолжение приключений Остапа Бендера в поисках миллиона рублей.",
+    isbn: "978-5-699-80702-9",
+    available: true,
+    cover: "https://cv4.litres.ru/pub/c/cover_415/10235686.jpg",
+    readLink: "https://ilibrary.ru/text/1140/p.1/index.html",
+    pages: 384
+  },
+  {
+    id: 21,
+    title: "Петербургские повести",
+    author: "Николай Гоголь",
+    year: 1842,
+    genre: "Повести",
+    description: "Цикл повестей, посвящённых жизни Петербурга и его обитателей.",
+    isbn: "978-5-4453-0158-5",
+    available: true,
+    cover: "https://cv7.litres.ru/pub/c/cover_415/10235768.jpg",
+    readLink: "https://ilibrary.ru/text/77/p.1/index.html",
+    pages: 256
+  },
+  {
+    id: 22,
+    title: "Гранатовый браслет",
+    author: "Александр Куприн",
+    year: 1911,
+    genre: "Повесть",
+    description: "Повесть о безответной любви мелкого чиновника к замужней княгине.",
+    isbn: "978-5-4453-0159-2",
+    available: true,
+    cover: "https://cv2.litres.ru/pub/c/cover_415/10235653.jpg",
+    readLink: "https://ilibrary.ru/text/1150/p.1/index.html",
+    pages: 96
+  },
+  {
+    id: 23,
+    title: "Старик и море",
+    author: "Эрнест Хемингуэй",
+    year: 1952,
+    genre: "Повесть",
+    description: "Повесть о кубинском рыбаке Сантьяго и его борьбе с гигантской рыбой.",
+    isbn: "978-5-699-80703-6",
+    available: true,
+    cover: "https://cv5.litres.ru/pub/c/cover_415/10235782.jpg",
+    readLink: "https://ilibrary.ru/text/1160/p.1/index.html",
+    pages: 112
+  },
+  {
+    id: 24,
+    title: "Маленький принц",
+    author: "Антуан де Сент-Экзюпери",
+    year: 1943,
+    genre: "Философская сказка",
+    description: "Самое известное произведение Экзюпери, обращённое к детям и взрослым.",
+    isbn: "978-5-699-80704-3",
+    available: true,
+    cover: "https://cv8.litres.ru/pub/c/cover_415/10235619.jpg",
+    readLink: "https://ilibrary.ru/text/1170/p.1/index.html",
+    pages: 96
+  },
+  {
+    id: 25,
+    title: "1984",
+    author: "Джордж Оруэлл",
+    year: 1949,
+    genre: "Антиутопия",
+    description: "Роман-антиутопия о тоталитарном обществе под постоянным контролем «Старшего Брата».",
+    isbn: "978-5-699-80705-0",
+    available: true,
+    cover: "https://cv3.litres.ru/pub/c/cover_415/10235705.jpg",
+    readLink: "https://ilibrary.ru/text/1180/p.1/index.html",
+    pages: 320
+  }
 ];
 
 const MOCK_GENRES = [
-    "Все жанры", "Роман-эпопея", "Психологический роман", "Фантастика", 
-    "Роман в стихах", "Реализм", "Поэма", "Социально-психологический роман",
-    "Философский роман", "Исторический роман", "Драма", "Комедия", 
-    "Сатирический роман", "Политический роман", "Повести", "Философская сказка",
-    "Антиутопия"
+  "Все жанры", "Роман-эпопея", "Психологический роман", "Фантастика", 
+  "Роман в стихах", "Реализм", "Поэма", "Социально-психологический роман",
+  "Философский роман", "Исторический роман", "Драма", "Комедия", 
+  "Сатирический роман", "Политический роман", "Повести", "Философская сказка",
+  "Антиутопия"
 ];
 
 // Глобальные переменные
@@ -261,10 +380,6 @@ let userData = {
         }
     ],
     favorites: [1, 2],
-    reviews: [
-        { bookId: 1, bookTitle: "Война и мир", rating: 5, text: "Одна из лучших книг в моей жизни!", date: "2024-01-05" },
-        { bookId: 2, bookTitle: "Преступление и наказание", rating: 4, text: "Сильное произведение, заставляет задуматься.", date: "2023-12-20" }
-    ],
     stats: {
         totalBooks: 3,
         activeBorrows: 1,
@@ -273,47 +388,7 @@ let userData = {
     }
 };
 
-// Социальные данные
-let bookReviews = {
-    1: [
-        { userId: 1, userName: "Анна", rating: 5, text: "Великолепная книга! Перечитываю каждый год.", date: "2024-01-15", likes: 12 },
-        { userId: 2, userName: "Михаил", rating: 4, text: "Классика, которую должен прочитать каждый.", date: "2024-01-10", likes: 8 }
-    ],
-    2: [
-        { userId: 3, userName: "Екатерина", rating: 5, text: "Потрясающая глубина психологического анализа.", date: "2024-01-12", likes: 15 }
-    ],
-    3: [
-        { userId: 4, userName: "Дмитрий", rating: 5, text: "Мистика, философия и юмор - идеальное сочетание!", date: "2024-01-08", likes: 20 }
-    ]
-};
-
-let popularBooks = [
-    { id: 3, title: "Мастер и Маргарита", author: "Михаил Булгаков", rating: 4.8, reviews: 45 },
-    { id: 1, title: "Война и мир", author: "Лев Толстой", rating: 4.7, reviews: 38 },
-    { id: 2, title: "Преступление и наказание", author: "Федор Достоевский", rating: 4.6, reviews: 42 },
-    { id: 7, title: "Анна Каренина", author: "Лев Толстой", rating: 4.5, reviews: 35 },
-    { id: 10, title: "Братья Карамазовы", author: "Федор Достоевский", rating: 4.4, reviews: 28 }
-];
-
-// Книга дня и недели
-let featuredBooks = {
-    bookOfDay: {
-        id: 3,
-        title: "Мастер и Маргарита",
-        author: "Михаил Булгаков",
-        description: "Мистический роман о визите дьявола в Москву 1930-х годов. Шедевр русской литературы, сочетающий философию, сатиру и мистику.",
-        cover: "https://cv5.litres.ru/pub/c/cover_415/17829610.jpg"
-    },
-    weeklyBooks: [
-        { id: 1, title: "Война и мир", author: "Лев Толстой", rating: 4.7, cover: "https://cv6.litres.ru/pub/c/cover_415/66809843.jpg" },
-        { id: 2, title: "Преступление и наказание", author: "Федор Достоевский", rating: 4.6, cover: "https://cv0.litres.ru/pub/c/cover_415/10235628.jpg" },
-        { id: 4, title: "Евгений Онегин", author: "Александр Пушкин", rating: 4.5, cover: "https://cv8.litres.ru/pub/c/cover_415/69495660.jpg" },
-        { id: 5, title: "Тихий Дон", author: "Михаил Шолохов", rating: 4.4, cover: "https://cv5.litres.ru/pub/c/cover_415/10321963.jpg" },
-        { id: 8, title: "Мёртвые души", author: "Николай Гоголь", rating: 4.3, cover: "https://cv5.litres.ru/pub/c/cover_415/10235746.jpg" }
-    ]
-};
-
-// Рассчитываем статистику
+// Рассчитываем статистику библиотеки
 const MOCK_STATS = {
     totalBooks: MOCK_BOOKS.length,
     availableBooks: MOCK_BOOKS.filter(book => book.available).length,
@@ -336,6 +411,7 @@ function initializeTelegramApp() {
         tg.enableClosingConfirmation();
         tg.BackButton.onClick(handleBackButton);
         
+        // Получаем данные пользователя из Telegram
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             const tgUser = tg.initDataUnsafe.user;
             userData.name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
@@ -351,8 +427,11 @@ function initializeTelegramApp() {
         
         console.log('Telegram Web App инициализирован');
     } else {
+        // Режим браузера для тестирования
         tg = {
-            showPopup: (params) => alert(params.title + ": " + params.message),
+            showPopup: (params) => {
+                alert(params.title + ": " + params.message);
+            },
             showAlert: (message) => alert(message),
             BackButton: {
                 show: () => console.log('BackButton show'),
@@ -360,16 +439,15 @@ function initializeTelegramApp() {
                 onClick: (cb) => console.log('BackButton onClick')
             }
         };
+        console.log('Режим браузера - Telegram Web App не доступен');
     }
 }
 
 function handleBackButton() {
-    if (document.getElementById('bookModal').classList.contains('hidden') && 
-        document.getElementById('animalModal').classList.contains('hidden')) {
+    if (document.getElementById('bookModal').classList.contains('hidden')) {
         tg.close();
     } else {
         closeModal();
-        closeAnimalModal();
     }
 }
 
@@ -387,32 +465,34 @@ function setupEventListeners() {
     });
     
     document.getElementById('bookModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
-    
-    document.getElementById('animalModal').addEventListener('click', function(e) {
-        if (e.target === this) closeAnimalModal();
+        if (e.target === this) {
+            closeModal();
+        }
     });
 }
 
 // Навигация по разделам
 function showSection(sectionName) {
+    // Скрыть все секции
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
     
+    // Скрыть/показать поиск
     document.getElementById('searchSection').classList.toggle('hidden', sectionName !== 'catalog');
+    
+    // Показать выбранную секцию
     document.getElementById(sectionName + 'Section').classList.add('active');
     
+    // Обновить навигационные кнопки
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
     
+    // Если открыли профиль - обновить данные
     if (sectionName === 'profile') {
-        updateUserProfile();
-    } else if (sectionName === 'redbook') {
-        updateRedBookDisplay();
+        updateProfileDisplay();
     }
 }
 
@@ -421,160 +501,30 @@ async function loadInitialData() {
     try {
         showLoading(true);
         
+        // Имитируем задержку сети
         setTimeout(() => {
             updateBooksDisplay(MOCK_BOOKS);
             populateGenreFilter(MOCK_GENRES);
             updateStats(MOCK_STATS);
-            updateFeaturedBooks();
             updateUserProfile();
             showLoading(false);
         }, 800);
         
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
-        showError('Не удалось загрузить данные');
+        showError('Не удалось загрузить данные. Используются демо-данные.');
         
+        // Fallback на mock данные
         updateBooksDisplay(MOCK_BOOKS);
         populateGenreFilter(MOCK_GENRES);
         updateStats(MOCK_STATS);
-        updateFeaturedBooks();
         updateUserProfile();
         showLoading(false);
     }
 }
 
-// Обновление featured книг
-function updateFeaturedBooks() {
-    // Книга дня
-    const bookOfDay = featuredBooks.bookOfDay;
-    const bookOfDayElement = document.getElementById('bookOfDay');
-    bookOfDayElement.innerHTML = `
-        <img src="${bookOfDay.cover}" alt="${bookOfDay.title}" class="book-of-day-cover"
-             onerror="this.src='https://via.placeholder.com/120x180/4CAF50/white?text=📖'">
-        <div class="book-of-day-info">
-            <div class="book-of-day-badge">📖 Книга дня</div>
-            <div class="book-of-day-title">${bookOfDay.title}</div>
-            <div class="book-of-day-author">${bookOfDay.author}</div>
-            <div class="book-of-day-description">${bookOfDay.description}</div>
-            <button class="borrow-btn" onclick="showBookDetails(${bookOfDay.id})" style="margin-top: 15px;">
-                Подробнее
-            </button>
-        </div>
-    `;
-
-    // Книги недели
-    const weeklyBooksElement = document.getElementById('weeklyBooks');
-    weeklyBooksElement.innerHTML = featuredBooks.weeklyBooks.map(book => `
-        <div class="weekly-book" onclick="showBookDetails(${book.id})">
-            <img src="${book.cover}" alt="${book.title}" class="weekly-book-cover"
-                 onerror="this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖'">
-            <div class="weekly-book-title">${book.title}</div>
-            <div class="weekly-book-author">${book.author}</div>
-            <div class="weekly-book-rating">★ ${book.rating}</div>
-        </div>
-    `).join('');
-}
-
-// Обновление Красной книги
-function updateRedBookDisplay() {
-    const animalsContainer = document.getElementById('animalsContainer');
-    const endangeredCount = RED_BOOK_ANIMALS.filter(a => a.status === 'endangered').length;
-    const rareCount = RED_BOOK_ANIMALS.filter(a => a.status === 'rare').length;
-    
-    document.getElementById('totalAnimals').textContent = RED_BOOK_ANIMALS.length;
-    document.getElementById('endangeredCount').textContent = endangeredCount;
-    document.getElementById('rareCount').textContent = rareCount;
-    
-    animalsContainer.innerHTML = RED_BOOK_ANIMALS.map(animal => {
-        const statusText = {
-            'endangered': 'Исчезающий',
-            'rare': 'Редкий', 
-            'vulnerable': 'Уязвимый'
-        }[animal.status];
-        
-        const statusClass = {
-            'endangered': 'status-endangered',
-            'rare': 'status-rare',
-            'vulnerable': 'status-vulnerable'
-        }[animal.status];
-        
-        return `
-            <div class="animal-card" onclick="showAnimalDetails(${animal.id})">
-                <img src="${animal.image}" alt="${animal.name}" class="animal-image"
-                     onerror="this.src='https://via.placeholder.com/300x200/4CAF50/white?text=🦌'">
-                <div class="animal-name">${animal.name}</div>
-                <div class="animal-latin">${animal.latinName}</div>
-                <div class="animal-status ${statusClass}">${statusText}</div>
-                <div class="animal-description">${animal.description}</div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Показать детали животного
-function showAnimalDetails(animalId) {
-    const animal = RED_BOOK_ANIMALS.find(a => a.id === animalId);
-    if (!animal) return;
-    
-    const statusText = {
-        'endangered': 'Исчезающий',
-        'rare': 'Редкий',
-        'vulnerable': 'Уязвимый'
-    }[animal.status];
-    
-    const statusClass = {
-        'endangered': 'status-endangered',
-        'rare': 'status-rare', 
-        'vulnerable': 'status-vulnerable'
-    }[animal.status];
-    
-    document.getElementById('animalModalTitle').textContent = animal.name;
-    document.getElementById('animalModalBody').innerHTML = `
-        <div class="animal-details">
-            <img src="${animal.image}" alt="${animal.name}" class="animal-detail-image"
-                 onerror="this.src='https://via.placeholder.com/400x300/4CAF50/white?text=🦌'">
-            <div class="animal-detail-info">
-                <div class="animal-detail-name">${animal.name}</div>
-                <div class="animal-detail-latin">${animal.latinName}</div>
-                <div class="animal-status ${statusClass}">${statusText}</div>
-                
-                <div class="animal-detail-section">
-                    <h4>Описание</h4>
-                    <p>${animal.description}</p>
-                </div>
-                
-                <div class="animal-detail-section">
-                    <h4>Популяция</h4>
-                    <p>${animal.population}</p>
-                </div>
-                
-                <div class="animal-detail-section">
-                    <h4>Место обитания</h4>
-                    <p>${animal.habitat}</p>
-                </div>
-                
-                <div class="animal-detail-section">
-                    <h4>Статус охраны</h4>
-                    <p>Вид занесён в Красную книгу Беларуси и находится под государственной охраной.</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('animalModal').classList.remove('hidden');
-    tg.BackButton.show();
-}
-
-function closeAnimalModal() {
-    document.getElementById('animalModal').classList.add('hidden');
-    tg.BackButton.hide();
-}
-
-// Остальные функции (поиск, бронирование, отзывы и т.д.) остаются без изменений
-// ... (вставляем все предыдущие функции из социальной версии)
-
-// Добавляем недостающие функции для полноты
-function searchBooks() {
+// Поиск книг
+async function searchBooks() {
     const searchInput = document.getElementById('searchInput');
     const query = searchInput.value.trim();
     currentSearchQuery = query;
@@ -582,6 +532,7 @@ function searchBooks() {
     try {
         showLoading(true);
         
+        // Mock поиск
         setTimeout(() => {
             let filteredBooks = MOCK_BOOKS;
             
@@ -606,7 +557,8 @@ function searchBooks() {
     }
 }
 
-function filterByGenre() {
+// Фильтрация по жанру
+async function filterByGenre() {
     const genreFilter = document.getElementById('genreFilter');
     const genre = genreFilter.value;
     currentGenre = genre;
@@ -614,6 +566,7 @@ function filterByGenre() {
     try {
         showLoading(true);
         
+        // Mock фильтрация
         setTimeout(() => {
             let filteredBooks = MOCK_BOOKS;
             if (genre && genre !== 'Все жанры') {
@@ -629,6 +582,407 @@ function filterByGenre() {
         console.error('Ошибка фильтрации:', error);
         showError('Ошибка при фильтрации');
         showLoading(false);
+    }
+}
+
+// Отображение книг
+function updateBooksDisplay(books) {
+    currentBooks = books || [];
+    const container = document.getElementById('booksContainer');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!books || books.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        updateBooksCount(0);
+        return;
+    }
+    
+    emptyState.classList.add('hidden');
+    
+    container.innerHTML = books.map(book => {
+        const isFavorite = userData.favorites.includes(book.id);
+        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        
+        return `
+        <div class="book-card" onclick="showBookDetails(${book.id})">
+            <div class="book-header">
+                <div class="book-cover">
+                    ${book.cover ? 
+                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-img" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖';">` : 
+                        `📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}`
+                    }
+                </div>
+                <div class="book-info">
+                    <div class="book-title">${escapeHtml(book.title)}</div>
+                    <div class="book-author">👤 ${escapeHtml(book.author)}</div>
+                    <div class="book-meta">📅 ${book.year} год</div>
+                    <div class="book-meta">🏷️ ${book.genre}</div>
+                    <div class="book-meta">📄 ${book.pages} стр.</div>
+                    <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
+                        ${book.available ? '✅ Доступна' : '❌ Выдана'}
+                    </div>
+                </div>
+            </div>
+            <div class="book-actions">
+                <button 
+                    class="borrow-btn" 
+                    onclick="event.stopPropagation(); borrowBook(${book.id})"
+                    ${!book.available || isBorrowed ? 'disabled' : ''}
+                >
+                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                </button>
+                <button 
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
+                >
+                    ${isFavorite ? '★' : '☆'}
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
+    
+    updateBooksCount(books.length);
+}
+
+// Показать детали книги
+async function showBookDetails(bookId) {
+    try {
+        showLoading(true);
+        
+        const book = MOCK_BOOKS.find(b => b.id === bookId);
+        
+        if (!book) {
+            throw new Error('Книга не найдена');
+        }
+        
+        const isFavorite = userData.favorites.includes(book.id);
+        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+            <div class="book-details">
+                <div class="book-cover-large">
+                    ${book.cover ? 
+                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-large-img"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x300/4CAF50/white?text=📖\\n${escapeHtml(book.title)}';">` : 
+                        `<div class="book-cover-large-placeholder">📖<br>${escapeHtml(book.title)}</div>`
+                    }
+                </div>
+                <div class="book-info-detailed">
+                    <h4>${escapeHtml(book.title)}</h4>
+                    <p><strong>Автор:</strong> ${escapeHtml(book.author)}</p>
+                    <p><strong>Год издания:</strong> ${book.year}</p>
+                    <p><strong>Жанр:</strong> ${book.genre}</p>
+                    <p><strong>ISBN:</strong> ${book.isbn || 'Не указан'}</p>
+                    <p><strong>Страниц:</strong> ${book.pages}</p>
+                    <p><strong>Статус:</strong> 
+                        <span class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
+                            ${isBorrowed ? '📖 У вас' : (book.available ? '✅ Доступна' : '❌ Выдана')}
+                        </span>
+                    </p>
+                    <div class="book-description">
+                        <strong>Описание:</strong>
+                        <p>${escapeHtml(book.description || 'Описание отсутствует.')}</p>
+                    </div>
+                    
+                    ${book.readLink ? `
+                    <div class="read-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                        <a href="${book.readLink}" target="_blank" class="read-btn">
+                            📖 Читать книгу онлайн
+                        </a>
+                        <p style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
+                            Откроется в новом окне
+                        </p>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button 
+                    class="borrow-btn" 
+                    onclick="borrowBook(${book.id})"
+                    ${!book.available || isBorrowed ? 'disabled' : ''}
+                    style="flex: 1; margin-right: 10px;"
+                >
+                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                </button>
+                <button 
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                    onclick="toggleFavorite(${book.id})"
+                    style="padding: 12px;"
+                >
+                    ${isFavorite ? '★' : '☆'}
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('modalTitle').textContent = book.title;
+        document.getElementById('bookModal').classList.remove('hidden');
+        tg.BackButton.show();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки деталей книги:', error);
+        showError('Не удалось загрузить информацию о книге');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Бронирование книги
+async function borrowBook(bookId) {
+    try {
+        const book = MOCK_BOOKS.find(b => b.id === bookId);
+        if (book && book.available) {
+            // Обновляем статус книги
+            book.available = false;
+            
+            // Добавляем в список пользователя
+            const borrowRecord = {
+                id: Date.now(),
+                bookId: book.id,
+                bookTitle: book.title,
+                borrowDate: new Date().toISOString().split('T')[0],
+                returnDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                status: 'active'
+            };
+            
+            userData.borrowedBooks.push(borrowRecord);
+            userData.stats.totalBooks++;
+            userData.stats.activeBorrows++;
+            
+            // Обновляем статистику библиотеки
+            MOCK_STATS.availableBooks--;
+            MOCK_STATS.borrowedBooks++;
+            
+            tg.showPopup({
+                title: 'Успех! 🎉',
+                message: `Книга "${book.title}" успешно забронирована!\nВерните до ${formatDate(borrowRecord.returnDate)}`,
+                buttons: [{ type: 'ok' }]
+            });
+            
+            // Обновляем отображение
+            updateBooksDisplay(currentBooks);
+            updateStats(MOCK_STATS);
+            updateUserProfile();
+            closeModal();
+            
+        } else {
+            throw new Error('Книга недоступна для бронирования');
+        }
+    } catch (error) {
+        console.error('Ошибка бронирования:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: error.message || 'Не удалось забронировать книгу',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Возврат книги
+function returnBook(bookId) {
+    const book = MOCK_BOOKS.find(b => b.id === bookId);
+    const borrowIndex = userData.borrowedBooks.findIndex(b => b.bookId === bookId && b.status === 'active');
+    
+    if (book && borrowIndex !== -1) {
+        // Обновляем статус книги
+        book.available = true;
+        userData.borrowedBooks[borrowIndex].status = 'returned';
+        
+        // Добавляем в историю
+        userData.history.unshift({
+            ...userData.borrowedBooks[borrowIndex],
+            status: 'returned'
+        });
+        
+        // Обновляем статистику
+        userData.stats.activeBorrows--;
+        userData.stats.totalRead++;
+        
+        MOCK_STATS.availableBooks++;
+        MOCK_STATS.borrowedBooks--;
+        
+        tg.showPopup({
+            title: 'Книга возвращена! 📚',
+            message: `"${book.title}" успешно возвращена в библиотеку`,
+            buttons: [{ type: 'ok' }]
+        });
+        
+        // Обновляем отображение
+        updateBooksDisplay(currentBooks);
+        updateStats(MOCK_STATS);
+        updateUserProfile();
+    }
+}
+
+// Добавить/удалить из избранного
+function toggleFavorite(bookId) {
+    const favoriteIndex = userData.favorites.indexOf(bookId);
+    
+    if (favoriteIndex === -1) {
+        // Добавляем в избранное
+        userData.favorites.push(bookId);
+        tg.showPopup({
+            title: 'Добавлено в избранное ★',
+            message: 'Книга добавлена в ваш список избранных',
+            buttons: [{ type: 'ok' }]
+        });
+    } else {
+        // Удаляем из избранного
+        userData.favorites.splice(favoriteIndex, 1);
+        tg.showPopup({
+            title: 'Удалено из избранного',
+            message: 'Книга удалена из вашего списка избранных',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+    
+    // Обновляем отображение
+    updateBooksDisplay(currentBooks);
+    updateUserProfile();
+    
+    // Если открыто модальное окно - обновляем его
+    if (!document.getElementById('bookModal').classList.contains('hidden')) {
+        const modalTitle = document.getElementById('modalTitle').textContent;
+        const book = MOCK_BOOKS.find(b => b.title === modalTitle);
+        if (book) {
+            showBookDetails(book.id);
+        }
+    }
+}
+
+// Удалить из избранного
+function removeFavorite(bookId) {
+    const favoriteIndex = userData.favorites.indexOf(bookId);
+    if (favoriteIndex !== -1) {
+        userData.favorites.splice(favoriteIndex, 1);
+        updateUserProfile();
+        
+        tg.showPopup({
+            title: 'Удалено из избранного',
+            message: 'Книга удалена из вашего списка избранных',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Обновление профиля пользователя
+function updateUserProfile() {
+    // Основная информация
+    document.getElementById('userName').textContent = userData.name;
+    document.getElementById('userRegistration').textContent = `Зарегистрирован: ${userData.registrationDate}`;
+    
+    // Статистика
+    document.getElementById('userTotalBooks').textContent = userData.stats.totalBooks;
+    document.getElementById('userFavorites').textContent = userData.favorites.length;
+    document.getElementById('activeBorrows').textContent = userData.stats.activeBorrows;
+    document.getElementById('totalRead').textContent = userData.stats.totalRead;
+    document.getElementById('readingTime').textContent = userData.stats.readingDays;
+    
+    // Активные книги
+    updateActiveBooksList();
+    
+    // История
+    updateHistoryList();
+    
+    // Избранное
+    updateFavoritesList();
+}
+
+// Обновление списка активных книг
+function updateActiveBooksList() {
+    const activeBooksList = document.getElementById('activeBooksList');
+    const activeBooks = userData.borrowedBooks.filter(b => b.status === 'active');
+    
+    document.getElementById('activeBooksCount').textContent = activeBooks.length;
+    
+    if (activeBooks.length === 0) {
+        activeBooksList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">📚</div>
+                <h4>Нет активных книг</h4>
+                <p>Найдите интересные книги в каталоге</p>
+            </div>
+        `;
+    } else {
+        activeBooksList.innerHTML = activeBooks.map(borrow => `
+            <div class="borrowed-book-item">
+                <div class="book-info">
+                    <div class="book-title">${borrow.bookTitle}</div>
+                    <div class="borrow-dates">
+                        <span>Взята: ${formatDate(borrow.borrowDate)}</span>
+                        <span class="return-date">Вернуть до: ${formatDate(borrow.returnDate)}</span>
+                    </div>
+                </div>
+                <button class="return-btn" onclick="returnBook(${borrow.bookId})">
+                    🔄 Вернуть
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+// Обновление истории
+function updateHistoryList() {
+    const historyList = document.getElementById('historyList');
+    
+    document.getElementById('historyCount').textContent = userData.history.length;
+    
+    if (userData.history.length === 0) {
+        historyList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">🕐</div>
+                <h4>История пуста</h4>
+                <p>Здесь появятся ваши завершенные бронирования</p>
+            </div>
+        `;
+    } else {
+        historyList.innerHTML = userData.history.map(record => `
+            <div class="history-item">
+                <div class="history-info">
+                    <div class="book-title">${record.bookTitle}</div>
+                    <div class="history-dates">
+                        <span>${formatDate(record.borrowDate)} - ${formatDate(record.returnDate)}</span>
+                    </div>
+                </div>
+                <div class="history-status ${record.status === 'returned' ? 'status-returned' : 'status-expired'}">
+                    ${record.status === 'returned' ? 'Возвращена' : 'Просрочена'}
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Обновление избранного
+function updateFavoritesList() {
+    const favoritesList = document.getElementById('favoritesList');
+    const favoriteBooks = MOCK_BOOKS.filter(book => userData.favorites.includes(book.id));
+    
+    document.getElementById('favoritesCount').textContent = favoriteBooks.length;
+    
+    if (favoriteBooks.length === 0) {
+        favoritesList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">⭐</div>
+                <h4>Нет избранных книг</h4>
+                <p>Добавляйте книги в избранное, нажимая на звездочку</p>
+            </div>
+        `;
+    } else {
+        favoritesList.innerHTML = favoriteBooks.map(book => `
+            <div class="favorite-item" onclick="showBookDetails(${book.id})">
+                <div class="favorite-info">
+                    <div class="book-title">${book.title}</div>
+                    <div class="favorite-author">${book.author}</div>
+                </div>
+                <button class="remove-favorite" onclick="event.stopPropagation(); removeFavorite(${book.id})">
+                    ✕
+                </button>
+            </div>
+        `).join('');
     }
 }
 
@@ -706,48 +1060,6 @@ function escapeHtml(unsafe) {
 
 // Добавляем стили для новых элементов
 const additionalStyles = `
-.animal-details {
-    max-width: 100%;
-}
-
-.animal-detail-image {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.animal-detail-info {
-    color: var(--text-dark);
-}
-
-.animal-detail-name {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.animal-detail-latin {
-    font-style: italic;
-    color: var(--text-light);
-    margin-bottom: 15px;
-}
-
-.animal-detail-section {
-    margin-bottom: 20px;
-}
-
-.animal-detail-section h4 {
-    margin-bottom: 8px;
-    color: var(--text-dark);
-}
-
-.animal-detail-section p {
-    color: var(--text-light);
-    line-height: 1.4;
-}
-
 .book-actions {
     display: flex;
     gap: 10px;
@@ -828,171 +1140,9 @@ const additionalStyles = `
     text-align: center;
     padding: 20px;
 }
-
-.rating-stars {
-    display: flex;
-    gap: 2px;
-    margin: 10px 0;
-}
-
-.star {
-    font-size: 1.2em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.star.active {
-    color: var(--accent-color);
-}
-
-.star:hover {
-    transform: scale(1.2);
-}
-
-.review-form {
-    background: var(--bg-light);
-    padding: 15px;
-    border-radius: 12px;
-    margin-top: 15px;
-}
-
-.review-textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    resize: vertical;
-    font-family: inherit;
-    margin-bottom: 10px;
-}
-
-.review-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.book-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-}
-
-.book-tab {
-    flex: 1;
-    padding: 10px;
-    background: var(--bg-light);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.book-tab.active {
-    background: var(--primary-color);
-    color: white;
-}
-
-.book-tab-content {
-    min-height: 300px;
-}
-
-.book-tab-pane {
-    display: none;
-}
-
-.book-tab-pane.active {
-    display: block;
-}
-
-.book-header-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.book-rating {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-}
-
-.rating-stars-small {
-    color: var(--accent-color);
-}
-
-.rating-value {
-    font-weight: bold;
-    color: var(--text-dark);
-}
-
-.reviews-count {
-    color: var(--text-light);
-}
-
-.no-reviews {
-    color: var(--text-light);
-    font-style: italic;
-}
-
-.reviews-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.average-rating {
-    font-size: 0.9em;
-    color: var(--text-dark);
-}
-
-.empty-reviews {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-light);
-}
-
-.empty-reviews .empty-icon {
-    font-size: 3em;
-    margin-bottom: 10px;
-    opacity: 0.5;
-}
-
-.user-review {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-}
-
-.review-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.review-likes {
-    color: var(--secondary-color);
-    font-size: 0.9em;
-}
-
-.review-user {
-    font-weight: 500;
-    color: var(--text-dark);
-}
 `;
 
-// Добавляем стили
+// Добавляем стили в страницу
 const styleSheet = document.createElement('style');
 styleSheet.textContent = additionalStyles;
 document.head.appendChild(styleSheet);
@@ -1006,345 +1156,5 @@ window.returnBook = returnBook;
 window.toggleFavorite = toggleFavorite;
 window.removeFavorite = removeFavorite;
 window.showSection = showSection;
-window.showAnimalDetails = showAnimalDetails;
 window.closeModal = closeModal;
-window.closeAnimalModal = closeAnimalModal;
 window.clearFilters = clearFilters;
-
-// Инициализируем отображение книг при загрузке
-function updateBooksDisplay(books) {
-    currentBooks = books || [];
-    const container = document.getElementById('booksContainer');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (!books || books.length === 0) {
-        container.innerHTML = '';
-        emptyState.classList.remove('hidden');
-        updateBooksCount(0);
-        return;
-    }
-    
-    emptyState.classList.add('hidden');
-    
-    container.innerHTML = books.map(book => {
-        const isFavorite = userData.favorites.includes(book.id);
-        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
-        
-        return `
-        <div class="book-card" onclick="showBookDetails(${book.id})">
-            <div class="book-header">
-                <div class="book-cover">
-                    ${book.cover ? 
-                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-img" 
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖';">` : 
-                        `📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}`
-                    }
-                </div>
-                <div class="book-info">
-                    <div class="book-title">${escapeHtml(book.title)}</div>
-                    <div class="book-author">👤 ${escapeHtml(book.author)}</div>
-                    <div class="book-meta">📅 ${book.year} год</div>
-                    <div class="book-meta">🏷️ ${book.genre}</div>
-                    <div class="book-meta">📄 ${book.pages} стр.</div>
-                    <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
-                        ${book.available ? '✅ Доступна' : '❌ Выдана'}
-                    </div>
-                </div>
-            </div>
-            <div class="book-actions">
-                <button 
-                    class="borrow-btn" 
-                    onclick="event.stopPropagation(); borrowBook(${book.id})"
-                    ${!book.available || isBorrowed ? 'disabled' : ''}
-                >
-                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
-                </button>
-                <button 
-                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
-                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
-                >
-                    ${isFavorite ? '★' : '☆'}
-                </button>
-            </div>
-        </div>
-        `;
-    }).join('');
-    
-    updateBooksCount(books.length);
-}
-
-// Заглушки для отсутствующих функций
-function showBookDetails(bookId) {
-    const book = MOCK_BOOKS.find(b => b.id === bookId);
-    if (!book) return;
-    
-    document.getElementById('modalTitle').textContent = book.title;
-    document.getElementById('modalBody').innerHTML = `
-        <div style="text-align: center; padding: 40px;">
-            <div style="font-size: 3em; margin-bottom: 20px;">📖</div>
-            <h3>${book.title}</h3>
-            <p>Автор: ${book.author}</p>
-            <p>Год: ${book.year}</p>
-            <p>Жанр: ${book.genre}</p>
-            <p style="margin-top: 20px;">Функция в разработке</p>
-            <button class="borrow-btn" onclick="closeModal()" style="margin-top: 20px;">
-                Закрыть
-            </button>
-        </div>
-    `;
-    document.getElementById('bookModal').classList.remove('hidden');
-    tg.BackButton.show();
-}
-
-function borrowBook(bookId) {
-    tg.showPopup({
-        title: 'В разработке',
-        message: 'Функция бронирования книг скоро будет доступна!',
-        buttons: [{ type: 'ok' }]
-    });
-}
-
-function updateUserProfile() {
-    document.getElementById('userName').textContent = userData.name;
-    document.getElementById('userRegistration').textContent = `Зарегистрирован: ${userData.registrationDate}`;
-    document.getElementById('userTotalBooks').textContent = userData.stats.totalBooks;
-    document.getElementById('userFavorites').textContent = userData.favorites.length;
-    document.getElementById('userReviewsCount').textContent = userData.reviews.length;
-    document.getElementById('activeBorrows').textContent = userData.stats.activeBorrows;
-    document.getElementById('totalRead').textContent = userData.stats.totalRead;
-    document.getElementById('readingTime').textContent = userData.stats.readingDays;
-    document.getElementById('activeBooksCount').textContent = userData.borrowedBooks.filter(b => b.status === 'active').length;
-    document.getElementById('reviewsCount').textContent = userData.reviews.length;
-    document.getElementById('favoritesCount').textContent = userData.favorites.length;
-}
-// Обновленная функция навигации
-function showSection(sectionName) {
-    // Скрыть все секции
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // Показать выбранную секцию
-    document.getElementById(sectionName + 'Section').classList.add('active');
-    
-    // Обновить навигационные кнопки
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
-    
-    // Обновить данные если нужно
-    if (sectionName === 'profile') {
-        updateUserProfile();
-    } else if (sectionName === 'redbook') {
-        updateRedBookDisplay();
-    }
-}
-
-// Обновленная функция загрузки данных
-async function loadInitialData() {
-    try {
-        showLoading(true);
-        
-        setTimeout(() => {
-            updateBooksDisplay(MOCK_BOOKS);
-            populateGenreFilter(MOCK_GENRES);
-            updateStats(MOCK_STATS);
-            updateFeaturedBooks();
-            updateUserProfile();
-            showLoading(false);
-        }, 800);
-        
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        showError('Не удалось загрузить данные');
-        
-        updateBooksDisplay(MOCK_BOOKS);
-        populateGenreFilter(MOCK_GENRES);
-        updateStats(MOCK_STATS);
-        updateFeaturedBooks();
-        updateUserProfile();
-        showLoading(false);
-    }
-}
-
-// Функция поиска книг
-async function searchBooks() {
-    const searchInput = document.getElementById('searchInput');
-    const query = searchInput.value.trim();
-    currentSearchQuery = query;
-    
-    try {
-        showLoading(true);
-        
-        // Имитируем задержку
-        setTimeout(() => {
-            let filteredBooks = MOCK_BOOKS;
-            
-            if (query) {
-                filteredBooks = MOCK_BOOKS.filter(book => 
-                    book.title.toLowerCase().includes(query.toLowerCase()) || 
-                    book.author.toLowerCase().includes(query.toLowerCase()) ||
-                    book.genre.toLowerCase().includes(query.toLowerCase()) ||
-                    (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
-                );
-            }
-            
-            updateBooksDisplay(filteredBooks);
-            updateSectionTitle(query ? `Результаты поиска: "${query}"` : 'Каталог книг');
-            showLoading(false);
-        }, 300);
-        
-    } catch (error) {
-        console.error('Ошибка поиска:', error);
-        showError('Ошибка при выполнении поиска');
-        showLoading(false);
-    }
-}
-
-// Функция фильтрации по жанру
-async function filterByGenre() {
-    const genreFilter = document.getElementById('genreFilter');
-    const genre = genreFilter.value;
-    currentGenre = genre;
-    
-    try {
-        showLoading(true);
-        
-        setTimeout(() => {
-            let filteredBooks = MOCK_BOOKS;
-            if (genre && genre !== 'Все жанры') {
-                filteredBooks = MOCK_BOOKS.filter(book => book.genre === genre);
-            }
-            
-            updateBooksDisplay(filteredBooks);
-            updateSectionTitle(genre && genre !== 'Все жанры' ? `Жанр: ${genre}` : 'Каталог книг');
-            showLoading(false);
-        }, 300);
-        
-    } catch (error) {
-        console.error('Ошибка фильтрации:', error);
-        showError('Ошибка при фильтрации');
-        showLoading(false);
-    }
-}
-
-// Функция заполнения фильтра жанров
-function populateGenreFilter(genres) {
-    const genreFilter = document.getElementById('genreFilter');
-    genreFilter.innerHTML = genres.map(genre => 
-        `<option value="${genre}">${genre}</option>`
-    ).join('');
-}
-
-// Функция отображения книг
-function updateBooksDisplay(books) {
-    currentBooks = books || [];
-    const container = document.getElementById('booksContainer');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (!books || books.length === 0) {
-        container.innerHTML = '';
-        emptyState.classList.remove('hidden');
-        updateBooksCount(0);
-        return;
-    }
-    
-    emptyState.classList.add('hidden');
-    
-    container.innerHTML = books.map(book => {
-        const isFavorite = userData.favorites.includes(book.id);
-        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
-        
-        return `
-        <div class="book-card" onclick="showBookDetails(${book.id})">
-            <div class="book-header">
-                <div class="book-cover">
-                    ${book.cover ? 
-                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-img" 
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖';">` : 
-                        `📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}`
-                    }
-                </div>
-                <div class="book-info">
-                    <div class="book-title">${escapeHtml(book.title)}</div>
-                    <div class="book-author">👤 ${escapeHtml(book.author)}</div>
-                    <div class="book-meta">📅 ${book.year} год</div>
-                    <div class="book-meta">🏷️ ${book.genre}</div>
-                    <div class="book-meta">📄 ${book.pages} стр.</div>
-                    <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
-                        ${book.available ? '✅ Доступна' : '❌ Выдана'}
-                    </div>
-                </div>
-            </div>
-            <div class="book-actions">
-                <button 
-                    class="borrow-btn" 
-                    onclick="event.stopPropagation(); borrowBook(${book.id})"
-                    ${!book.available || isBorrowed ? 'disabled' : ''}
-                >
-                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
-                </button>
-                <button 
-                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
-                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
-                >
-                    ${isFavorite ? '★' : '☆'}
-                </button>
-            </div>
-        </div>
-        `;
-    }).join('');
-    
-    updateBooksCount(books.length);
-}
-
-// Вспомогательные функции
-function updateBooksCount(count) {
-    document.getElementById('booksCount').textContent = `${count} ${getBookWord(count)}`;
-}
-
-function updateSectionTitle(title) {
-    const titleElement = document.getElementById('sectionTitle');
-    if (titleElement) {
-        titleElement.textContent = title;
-    }
-}
-
-function getBookWord(count) {
-    if (count % 10 === 1 && count % 100 !== 11) return 'книга';
-    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'книги';
-    return 'книг';
-}
-
-function showLoading(show) {
-    const loading = document.getElementById('loading');
-    const booksContainer = document.getElementById('booksContainer');
-    
-    if (loading && booksContainer) {
-        if (show) {
-            loading.classList.remove('hidden');
-            booksContainer.classList.add('hidden');
-        } else {
-            loading.classList.add('hidden');
-            booksContainer.classList.remove('hidden');
-        }
-    }
-}
-
-function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('genreFilter').value = 'Все жанры';
-    currentSearchQuery = '';
-    currentGenre = '';
-    loadInitialData();
-}
-
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    initializeTelegramApp();
-    loadInitialData();
-    setupEventListeners();
-});
-
-console.log('Приложение КнігаБел успешно загружено!');

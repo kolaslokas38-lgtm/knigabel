@@ -18,8 +18,6 @@
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
     --card-radius: 16px;
-    --belarus-red: #D22730;
-    --belarus-green: #007C30;
 }
 
 body {
@@ -55,7 +53,7 @@ body {
 .header-content h1 {
     font-size: 2.5em;
     margin-bottom: 5px;
-    background: linear-gradient(135deg, var(--belarus-red), var(--belarus-green));
+    background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -99,7 +97,7 @@ body {
 
 .nav-tabs {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
 }
 
@@ -119,9 +117,9 @@ body {
 }
 
 .nav-btn.active {
-    background: var(--belarus-red);
+    background: var(--primary-color);
     color: white;
-    border-color: var(--belarus-red);
+    border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover);
 }
@@ -139,8 +137,8 @@ body {
     font-size: 0.9em;
 }
 
-/* Featured Sections */
-.featured-section {
+/* Search Section */
+.search-section {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: var(--card-radius);
@@ -149,228 +147,94 @@ body {
     box-shadow: var(--shadow);
 }
 
-/* Book of the Day */
-.book-of-day {
-    background: linear-gradient(135deg, var(--belarus-red), var(--belarus-green));
-    border-radius: var(--card-radius);
-    padding: 25px;
-    color: white;
+.search-container {
     display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.book-of-day-cover {
-    width: 120px;
-    height: 180px;
-    border-radius: 12px;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-}
-
-.book-of-day-info {
-    flex: 1;
-}
-
-.book-of-day-badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8em;
-    margin-bottom: 10px;
-    display: inline-block;
-}
-
-.book-of-day-title {
-    font-size: 1.5em;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.book-of-day-author {
-    font-size: 1.1em;
-    margin-bottom: 12px;
-    opacity: 0.9;
-}
-
-.book-of-day-description {
-    font-size: 0.95em;
-    opacity: 0.8;
-    line-height: 1.4;
-}
-
-/* Weekly Books */
-.weekly-books {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.weekly-book {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.weekly-book:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-hover);
-}
-
-.weekly-book-cover {
-    width: 80px;
-    height: 120px;
-    border-radius: 8px;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
-
-.weekly-book-title {
-    font-weight: 500;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-}
-
-.weekly-book-author {
-    color: var(--text-light);
-    font-size: 0.8em;
-    margin-bottom: 8px;
-}
-
-.weekly-book-rating {
-    color: var(--accent-color);
-    font-size: 0.8em;
-}
-
-/* Red Book Section */
-#redbookSection {
-    background: transparent;
-}
-
-.redbook-header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: var(--card-radius);
-    padding: 30px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.redbook-icon {
-    font-size: 3em;
-    color: var(--belarus-red);
-}
-
-.redbook-info h2 {
-    margin-bottom: 8px;
-    color: var(--text-dark);
-}
-
-.redbook-info p {
-    color: var(--text-light);
-}
-
-.redbook-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.redbook-stat {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: var(--card-radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* Animals Grid */
-.animals-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.animal-card {
-    background: white;
-    border-radius: var(--card-radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid var(--border-color);
-}
-
-.animal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hover);
-}
-
-.animal-image {
-    width: 100%;
-    height: 200px;
-    border-radius: 12px;
-    object-fit: cover;
+    gap: 12px;
     margin-bottom: 15px;
 }
 
-.animal-name {
-    font-size: 1.2em;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: var(--text-dark);
+.search-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
 }
 
-.animal-latin {
-    font-style: italic;
-    color: var(--text-light);
-    margin-bottom: 10px;
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.search-btn {
+    padding: 15px 20px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    min-width: 60px;
+}
+
+.search-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.genre-filter {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    font-size: 16px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.genre-filter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Content Sections */
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.section-header h2 {
+    color: white;
+    font-size: 1.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.books-count {
+    color: white;
     font-size: 0.9em;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
 }
 
-.animal-status {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8em;
-    font-weight: 500;
-    display: inline-block;
-    margin-bottom: 10px;
-}
-
-.status-endangered {
-    background: #ffebee;
-    color: #c62828;
-}
-
-.status-rare {
-    background: #fff3e0;
-    color: #ef6c00;
-}
-
-.status-vulnerable {
-    background: #e8f5e8;
-    color: #2e7d32;
-}
-
-.animal-description {
-    color: var(--text-light);
-    font-size: 0.9em;
-    line-height: 1.4;
-}
-
-/* Остальные стили из предыдущей версии (Books, Profile, etc.) */
 /* Books Grid */
 .books-container {
     display: grid;
@@ -505,7 +369,7 @@ body {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--belarus-red), var(--belarus-green));
+    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -561,7 +425,7 @@ body {
     font-size: 2em;
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, var(--belarus-red), var(--belarus-green));
+    background: linear-gradient(135deg, #667eea, #764ba2);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -604,7 +468,7 @@ body {
 }
 
 .section-badge {
-    background: var(--belarus-red);
+    background: var(--primary-color);
     color: white;
     padding: 4px 12px;
     border-radius: 20px;
@@ -673,49 +537,43 @@ body {
     transform: translateY(-1px);
 }
 
-/* Reviews List */
-.review-item {
+/* History List */
+.history-item {
+    padding: 15px;
     background: white;
     border-radius: 12px;
-    padding: 15px;
     margin-bottom: 10px;
     border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.review-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.review-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
 }
 
-.review-book-title {
+.history-info .book-title {
     font-weight: 500;
-    color: var(--text-dark);
+    margin-bottom: 5px;
 }
 
-.review-rating {
-    color: var(--accent-color);
-    font-weight: 500;
-}
-
-.review-text {
+.history-dates {
+    font-size: 0.85em;
     color: var(--text-light);
-    line-height: 1.4;
-    margin-bottom: 10px;
 }
 
-.review-date {
+.history-status {
+    padding: 4px 8px;
+    border-radius: 8px;
     font-size: 0.8em;
-    color: var(--text-light);
-    text-align: right;
+    font-weight: 500;
+}
+
+.status-returned {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-expired {
+    background: #ffebee;
+    color: #c62828;
 }
 
 /* Favorites List */
@@ -760,57 +618,6 @@ body {
 
 .remove-favorite:hover {
     background: #d32f2f;
-}
-
-/* Popular Books */
-.popular-book-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px;
-    background: white;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.popular-book-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.popular-book-rank {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--belarus-red);
-    min-width: 30px;
-}
-
-.popular-book-cover {
-    width: 50px;
-    height: 70px;
-    border-radius: 6px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.popular-book-info {
-    flex: 1;
-}
-
-.popular-book-title {
-    font-weight: 500;
-    margin-bottom: 4px;
-}
-
-.popular-book-rating {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
-    color: var(--text-light);
 }
 
 /* Empty States */
@@ -951,25 +758,8 @@ body {
         gap: 20px;
     }
     
-    .nav-tabs {
-        grid-template-columns: 1fr;
-    }
-    
     .books-container {
         grid-template-columns: 1fr;
-    }
-    
-    .animals-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .book-of-day {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .weekly-books {
-        grid-template-columns: repeat(2, 1fr);
     }
     
     .search-container {
@@ -990,8 +780,14 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .redbook-stats {
-        grid-template-columns: 1fr;
+    .borrowed-book-item {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .borrowed-book-item .book-info {
+        width: 100%;
     }
 }
 
@@ -1013,84 +809,7 @@ body {
         align-self: center;
     }
     
-    .weekly-books {
+    .nav-tabs {
         grid-template-columns: 1fr;
     }
-    /* Main Content Area */
-.main-content {
-    position: relative;
-}
-
-.content-section {
-    display: none;
-}
-
-.content-section.active {
-    display: block;
-}
-
-/* Search Section */
-.search-section {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: var(--card-radius);
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-}
-
-.search-container {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.search-input {
-    flex: 1;
-    padding: 15px 20px;
-    border: 2px solid var(--border-color);
-    border-radius: 15px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    background: white;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.search-btn {
-    padding: 15px 20px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    min-width: 100px;
-}
-
-.search-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-.genre-filter {
-    width: 100%;
-    padding: 15px 20px;
-    border: 2px solid var(--border-color);
-    border-radius: 15px;
-    font-size: 16px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.genre-filter:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
 }
