@@ -1117,5 +1117,234 @@ function updateUserProfile() {
     document.getElementById('reviewsCount').textContent = userData.reviews.length;
     document.getElementById('favoritesCount').textContent = userData.favorites.length;
 }
+// Обновленная функция навигации
+function showSection(sectionName) {
+    // Скрыть все секции
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Показать выбранную секцию
+    document.getElementById(sectionName + 'Section').classList.add('active');
+    
+    // Обновить навигационные кнопки
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
+    
+    // Обновить данные если нужно
+    if (sectionName === 'profile') {
+        updateUserProfile();
+    } else if (sectionName === 'redbook') {
+        updateRedBookDisplay();
+    }
+}
+
+// Обновленная функция загрузки данных
+async function loadInitialData() {
+    try {
+        showLoading(true);
+        
+        setTimeout(() => {
+            updateBooksDisplay(MOCK_BOOKS);
+            populateGenreFilter(MOCK_GENRES);
+            updateStats(MOCK_STATS);
+            updateFeaturedBooks();
+            updateUserProfile();
+            showLoading(false);
+        }, 800);
+        
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        showError('Не удалось загрузить данные');
+        
+        updateBooksDisplay(MOCK_BOOKS);
+        populateGenreFilter(MOCK_GENRES);
+        updateStats(MOCK_STATS);
+        updateFeaturedBooks();
+        updateUserProfile();
+        showLoading(false);
+    }
+}
+
+// Функция поиска книг
+async function searchBooks() {
+    const searchInput = document.getElementById('searchInput');
+    const query = searchInput.value.trim();
+    currentSearchQuery = query;
+    
+    try {
+        showLoading(true);
+        
+        // Имитируем задержку
+        setTimeout(() => {
+            let filteredBooks = MOCK_BOOKS;
+            
+            if (query) {
+                filteredBooks = MOCK_BOOKS.filter(book => 
+                    book.title.toLowerCase().includes(query.toLowerCase()) || 
+                    book.author.toLowerCase().includes(query.toLowerCase()) ||
+                    book.genre.toLowerCase().includes(query.toLowerCase()) ||
+                    (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
+                );
+            }
+            
+            updateBooksDisplay(filteredBooks);
+            updateSectionTitle(query ? `Результаты поиска: "${query}"` : 'Каталог книг');
+            showLoading(false);
+        }, 300);
+        
+    } catch (error) {
+        console.error('Ошибка поиска:', error);
+        showError('Ошибка при выполнении поиска');
+        showLoading(false);
+    }
+}
+
+// Функция фильтрации по жанру
+async function filterByGenre() {
+    const genreFilter = document.getElementById('genreFilter');
+    const genre = genreFilter.value;
+    currentGenre = genre;
+    
+    try {
+        showLoading(true);
+        
+        setTimeout(() => {
+            let filteredBooks = MOCK_BOOKS;
+            if (genre && genre !== 'Все жанры') {
+                filteredBooks = MOCK_BOOKS.filter(book => book.genre === genre);
+            }
+            
+            updateBooksDisplay(filteredBooks);
+            updateSectionTitle(genre && genre !== 'Все жанры' ? `Жанр: ${genre}` : 'Каталог книг');
+            showLoading(false);
+        }, 300);
+        
+    } catch (error) {
+        console.error('Ошибка фильтрации:', error);
+        showError('Ошибка при фильтрации');
+        showLoading(false);
+    }
+}
+
+// Функция заполнения фильтра жанров
+function populateGenreFilter(genres) {
+    const genreFilter = document.getElementById('genreFilter');
+    genreFilter.innerHTML = genres.map(genre => 
+        `<option value="${genre}">${genre}</option>`
+    ).join('');
+}
+
+// Функция отображения книг
+function updateBooksDisplay(books) {
+    currentBooks = books || [];
+    const container = document.getElementById('booksContainer');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!books || books.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        updateBooksCount(0);
+        return;
+    }
+    
+    emptyState.classList.add('hidden');
+    
+    container.innerHTML = books.map(book => {
+        const isFavorite = userData.favorites.includes(book.id);
+        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        
+        return `
+        <div class="book-card" onclick="showBookDetails(${book.id})">
+            <div class="book-header">
+                <div class="book-cover">
+                    ${book.cover ? 
+                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-img" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖';">` : 
+                        `📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}`
+                    }
+                </div>
+                <div class="book-info">
+                    <div class="book-title">${escapeHtml(book.title)}</div>
+                    <div class="book-author">👤 ${escapeHtml(book.author)}</div>
+                    <div class="book-meta">📅 ${book.year} год</div>
+                    <div class="book-meta">🏷️ ${book.genre}</div>
+                    <div class="book-meta">📄 ${book.pages} стр.</div>
+                    <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
+                        ${book.available ? '✅ Доступна' : '❌ Выдана'}
+                    </div>
+                </div>
+            </div>
+            <div class="book-actions">
+                <button 
+                    class="borrow-btn" 
+                    onclick="event.stopPropagation(); borrowBook(${book.id})"
+                    ${!book.available || isBorrowed ? 'disabled' : ''}
+                >
+                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                </button>
+                <button 
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
+                >
+                    ${isFavorite ? '★' : '☆'}
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
+    
+    updateBooksCount(books.length);
+}
+
+// Вспомогательные функции
+function updateBooksCount(count) {
+    document.getElementById('booksCount').textContent = `${count} ${getBookWord(count)}`;
+}
+
+function updateSectionTitle(title) {
+    const titleElement = document.getElementById('sectionTitle');
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+}
+
+function getBookWord(count) {
+    if (count % 10 === 1 && count % 100 !== 11) return 'книга';
+    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'книги';
+    return 'книг';
+}
+
+function showLoading(show) {
+    const loading = document.getElementById('loading');
+    const booksContainer = document.getElementById('booksContainer');
+    
+    if (loading && booksContainer) {
+        if (show) {
+            loading.classList.remove('hidden');
+            booksContainer.classList.add('hidden');
+        } else {
+            loading.classList.add('hidden');
+            booksContainer.classList.remove('hidden');
+        }
+    }
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('genreFilter').value = 'Все жанры';
+    currentSearchQuery = '';
+    currentGenre = '';
+    loadInitialData();
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTelegramApp();
+    loadInitialData();
+    setupEventListeners();
+});
 
 console.log('Приложение КнігаБел успешно загружено!');
