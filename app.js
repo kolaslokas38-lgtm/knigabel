@@ -16,7 +16,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv6.litres.ru/pub/c/cover_415/66809843.jpg",
     readLink: "https://ilibrary.ru/text/11/index.html",
-    pages: 1225
+    pages: 1225,
+    rating: 4.8,
+    reviewsCount: 156
   },
   {
     id: 2,
@@ -29,7 +31,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv0.litres.ru/pub/c/cover_415/10235628.jpg",
     readLink: "https://www.litres.ru/book/fedor-dostoevskiy/prestuplenie-i-nakazanie-139491/chitat-onlayn/",
-    pages: 672
+    pages: 672,
+    rating: 4.7,
+    reviewsCount: 89
   },
   {
     id: 3,
@@ -42,7 +46,9 @@ const MOCK_BOOKS = [
     available: false,
     cover: "https://cv5.litres.ru/pub/c/cover_415/17829610.jpg",
     readLink: "https://author.today/reader/428523",
-    pages: 480
+    pages: 480,
+    rating: 4.9,
+    reviewsCount: 203
   },
   {
     id: 4,
@@ -55,7 +61,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv8.litres.ru/pub/c/cover_415/69495660.jpg",
     readLink: "https://ilibrary.ru/text/436/p.2/in-/index.html",
-    pages: 288
+    pages: 288,
+    rating: 4.6,
+    reviewsCount: 78
   },
   {
     id: 5,
@@ -68,7 +76,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv5.litres.ru/pub/c/cover_415/10321963.jpg",
     readLink: "https://kartaslov.ru/%D0%BA%D0%BD%D0%B8%D0%B3%D0%B8/%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A8%D0%BE%D0%BB%D0%BE%D1%85%D0%BE%D0%B2_%D0%A2%D0%B8%D1%85%D0%B8%D0%B9_%D0%94%D0%BE%D0%BD",
-    pages: 1504
+    pages: 1504,
+    rating: 4.5,
+    reviewsCount: 67
   },
   {
     id: 6,
@@ -81,7 +91,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv9.litres.ru/pub/c/cover_415/10235779.jpg",
     readLink: "https://ilibrary.ru/text/96/p.1/index.html",
-    pages: 320
+    pages: 320,
+    rating: 4.4,
+    reviewsCount: 54
   },
   {
     id: 7,
@@ -94,7 +106,9 @@ const MOCK_BOOKS = [
     available: false,
     cover: "https://cv8.litres.ru/pub/c/cover_415/10235657.jpg",
     readLink: "https://ilibrary.ru/text/1099/p.1/index.html",
-    pages: 864
+    pages: 864,
+    rating: 4.8,
+    reviewsCount: 134
   },
   {
     id: 8,
@@ -107,7 +121,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv5.litres.ru/pub/c/cover_415/10235746.jpg",
     readLink: "https://ilibrary.ru/text/78/p.1/index.html",
-    pages: 352
+    pages: 352,
+    rating: 4.3,
+    reviewsCount: 45
   },
   {
     id: 9,
@@ -120,7 +136,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv6.litres.ru/pub/c/cover_415/10235713.jpg",
     readLink: "https://ilibrary.ru/text/71/p.1/index.html",
-    pages: 224
+    pages: 224,
+    rating: 4.6,
+    reviewsCount: 89
   },
   {
     id: 10,
@@ -133,7 +151,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv1.litres.ru/pub/c/cover_415/10235641.jpg",
     readLink: "https://ilibrary.ru/text/1045/p.1/index.html",
-    pages: 824
+    pages: 824,
+    rating: 4.7,
+    reviewsCount: 112
   },
   {
     id: 11,
@@ -146,7 +166,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv7.litres.ru/pub/c/cover_415/10235760.jpg",
     readLink: "https://ilibrary.ru/text/359/p.1/index.html",
-    pages: 320
+    pages: 320,
+    rating: 4.5,
+    reviewsCount: 67
   },
   {
     id: 12,
@@ -159,7 +181,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv2.litres.ru/pub/c/cover_415/10235734.jpg",
     readLink: "https://ilibrary.ru/text/110/p.1/index.html",
-    pages: 480
+    pages: 480,
+    rating: 4.4,
+    reviewsCount: 58
   },
   {
     id: 13,
@@ -172,7 +196,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv4.litres.ru/pub/c/cover_415/10235694.jpg",
     readLink: "https://ilibrary.ru/text/1190/p.1/index.html",
-    pages: 96
+    pages: 96,
+    rating: 4.2,
+    reviewsCount: 34
   },
   {
     id: 14,
@@ -185,7 +211,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv3.litres.ru/pub/c/cover_415/10235727.jpg",
     readLink: "https://ilibrary.ru/text/74/p.1/index.html",
-    pages: 128
+    pages: 128,
+    rating: 4.3,
+    reviewsCount: 41
   },
   {
     id: 15,
@@ -198,7 +226,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv0.litres.ru/pub/c/cover_415/10235675.jpg",
     readLink: "https://ilibrary.ru/text/60/p.1/index.html",
-    pages: 160
+    pages: 160,
+    rating: 4.4,
+    reviewsCount: 49
   },
   {
     id: 16,
@@ -211,7 +241,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv8.litres.ru/pub/c/cover_415/10235788.jpg",
     readLink: "https://ilibrary.ru/text/1120/p.1/index.html",
-    pages: 592
+    pages: 592,
+    rating: 4.6,
+    reviewsCount: 78
   },
   {
     id: 17,
@@ -224,7 +256,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv9.litres.ru/pub/c/cover_415/10235662.jpg",
     readLink: "https://ilibrary.ru/text/1030/p.1/index.html",
-    pages: 640
+    pages: 640,
+    rating: 4.7,
+    reviewsCount: 95
   },
   {
     id: 18,
@@ -237,7 +271,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv6.litres.ru/pub/c/cover_415/10235701.jpg",
     readLink: "https://ilibrary.ru/text/1040/p.1/index.html",
-    pages: 768
+    pages: 768,
+    rating: 4.5,
+    reviewsCount: 63
   },
   {
     id: 19,
@@ -250,7 +286,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv1.litres.ru/pub/c/cover_415/10235795.jpg",
     readLink: "https://ilibrary.ru/text/1130/p.1/index.html",
-    pages: 416
+    pages: 416,
+    rating: 4.8,
+    reviewsCount: 121
   },
   {
     id: 20,
@@ -263,7 +301,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv4.litres.ru/pub/c/cover_415/10235686.jpg",
     readLink: "https://ilibrary.ru/text/1140/p.1/index.html",
-    pages: 384
+    pages: 384,
+    rating: 4.7,
+    reviewsCount: 98
   },
   {
     id: 21,
@@ -276,7 +316,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv7.litres.ru/pub/c/cover_415/10235768.jpg",
     readLink: "https://ilibrary.ru/text/77/p.1/index.html",
-    pages: 256
+    pages: 256,
+    rating: 4.3,
+    reviewsCount: 42
   },
   {
     id: 22,
@@ -289,7 +331,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv2.litres.ru/pub/c/cover_415/10235653.jpg",
     readLink: "https://ilibrary.ru/text/1150/p.1/index.html",
-    pages: 96
+    pages: 96,
+    rating: 4.5,
+    reviewsCount: 56
   },
   {
     id: 23,
@@ -302,7 +346,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv5.litres.ru/pub/c/cover_415/10235782.jpg",
     readLink: "https://ilibrary.ru/text/1160/p.1/index.html",
-    pages: 112
+    pages: 112,
+    rating: 4.4,
+    reviewsCount: 67
   },
   {
     id: 24,
@@ -315,7 +361,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv8.litres.ru/pub/c/cover_415/10235619.jpg",
     readLink: "https://ilibrary.ru/text/1170/p.1/index.html",
-    pages: 96
+    pages: 96,
+    rating: 4.9,
+    reviewsCount: 215
   },
   {
     id: 25,
@@ -328,7 +376,9 @@ const MOCK_BOOKS = [
     available: true,
     cover: "https://cv3.litres.ru/pub/c/cover_415/10235705.jpg",
     readLink: "https://ilibrary.ru/text/1180/p.1/index.html",
-    pages: 320
+    pages: 320,
+    rating: 4.8,
+    reviewsCount: 189
   }
 ];
 
@@ -338,6 +388,70 @@ const MOCK_GENRES = [
   "Философский роман", "Исторический роман", "Драма", "Комедия", 
   "Сатирический роман", "Политический роман", "Повести", "Философская сказка",
   "Антиутопия"
+];
+
+// Отзывы пользователей
+const BOOK_REVIEWS = [
+  {
+    id: 1,
+    userName: "Анна К.",
+    bookTitle: "Война и мир",
+    bookId: 1,
+    rating: 5,
+    comment: "Великолепное произведение! Перечитываю уже в третий раз. Каждый раз открываю для себя новые глубины характеров и смыслов.",
+    date: "2024-01-15",
+    likes: 12
+  },
+  {
+    id: 2,
+    userName: "Михаил П.",
+    bookTitle: "Мастер и Маргарита",
+    bookId: 3,
+    rating: 4,
+    comment: "Интересная книга, но некоторые моменты сложны для понимания. Рекомендую читать со справочным материалом.",
+    date: "2024-01-14",
+    likes: 8
+  },
+  {
+    id: 3,
+    userName: "Екатерина С.",
+    bookTitle: "Преступление и наказание",
+    bookId: 2,
+    rating: 5,
+    comment: "Потрясающая психологическая глубина персонажей! Достоевский как всегда гениален в описании внутренних конфликтов.",
+    date: "2024-01-13",
+    likes: 15
+  },
+  {
+    id: 4,
+    userName: "Дмитрий Л.",
+    bookTitle: "1984",
+    bookId: 25,
+    rating: 5,
+    comment: "Книга, которая заставляет задуматься о современном обществе. Актуально как никогда!",
+    date: "2024-01-12",
+    likes: 20
+  },
+  {
+    id: 5,
+    userName: "София М.",
+    bookTitle: "Маленький принц",
+    bookId: 24,
+    rating: 5,
+    comment: "Перечитываю эту книгу в разные периоды жизни и каждый раз нахожу новые смыслы. Бессмертная классика!",
+    date: "2024-01-11",
+    likes: 25
+  },
+  {
+    id: 6,
+    userName: "Алексей В.",
+    bookTitle: "Двенадцать стульев",
+    bookId: 19,
+    rating: 5,
+    comment: "Невероятно смешная и умная сатира! Остап Бендер - один из самых харизматичных персонажей в литературе.",
+    date: "2024-01-10",
+    likes: 18
+  }
 ];
 
 // Глобальные переменные
@@ -507,6 +621,8 @@ async function loadInitialData() {
             populateGenreFilter(MOCK_GENRES);
             updateStats(MOCK_STATS);
             updateUserProfile();
+            renderWeeklyBooks();
+            renderBookOfDay();
             showLoading(false);
         }, 800);
         
@@ -519,8 +635,100 @@ async function loadInitialData() {
         populateGenreFilter(MOCK_GENRES);
         updateStats(MOCK_STATS);
         updateUserProfile();
+        renderWeeklyBooks();
+        renderBookOfDay();
         showLoading(false);
     }
+}
+
+// Отображение книг недели
+function renderWeeklyBooks() {
+    const container = document.getElementById('weeklyBooksContainer');
+    
+    // Выбираем 4 случайные книги для "Книг недели"
+    const weeklyBooks = getRandomBooks(4);
+    
+    container.innerHTML = weeklyBooks.map(book => `
+        <div class="weekly-book-card" onclick="showBookDetails(${book.id})">
+            <div class="weekly-book-header">
+                <div class="weekly-book-cover">
+                    ${book.cover ? 
+                        `<img src="${book.cover}" alt="${book.title}" class="weekly-book-cover-img" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/60x90/4CAF50/white?text=📖';">` : 
+                        `<div class="weekly-book-cover-placeholder">📖</div>`
+                    }
+                </div>
+                <div class="weekly-book-info">
+                    <div class="weekly-book-title">${escapeHtml(book.title)}</div>
+                    <div class="weekly-book-author">${escapeHtml(book.author)}</div>
+                    <div class="weekly-book-rating">
+                        <span class="stars">${createRatingStars(book.rating)}</span>
+                        <span class="rating-value">${book.rating}</span>
+                        <span class="reviews-count">(${book.reviewsCount})</span>
+                    </div>
+                    <div class="weekly-book-meta">
+                        <span class="book-year">${book.year} год</span>
+                        <span class="book-pages">${book.pages} стр.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="weekly-book-actions">
+                <button class="borrow-weekly-btn" onclick="event.stopPropagation(); borrowBook(${book.id})">
+                    📚 Забронировать
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Отображение книги дня
+function renderBookOfDay() {
+    const container = document.getElementById('bookOfDayContainer');
+    
+    // Выбираем случайную книгу для "Книги дня"
+    const bookOfDay = getRandomBooks(1)[0];
+    
+    container.innerHTML = `
+        <div class="book-of-day-card">
+            <div class="book-of-day-badge">⭐ КНИГА ДНЯ</div>
+            <div class="book-of-day-content">
+                <div class="book-of-day-cover">
+                    ${bookOfDay.cover ? 
+                        `<img src="${bookOfDay.cover}" alt="${bookOfDay.title}" class="book-of-day-cover-img"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/100x150/4CAF50/white?text=📖';">` : 
+                        `<div class="book-of-day-cover-placeholder">📖<br>${escapeHtml(bookOfDay.title)}</div>`
+                    }
+                </div>
+                <div class="book-of-day-info">
+                    <h3 class="book-of-day-title">${escapeHtml(bookOfDay.title)}</h3>
+                    <p class="book-of-day-author">${escapeHtml(bookOfDay.author)}</p>
+                    
+                    <div class="book-of-day-rating">
+                        <span class="stars">${createRatingStars(bookOfDay.rating)}</span>
+                        <span class="rating-value">${bookOfDay.rating}/5</span>
+                        <span class="reviews-count">${bookOfDay.reviewsCount} отзывов</span>
+                    </div>
+                    
+                    <div class="book-of-day-meta">
+                        <span class="meta-item">📅 ${bookOfDay.year} год</span>
+                        <span class="meta-item">🏷️ ${bookOfDay.genre}</span>
+                        <span class="meta-item">📄 ${bookOfDay.pages} стр.</span>
+                    </div>
+                    
+                    <p class="book-of-day-description">${escapeHtml(bookOfDay.description)}</p>
+                    
+                    <div class="special-offer">
+                        🎁 Сегодня при бронировании этой книги получаете 2 дополнительных дня чтения!
+                    </div>
+                </div>
+            </div>
+            <div class="book-of-day-actions">
+                <button class="borrow-today-btn" onclick="borrowBook(${bookOfDay.id})">
+                    📖 Забронировать книгу дня
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 // Поиск книг
@@ -620,6 +828,11 @@ function updateBooksDisplay(books) {
                     <div class="book-meta">📅 ${book.year} год</div>
                     <div class="book-meta">🏷️ ${book.genre}</div>
                     <div class="book-meta">📄 ${book.pages} стр.</div>
+                    <div class="book-rating-small">
+                        <span class="stars">${createRatingStars(book.rating)}</span>
+                        <span class="rating-value">${book.rating}</span>
+                        <span class="reviews-count">(${book.reviewsCount})</span>
+                    </div>
                     <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
                         ${book.available ? '✅ Доступна' : '❌ Выдана'}
                     </div>
@@ -660,6 +873,7 @@ async function showBookDetails(bookId) {
         
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+        const bookReviews = BOOK_REVIEWS.filter(review => review.bookId === bookId);
         
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
@@ -678,6 +892,16 @@ async function showBookDetails(bookId) {
                     <p><strong>Жанр:</strong> ${book.genre}</p>
                     <p><strong>ISBN:</strong> ${book.isbn || 'Не указан'}</p>
                     <p><strong>Страниц:</strong> ${book.pages}</p>
+                    
+                    <div class="book-rating-detailed">
+                        <strong>Рейтинг:</strong>
+                        <div class="rating-display">
+                            <span class="stars">${createRatingStars(book.rating)}</span>
+                            <span class="rating-value">${book.rating}/5</span>
+                            <span class="reviews-count">на основе ${book.reviewsCount} отзывов</span>
+                        </div>
+                    </div>
+                    
                     <p><strong>Статус:</strong> 
                         <span class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
                             ${isBorrowed ? '📖 У вас' : (book.available ? '✅ Доступна' : '❌ Выдана')}
@@ -686,6 +910,35 @@ async function showBookDetails(bookId) {
                     <div class="book-description">
                         <strong>Описание:</strong>
                         <p>${escapeHtml(book.description || 'Описание отсутствует.')}</p>
+                    </div>
+                    
+                    <!-- Отзывы -->
+                    <div class="reviews-section">
+                        <h5>💬 Отзывы читателей (${bookReviews.length})</h5>
+                        <div class="reviews-list">
+                            ${bookReviews.length > 0 ? bookReviews.map(review => `
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="review-user">${review.userName}</div>
+                                        <div class="review-rating">${createRatingStars(review.rating)}</div>
+                                    </div>
+                                    <div class="review-comment">${escapeHtml(review.comment)}</div>
+                                    <div class="review-footer">
+                                        <span class="review-date">${formatReviewDate(review.date)}</span>
+                                        <button class="like-review-btn" onclick="likeReview(${review.id})">
+                                            ❤️ ${review.likes}
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') : `
+                                <div class="no-reviews">
+                                    <p>Пока нет отзывов. Будьте первым!</p>
+                                    <button class="add-review-btn" onclick="addReview(${book.id})">
+                                        ✍️ Написать отзыв
+                                    </button>
+                                </div>
+                            `}
+                        </div>
                     </div>
                     
                     ${book.readLink ? `
@@ -767,6 +1020,8 @@ async function borrowBook(bookId) {
             updateBooksDisplay(currentBooks);
             updateStats(MOCK_STATS);
             updateUserProfile();
+            renderWeeklyBooks();
+            renderBookOfDay();
             closeModal();
             
         } else {
@@ -815,6 +1070,8 @@ function returnBook(bookId) {
         updateBooksDisplay(currentBooks);
         updateStats(MOCK_STATS);
         updateUserProfile();
+        renderWeeklyBooks();
+        renderBookOfDay();
     }
 }
 
@@ -1018,6 +1275,23 @@ function formatDate(dateString) {
     return date.toLocaleDateString('ru-RU');
 }
 
+function formatReviewDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Вчера';
+    if (diffDays === 2) return 'Позавчера';
+    if (diffDays <= 7) return `${diffDays} дней назад`;
+    
+    return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
 function showLoading(show) {
     const loading = document.getElementById('loading');
     const booksContainer = document.getElementById('booksContainer');
@@ -1056,6 +1330,59 @@ function escapeHtml(unsafe) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+// Новые функции для рейтингов и отзывов
+function createRatingStars(rating) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    let stars = '';
+    
+    // Полные звезды
+    for (let i = 0; i < fullStars; i++) {
+        stars += '⭐';
+    }
+    
+    // Половина звезды
+    if (hasHalfStar) {
+        stars += '✨';
+    }
+    
+    // Пустые звезды
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    for (let i = 0; i < emptyStars; i++) {
+        stars += '☆';
+    }
+    
+    return stars;
+}
+
+function getRandomBooks(count) {
+    const shuffled = [...MOCK_BOOKS].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+}
+
+function likeReview(reviewId) {
+    const review = BOOK_REVIEWS.find(r => r.id === reviewId);
+    if (review) {
+        review.likes++;
+        // Обновляем отображение в модальном окне
+        const modalTitle = document.getElementById('modalTitle').textContent;
+        const book = MOCK_BOOKS.find(b => b.title === modalTitle);
+        if (book) {
+            showBookDetails(book.id);
+        }
+        tg.showAlert('Спасибо за ваш лайк! ❤️');
+    }
+}
+
+function addReview(bookId) {
+    tg.showPopup({
+        title: 'Написать отзыв',
+        message: 'Функция добавления отзывов скоро будет доступна!',
+        buttons: [{ type: 'ok' }]
+    });
 }
 
 // Добавляем стили для новых элементов
@@ -1140,6 +1467,454 @@ const additionalStyles = `
     text-align: center;
     padding: 20px;
 }
+
+/* Стили для книг недели */
+.weekly-books-section {
+    margin: 20px 0;
+    padding: 0 15px;
+}
+
+.weekly-books-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.weekly-books-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.weekly-book-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.weekly-book-card:active {
+    transform: scale(0.98);
+    background: var(--bg-light);
+}
+
+.weekly-book-header {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.weekly-book-cover {
+    width: 60px;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+}
+
+.weekly-book-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.weekly-book-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #666;
+}
+
+.weekly-book-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.weekly-book-title {
+    font-weight: 600;
+    font-size: 1em;
+    margin-bottom: 4px;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+
+.weekly-book-author {
+    font-size: 0.85em;
+    color: var(--text-light);
+    margin-bottom: 6px;
+}
+
+.weekly-book-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.weekly-book-rating .stars {
+    font-size: 0.9em;
+}
+
+.rating-value {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: var(--accent-color);
+}
+
+.reviews-count {
+    font-size: 0.8em;
+    color: var(--text-light);
+}
+
+.weekly-book-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8em;
+    color: var(--text-light);
+}
+
+.weekly-book-actions {
+    margin-top: 10px;
+}
+
+.borrow-weekly-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.borrow-weekly-btn:active {
+    background: var(--accent-dark);
+    transform: scale(0.98);
+}
+
+/* Стили для книги дня */
+.book-of-day-section {
+    margin: 20px 0;
+    padding: 0 15px;
+}
+
+.book-of-day-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.book-of-day-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 20px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.book-of-day-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75em;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.book-of-day-content {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.book-of-day-cover {
+    width: 100px;
+    height: 150px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.book-of-day-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.book-of-day-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.book-of-day-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-of-day-title {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.book-of-day-author {
+    font-size: 1em;
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.book-of-day-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.book-of-day-rating .stars {
+    font-size: 1em;
+}
+
+.book-of-day-rating .rating-value {
+    font-weight: 700;
+    color: white;
+}
+
+.book-of-day-rating .reviews-count {
+    font-size: 0.85em;
+    opacity: 0.8;
+    color: white;
+}
+
+.book-of-day-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+
+.book-of-day-description {
+    font-size: 0.9em;
+    line-height: 1.4;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.special-offer {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    margin-top: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.book-of-day-actions {
+    margin-top: 15px;
+}
+
+.borrow-today-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.borrow-today-btn:active {
+    background: white;
+    transform: scale(0.98);
+}
+
+/* Стили для рейтингов в карточках */
+.book-rating-small {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+.book-rating-small .stars {
+    font-size: 0.8em;
+}
+
+.book-rating-detailed {
+    margin: 10px 0;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+}
+
+/* Стили для отзывов в модальном окне */
+.reviews-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.reviews-section h5 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.reviews-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.review-item {
+    background: var(--bg-light);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-user {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.review-rating {
+    font-size: 0.9em;
+}
+
+.review-comment {
+    line-height: 1.4;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8em;
+}
+
+.review-date {
+    color: var(--text-light);
+}
+
+.like-review-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.like-review-btn:active {
+    background: var(--border-color);
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-light);
+}
+
+.add-review-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.add-review-btn:active {
+    background: #1976d2;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .book-of-day-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .book-of-day-cover {
+        margin: 0 auto;
+    }
+    
+    .weekly-book-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .weekly-book-cover {
+        align-self: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .weekly-books-section,
+    .book-of-day-section {
+        padding: 0 10px;
+    }
+    
+    .book-of-day-card {
+        padding: 15px;
+    }
+}
 `;
 
 // Добавляем стили в страницу
@@ -1158,3 +1933,5 @@ window.removeFavorite = removeFavorite;
 window.showSection = showSection;
 window.closeModal = closeModal;
 window.clearFilters = clearFilters;
+window.likeReview = likeReview;
+window.addReview = addReview;
