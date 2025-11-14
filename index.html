@@ -25,6 +25,11 @@
                     <span class="stat-label">Доступно</span>
                 </div>
             </div>
+            <div class="theme-toggle">
+                <button onclick="toggleTheme()" class="theme-btn" id="themeToggle">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
         </header>
 
         <!-- Navigation Tabs -->
@@ -187,6 +192,17 @@
                 </div>
                 <div class="favorites-list" id="favoritesList">
                     <!-- Favorites will be loaded here -->
+                </div>
+            </div>
+
+            <!-- My Reviews -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>💬 Мои отзывы</h3>
+                    <span class="section-badge" id="myReviewsCount">0</span>
+                </div>
+                <div class="my-reviews-list" id="myReviewsList">
+                    <!-- My reviews will be loaded here -->
                 </div>
             </div>
 

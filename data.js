@@ -676,6 +676,7 @@ const DEFAULT_USER_DATA = {
             returnDate: "2024-01-24",
             status: "active"
         }
+        
     ],
     history: [
         {
@@ -701,6 +702,22 @@ const DEFAULT_USER_DATA = {
         activeBorrows: 1,
         totalRead: 2,
         readingDays: 45
+    }
+};
+const THEMES = {
+    LIGHT: {
+        name: 'light',
+        bg: '#ffffff',
+        text: '#333333',
+        card: '#f8f9fa',
+        border: '#e0e0e0'
+    },
+    DARK: {
+        name: 'dark', 
+        bg: '#1a1a1a',
+        text: '#ffffff',
+        card: '#2d2d2d',
+        border: '#404040'
     }
 };
 

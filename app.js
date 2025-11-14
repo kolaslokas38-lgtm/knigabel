@@ -985,6 +985,181 @@ function calculateStats() {
         totalGenres: window.APP_DATA.MOCK_GENRES.length - 1
     };
 }
+function toggleTheme() {
+    const currentTheme = userData.theme;
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    userData.theme = newTheme;
+    window.STORAGE.saveAllData(userData);
+    applyTheme(newTheme);
+    
+    tg.showPopup({
+        title: 'Тема изменена',
+        message: `Переключено на ${newTheme === 'light' ? 'светлую' : 'тёмную'} тему`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+function applyTheme(theme) {
+    const root = document.documentElement;
+    const themeConfig = theme === 'light' ? THEMES.LIGHT : THEMES.DARK;
+    
+    root.style.setProperty('--bg-primary', themeConfig.bg);
+    root.style.setProperty('--text-primary', themeConfig.text);
+    root.style.setProperty('--bg-card', themeConfig.card);
+    root.style.setProperty('--border-primary', themeConfig.border);
+    
+    // Обновляем иконку темы
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+}
+
+// Функции для отзывов
+let currentReviewBookId = null;
+let selectedRating = 0;
+
+function openReviewModal(bookId) {
+    currentReviewBookId = bookId;
+    selectedRating = 0;
+    
+    // Сброс формы
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('ratingText').textContent = 'Выберите оценку';
+    document.querySelector('.submit-btn').disabled = true;
+    
+    // Сброс звезд
+    document.querySelectorAll('.star').forEach(star => {
+        star.textContent = '☆';
+        star.classList.remove('active');
+    });
+    
+    document.getElementById('reviewModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    tg.BackButton.hide();
+}
+
+function setRating(rating) {
+    selectedRating = rating;
+    const stars = document.querySelectorAll('.star');
+    const ratingText = document.getElementById('ratingText');
+    
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.textContent = '⭐';
+            star.classList.add('active');
+        } else {
+            star.textContent = '☆';
+            star.classList.remove('active');
+        }
+    });
+    
+    const ratingTexts = ['Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'];
+    ratingText.textContent = ratingTexts[rating - 1] || 'Выберите оценку';
+    
+    updateSubmitButton();
+}
+
+function updateCharCount() {
+    const textarea = document.getElementById('reviewComment');
+    const charCount = document.getElementById('charCount');
+    charCount.textContent = textarea.value.length;
+    updateSubmitButton();
+}
+
+function updateSubmitButton() {
+    const submitBtn = document.querySelector('.submit-btn');
+    const hasRating = selectedRating > 0;
+    const hasComment = document.getElementById('reviewComment').value.trim().length > 0;
+    submitBtn.disabled = !(hasRating && hasComment);
+}
+
+function submitReview() {
+    if (!currentReviewBookId || !selectedRating) return;
+    
+    const comment = document.getElementById('reviewComment').value.trim();
+    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === currentReviewBookId);
+    
+    if (!book) return;
+    
+    // Создаем новый отзыв
+    const newReview = {
+        id: Date.now(),
+        userName: userData.name,
+        bookTitle: book.title,
+        bookId: currentReviewBookId,
+        rating: selectedRating,
+        comment: comment,
+        date: new Date().toISOString().split('T')[0],
+        likes: 0
+    };
+    
+    // Добавляем в общие отзывы
+    window.APP_DATA.BOOK_REVIEWS.unshift(newReview);
+    
+    // Добавляем в отзывы пользователя
+    userData.myReviews.unshift({
+        ...newReview,
+        id: Date.now() + 1 // Уникальный ID для пользовательского отзыва
+    });
+    
+    window.STORAGE.saveAllData(userData);
+    
+    tg.showPopup({
+        title: 'Отзыв добавлен! ★',
+        message: 'Ваш отзыв успешно опубликован',
+        buttons: [{ type: 'ok' }]
+    });
+    
+    closeReviewModal();
+    updateMyReviewsList();
+    
+    // Если открыта детальная страница книги - обновляем ее
+    if (!document.getElementById('bookModal').classList.contains('hidden')) {
+        showBookDetails(currentReviewBookId);
+    }
+}
+
+function updateMyReviewsList() {
+    const myReviewsList = document.getElementById('myReviewsList');
+    const myReviewsCount = document.getElementById('myReviewsCount');
+    
+    myReviewsCount.textContent = userData.myReviews.length;
+    
+    if (userData.myReviews.length === 0) {
+        myReviewsList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">💬</div>
+                <h4>Нет отзывов</h4>
+                <p>Поделитесь вашим мнением о прочитанных книгах</p>
+            </div>
+        `;
+    } else {
+        myReviewsList.innerHTML = userData.myReviews.map(review => `
+            <div class="my-review-item">
+                <div class="my-review-header">
+                    <div class="my-review-book">${escapeHtml(review.bookTitle)}</div>
+                    <div class="my-review-rating">${createRatingStars(review.rating)}</div>
+                </div>
+                <div class="my-review-comment">${escapeHtml(review.comment)}</div>
+                <div class="my-review-date">${formatReviewDate(review.date)}</div>
+            </div>
+        `).join('');
+    }
+}
+
+// Инициализация темы при загрузке
+function initializeTheme() {
+    const savedTheme = window.STORAGE.loadTheme();
+    userData.theme = savedTheme;
+    applyTheme(savedTheme);
+}
 
 // Экспортируем глобальные функции
 window.searchBooks = searchBooks;

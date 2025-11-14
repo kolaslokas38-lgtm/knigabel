@@ -1,3 +1,4 @@
+// Функции для работы с localStorage
 function saveToStorage(key, data) {
     try {
         localStorage.setItem(key, JSON.stringify(data));
@@ -46,7 +47,8 @@ function loadUserData() {
             stats: {
                 ...window.APP_DATA.DEFAULT_USER_DATA.stats,
                 ...(saved.stats || {})
-            }
+            },
+            myReviews: saved.myReviews || []
         };
     }
     return window.APP_DATA.DEFAULT_USER_DATA;
@@ -74,18 +76,30 @@ function loadLibraryStats() {
     }
 }
 
+// Функция для сохранения темы
+function saveTheme(theme) {
+    return saveToStorage(window.APP_DATA.STORAGE_KEYS.THEME, theme);
+}
+
+function loadTheme() {
+    return loadFromStorage(window.APP_DATA.STORAGE_KEYS.THEME, 'light');
+}
+
 // Функция для полного сохранения всех данных
 function saveAllData(userData) {
     saveUserData(userData);
     saveBooksData();
     saveLibraryStats();
+    saveTheme(userData.theme);
 }
 
 // Функция для полной загрузки всех данных
 function loadAllData() {
     loadBooksData();
     loadLibraryStats();
-    return loadUserData();
+    const userData = loadUserData();
+    userData.theme = loadTheme();
+    return userData;
 }
 
 // Экспортируем функции хранилища
@@ -98,6 +112,8 @@ window.STORAGE = {
     loadUserData,
     loadBooksData,
     loadLibraryStats,
+    saveTheme,
+    loadTheme,
     saveAllData,
     loadAllData
 };
