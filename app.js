@@ -114,12 +114,18 @@ function showSection(sectionName) {
     if (sectionName === 'profile') {
         updateProfileDisplay();
     }
+    
+    // Если открыли Красную книгу - загрузить животных
+    if (sectionName === 'redbook') {
+        loadRedBookAnimals();
+    }
 }
 
 // Загрузка начальных данных
 async function loadInitialData() {
     try {
         showLoading(true);
+        loadInitialData;
         
         // Имитируем задержку сети
         setTimeout(() => {
@@ -158,11 +164,7 @@ function renderWeeklyBooks() {
         <div class="weekly-book-card" onclick="showBookDetails(${book.id})">
             <div class="weekly-book-header">
                 <div class="weekly-book-cover">
-                    ${book.cover ? 
-                        `<img src="${book.cover}" alt="${book.title}" class="weekly-book-cover-img" 
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/60x90/4CAF50/white?text=📖';">` : 
-                        `<div class="weekly-book-cover-placeholder">📖</div>`
-                    }
+                    <div class="weekly-book-icon">${book.icon || '📚'}</div>
                 </div>
                 <div class="weekly-book-info">
                     <div class="weekly-book-title">${escapeHtml(book.title)}</div>
@@ -199,11 +201,7 @@ function renderBookOfDay() {
             <div class="book-of-day-badge">⭐ КНИГА ДНЯ</div>
             <div class="book-of-day-content">
                 <div class="book-of-day-cover">
-                    ${bookOfDay.cover ? 
-                        `<img src="${bookOfDay.cover}" alt="${bookOfDay.title}" class="book-of-day-cover-img"
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/100x150/4CAF50/white?text=📖';">` : 
-                        `<div class="book-of-day-cover-placeholder">📖<br>${escapeHtml(bookOfDay.title)}</div>`
-                    }
+                    <div class="book-of-day-icon">${bookOfDay.icon || '📚'}</div>
                 </div>
                 <div class="book-of-day-info">
                     <h3 class="book-of-day-title">${escapeHtml(bookOfDay.title)}</h3>
@@ -322,11 +320,7 @@ function updateBooksDisplay(books) {
         <div class="book-card" onclick="showBookDetails(${book.id})">
             <div class="book-header">
                 <div class="book-cover">
-                    ${book.cover ? 
-                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-img" 
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/80x120/4CAF50/white?text=📖';">` : 
-                        `📖<br>${book.title.substring(0, 20)}${book.title.length > 20 ? '...' : ''}`
-                    }
+                    <div class="book-icon">${book.icon || '📚'}</div>
                 </div>
                 <div class="book-info">
                     <div class="book-title">${escapeHtml(book.title)}</div>
@@ -385,11 +379,7 @@ async function showBookDetails(bookId) {
         modalBody.innerHTML = `
             <div class="book-details">
                 <div class="book-cover-large">
-                    ${book.cover ? 
-                        `<img src="${book.cover}" alt="${book.title}" class="book-cover-large-img"
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x300/4CAF50/white?text=📖\\n${escapeHtml(book.title)}';">` : 
-                        `<div class="book-cover-large-placeholder">📖<br>${escapeHtml(book.title)}</div>`
-                    }
+                    <div class="book-icon-large">${book.icon || '📚'}</div>
                 </div>
                 <div class="book-info-detailed">
                     <h4>${escapeHtml(book.title)}</h4>
@@ -755,6 +745,95 @@ function updateFavoritesList() {
     }
 }
 
+// Функция для отображения животных Красной книги
+function loadRedBookAnimals() {
+    const container = document.getElementById('animalsContainer');
+    const animals = window.APP_DATA.RED_BOOK_ANIMALS;
+    
+    document.getElementById('animalsCount').textContent = `${animals.length} животных`;
+    
+    container.innerHTML = animals.map(animal => `
+        <div class="animal-card" onclick="showAnimalDetails(${animal.id})">
+            <div class="animal-image">
+                ${animal.image ? 
+                    `<img src="${animal.image}" alt="${animal.name}" class="animal-img"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150/4CAF50/white?text=🐾';">` : 
+                    `<div class="animal-image-placeholder">🐾</div>`
+                }
+                <div class="animal-status ${animal.status}">
+                    ${getStatusText(animal.status)}
+                </div>
+            </div>
+            <div class="animal-info">
+                <h3 class="animal-name">${escapeHtml(animal.name)}</h3>
+                <p class="animal-species">${escapeHtml(animal.species)}</p>
+                <p class="animal-description">${escapeHtml(animal.description.substring(0, 100))}...</p>
+                <div class="animal-meta">
+                    <span class="meta-item">👥 ${animal.population}</span>
+                    <span class="meta-item">🏞️ ${animal.habitat}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Функция для показа деталей животного
+function showAnimalDetails(animalId) {
+    const animal = window.APP_DATA.RED_BOOK_ANIMALS.find(a => a.id === animalId);
+    
+    if (!animal) return;
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+        <div class="animal-details">
+            <div class="animal-image-large">
+                ${animal.image ? 
+                    `<img src="${animal.image}" alt="${animal.name}" class="animal-img-large"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/4CAF50/white?text=🐾';">` : 
+                    `<div class="animal-image-large-placeholder">🐾<br>${escapeHtml(animal.name)}</div>`
+                }
+            </div>
+            <div class="animal-info-detailed">
+                <h4>${escapeHtml(animal.name)}</h4>
+                <p><strong>Вид:</strong> <em>${escapeHtml(animal.species)}</em></p>
+                <p><strong>Статус:</strong> 
+                    <span class="animal-status ${animal.status}">
+                        ${getStatusText(animal.status)}
+                    </span>
+                </p>
+                <p><strong>Популяция:</strong> ${animal.population}</p>
+                <p><strong>Место обитания:</strong> ${animal.habitat}</p>
+                
+                <div class="animal-description-detailed">
+                    <strong>Описание:</strong>
+                    <p>${escapeHtml(animal.description)}</p>
+                </div>
+                
+                <div class="conservation-info">
+                    <h5>🛡️ Меры охраны</h5>
+                    <p>Вид охраняется в соответствии с законодательством Республики Беларусь. 
+                       Запрещена охота, уничтожение мест обитания и любая деятельность, 
+                       приводящая к сокращению численности вида.</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modalTitle').textContent = animal.name;
+    document.getElementById('bookModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+// Функция для получения текста статуса
+function getStatusText(status) {
+    const statusMap = {
+        'endangered': 'На грани исчезновения',
+        'vulnerable': 'Уязвимый',
+        'rare': 'Редкий'
+    };
+    return statusMap[status] || status;
+}
+
 // Вспомогательные функции
 function populateGenreFilter(genres) {
     const genreFilter = document.getElementById('genreFilter');
@@ -763,7 +842,8 @@ function populateGenreFilter(genres) {
     ).join('');
 }
 
-function updateStats(stats) {
+function updateStats() {
+    const stats = calculateStats();
     document.getElementById('totalBooks').textContent = stats.totalBooks;
     document.getElementById('availableBooks').textContent = stats.availableBooks;
 }
@@ -896,123 +976,14 @@ function addReview(bookId) {
         buttons: [{ type: 'ok' }]
     });
 }
-// Функция для отображения животных Красной книги
-function loadRedBookAnimals() {
-    const container = document.getElementById('animalsContainer');
-    const animals = window.APP_DATA.RED_BOOK_ANIMALS;
-    
-    document.getElementById('animalsCount').textContent = `${animals.length} животных`;
-    
-    container.innerHTML = animals.map(animal => `
-        <div class="animal-card" onclick="showAnimalDetails(${animal.id})">
-            <div class="animal-image">
-                ${animal.image ? 
-                    `<img src="${animal.image}" alt="${animal.name}" class="animal-img"
-                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150/4CAF50/white?text=🐾';">` : 
-                    `<div class="animal-image-placeholder">🐾</div>`
-                }
-                <div class="animal-status ${animal.status}">
-                    ${getStatusText(animal.status)}
-                </div>
-            </div>
-            <div class="animal-info">
-                <h3 class="animal-name">${escapeHtml(animal.name)}</h3>
-                <p class="animal-species">${escapeHtml(animal.species)}</p>
-                <p class="animal-description">${escapeHtml(animal.description.substring(0, 100))}...</p>
-                <div class="animal-meta">
-                    <span class="meta-item">👥 ${animal.population}</span>
-                    <span class="meta-item">🏞️ ${animal.habitat}</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Функция для показа деталей животного
-function showAnimalDetails(animalId) {
-    const animal = window.APP_DATA.RED_BOOK_ANIMALS.find(a => a.id === animalId);
-    
-    if (!animal) return;
-    
-    const modalBody = document.getElementById('modalBody');
-    modalBody.innerHTML = `
-        <div class="animal-details">
-            <div class="animal-image-large">
-                ${animal.image ? 
-                    `<img src="${animal.image}" alt="${animal.name}" class="animal-img-large"
-                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/4CAF50/white?text=🐾';">` : 
-                    `<div class="animal-image-large-placeholder">🐾<br>${escapeHtml(animal.name)}</div>`
-                }
-            </div>
-            <div class="animal-info-detailed">
-                <h4>${escapeHtml(animal.name)}</h4>
-                <p><strong>Вид:</strong> <em>${escapeHtml(animal.species)}</em></p>
-                <p><strong>Статус:</strong> 
-                    <span class="animal-status ${animal.status}">
-                        ${getStatusText(animal.status)}
-                    </span>
-                </p>
-                <p><strong>Популяция:</strong> ${animal.population}</p>
-                <p><strong>Место обитания:</strong> ${animal.habitat}</p>
-                
-                <div class="animal-description-detailed">
-                    <strong>Описание:</strong>
-                    <p>${escapeHtml(animal.description)}</p>
-                </div>
-                
-                <div class="conservation-info">
-                    <h5>🛡️ Меры охраны</h5>
-                    <p>Вид охраняется в соответствии с законодательством Республики Беларусь. 
-                       Запрещена охота, уничтожение мест обитания и любая деятельность, 
-                       приводящая к сокращению численности вида.</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('modalTitle').textContent = animal.name;
-    document.getElementById('bookModal').classList.remove('hidden');
-    tg.BackButton.show();
-}
-
-// Функция для получения текста статуса
-function getStatusText(status) {
-    const statusMap = {
-        'endangered': 'На грани исчезновения',
-        'vulnerable': 'Уязвимый',
-        'rare': 'Редкий'
+function calculateStats() {
+    const books = window.APP_DATA.MOCK_BOOKS;
+    return {
+        totalBooks: books.length,
+        availableBooks: books.filter(book => book.available).length,
+        borrowedBooks: books.filter(book => !book.available).length,
+        totalGenres: window.APP_DATA.MOCK_GENRES.length - 1
     };
-    return statusMap[status] || status;
-}
-
-// Обновите функцию showSection для загрузки животных при переходе на вкладку
-function showSection(sectionName) {
-    // Скрыть все секции
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // Скрыть/показать поиск
-    document.getElementById('searchSection').classList.toggle('hidden', sectionName !== 'catalog');
-    
-    // Показать выбранную секцию
-    document.getElementById(sectionName + 'Section').classList.add('active');
-    
-    // Обновить навигационные кнопки
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
-    
-    // Если открыли профиль - обновить данные
-    if (sectionName === 'profile') {
-        updateProfileDisplay();
-    }
-    
-    // Если открыли Красную книгу - загрузить животных
-    if (sectionName === 'redbook') {
-        loadRedBookAnimals();
-    }
 }
 
 // Экспортируем глобальные функции
@@ -1028,3 +999,5 @@ window.closeModal = closeModal;
 window.clearFilters = clearFilters;
 window.likeReview = likeReview;
 window.addReview = addReview;
+window.loadRedBookAnimals = loadRedBookAnimals;
+window.showAnimalDetails = showAnimalDetails;
