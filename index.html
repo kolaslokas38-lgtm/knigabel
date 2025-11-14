@@ -34,6 +34,10 @@
                     <span class="nav-icon">📚</span>
                     <span class="nav-text">Каталог</span>
                 </button>
+                <button class="nav-btn" onclick="showSection('redbook')">
+                    <span class="nav-icon">🐾</span>
+                    <span class="nav-text">Красная Книга</span>
+                </button>
                 <button class="nav-btn" onclick="showSection('profile')">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Мой профиль</span>
@@ -87,7 +91,7 @@
                 <!-- Books will be loaded here -->
             </div>
             
-            <div class="loading" id="loading">
+            <div class="loading hidden" id="loading">
                 <div class="spinner"></div>
                 <p>Загрузка каталога...</p>
             </div>
@@ -97,6 +101,18 @@
                 <h3>Книги не найдены</h3>
                 <p>Попробуйте изменить поисковый запрос или фильтр</p>
                 <button onclick="clearFilters()" class="clear-btn">Сбросить фильтры</button>
+            </div>
+        </section>
+
+        <!-- Red Book Section -->
+        <section class="content-section" id="redbookSection">
+            <div class="section-header">
+                <h2>🐾 Красная Книга Беларуси</h2>
+                <span class="books-count" id="animalsCount">0 животных</span>
+            </div>
+            
+            <div class="animals-container" id="animalsContainer">
+                <!-- Animals will be loaded here -->
             </div>
         </section>
 
@@ -173,6 +189,19 @@
                     <!-- Favorites will be loaded here -->
                 </div>
             </div>
+
+            <!-- Data Management -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>⚙️ Управление данными</h3>
+                </div>
+                <div class="data-management">
+                    <button class="clear-data-btn" onclick="clearAllData()">
+                        🗑️ Сбросить все данные
+                    </button>
+                    <p class="data-info">Только для тестирования</p>
+                </div>
+            </div>
         </section>
 
         <!-- Book Modal -->
@@ -187,8 +216,52 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add Review Modal -->
+        <div class="modal hidden" id="reviewModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>✍️ Написать отзыв</h3>
+                    <button onclick="closeReviewModal()" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="review-form">
+                        <div class="form-group">
+                            <label for="reviewRating">Ваша оценка:</label>
+                            <div class="rating-selector">
+                                <span class="rating-stars">
+                                    <span class="star" data-rating="1">☆</span>
+                                    <span class="star" data-rating="2">☆</span>
+                                    <span class="star" data-rating="3">☆</span>
+                                    <span class="star" data-rating="4">☆</span>
+                                    <span class="star" data-rating="5">☆</span>
+                                </span>
+                                <span class="rating-text" id="ratingText">Выберите оценку</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reviewComment">Ваш отзыв:</label>
+                            <textarea 
+                                id="reviewComment" 
+                                placeholder="Поделитесь вашими впечатлениями о книге..."
+                                rows="4"
+                                maxlength="500"
+                            ></textarea>
+                            <div class="char-count"><span id="charCount">0</span>/500</div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="cancel-btn" onclick="closeReviewModal()">Отмена</button>
+                            <button type="button" class="submit-btn" onclick="submitReview()" disabled>Опубликовать отзыв</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Подключаем файлы в правильном порядке -->
+    <script src="data.js"></script>
+    <script src="storage.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
