@@ -326,13 +326,26 @@ async function showBookDetails(bookId) {
     try {
         showLoading(true);
         
-        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
-        if (!book) throw new Error('Книга не найдена');
+        // Ищем книгу - используем == вместо === потому что bookId может быть строкой или числом
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id == bookId);
+        
+        if (!book) {
+            throw new Error('Книга не найдена. ID: ' + bookId);
+        }
         
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
-        const bookReviews = window.STORAGE.getBookReviews(bookId);
-        const userHasReviewed = userData.myReviews.some(review => review.bookId === bookId);
+        
+        // Получаем отзывы для этой книги
+        let bookReviews = [];
+        try {
+            bookReviews = window.STORAGE.getBookReviews(book.id);
+        } catch (reviewError) {
+            console.error('Ошибка загрузки отзывов:', reviewError);
+            bookReviews = [];
+        }
+        
+        const userHasReviewed = userData.myReviews.some(review => review.bookId === book.id);
         
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
@@ -381,14 +394,14 @@ async function showBookDetails(bookId) {
                             ${bookReviews.length > 0 ? bookReviews.map(review => `
                                 <div class="review-item">
                                     <div class="review-header">
-                                        <div class="review-user">${review.userAvatar} ${review.userName}</div>
+                                        <div class="review-user">${review.userAvatar || '👤'} ${escapeHtml(review.userName)}</div>
                                         <div class="review-rating">${createRatingStars(review.rating)}</div>
                                     </div>
                                     <div class="review-comment">${escapeHtml(review.comment)}</div>
                                     <div class="review-footer">
                                         <span class="review-date">${formatReviewDate(review.date)}</span>
                                         <button class="like-review-btn" onclick="event.stopPropagation(); likeReview(${review.id})">
-                                            ❤️ ${review.likes}
+                                            ❤️ ${review.likes || 0}
                                         </button>
                                     </div>
                                 </div>
@@ -404,7 +417,7 @@ async function showBookDetails(bookId) {
                     </div>
                     
                     ${book.readLink ? `
-                    <div class="read-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                    <div class="read-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
                         <a href="${book.readLink}" target="_blank" class="read-btn">
                             📖 Читать книгу онлайн
                         </a>
@@ -440,11 +453,26 @@ async function showBookDetails(bookId) {
         
     } catch (error) {
         console.error('Ошибка загрузки деталей книги:', error);
-        showError('Не удалось загрузить информацию о книге');
+        
+        // Показываем понятную ошибку пользователю
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <div style="font-size: 4em; margin-bottom: 20px;">😕</div>
+                <h3 style="color: var(--text); margin-bottom: 10px;">Не удалось загрузить информацию</h3>
+                <p style="color: var(--text-light); margin-bottom: 20px;">${error.message}</p>
+                <button onclick="closeModal()" class="borrow-btn" style="background: var(--secondary);">
+                    Закрыть
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('modalTitle').textContent = 'Ошибка';
+        document.getElementById('bookModal').classList.remove('hidden');
+        tg.BackButton.show();
     } finally {
         showLoading(false);
     }
-}
 
 // Система отзывов и рейтингов
 function openReviewModal(bookId) {
