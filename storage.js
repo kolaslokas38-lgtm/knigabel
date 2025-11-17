@@ -40,10 +40,8 @@ function saveLibraryStats() {
     return saveToStorage(window.APP_DATA.STORAGE_KEYS.LIBRARY_STATS, window.APP_DATA.MOCK_STATS);
 }
 
-// СОХРАНЕНИЕ ОБЩИХ ОТЗЫВОВ
 function saveAllReviews() {
-    const allReviews = getAllReviews();
-    return saveToStorage(window.APP_DATA.STORAGE_KEYS.SHARED_REVIEWS, allReviews);
+    return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
 }
 
 // Функции для загрузки данных
@@ -91,15 +89,13 @@ function loadLibraryStats() {
     }
 }
 
-// ЗАГРУЗКА ОБЩИХ ОТЗЫВОВ
 function loadAllReviews() {
-    const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.SHARED_REVIEWS);
+    const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS);
     if (saved && saved.length > 0) {
-        // Возвращаем сохраненные отзывы
-        return saved;
+        // Заменяем mock отзывы сохраненными
+        window.APP_DATA.BOOK_REVIEWS.length = 0;
+        window.APP_DATA.BOOK_REVIEWS.push(...saved);
     }
-    // Если нет сохраненных, возвращаем начальные отзывы из APP_DATA
-    return window.APP_DATA.SHARED_REVIEWS || [];
 }
 
 // Функция для сохранения темы
@@ -111,88 +107,39 @@ function loadTheme() {
     return loadFromStorage(window.APP_DATA.STORAGE_KEYS.THEME, 'light');
 }
 
-// === ОБНОВЛЕННЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОБЩИМИ ОТЗЫВАМИ ===
-
-// Получить ВСЕ отзывы (сохраненные + начальные)
-function getAllReviews() {
-    const savedReviews = loadFromStorage(window.APP_DATA.STORAGE_KEYS.SHARED_REVIEWS, []);
-    const initialReviews = window.APP_DATA.SHARED_REVIEWS || [];
-    
-    // Объединяем, убирая дубликаты по ID
-    const allReviewsMap = new Map();
-    
-    // Сначала добавляем начальные отзывы
-    initialReviews.forEach(review => {
-        allReviewsMap.set(review.id, review);
-    });
-    
-    // Затем добавляем/обновляем сохраненными отзывами
-    savedReviews.forEach(review => {
-        allReviewsMap.set(review.id, review);
-    });
-    
-    return Array.from(allReviewsMap.values());
-}
-
-// Добавить новый отзыв
+// Функции для работы с отзывами
 function addNewReview(review) {
-    try {
-        // Добавляем ID пользователя если его нет
-        if (!review.userId) {
-            review.userId = 'user_' + Date.now();
-        }
-        
-        // Получаем все текущие отзывы
-        const allReviews = getAllReviews();
-        
-        // Добавляем новый отзыв в начало
-        allReviews.unshift(review);
-        
-        // Сохраняем обновленный список
-        saveToStorage(window.APP_DATA.STORAGE_KEYS.SHARED_REVIEWS, allReviews);
-        
-        // Обновляем рейтинг книги
-        if (window.APP_DATA.RatingUtils) {
-            window.APP_DATA.RatingUtils.updateBookRating(review.bookId, review.rating);
-        }
-        
-        // Сохраняем изменения в книгах
-        saveBooksData();
-        
-        return review;
-    } catch (error) {
-        console.error('Ошибка при добавлении отзыва:', error);
-        return null;
-    }
+    // Добавляем отзыв в общий список
+    window.APP_DATA.BOOK_REVIEWS.unshift(review);
+    
+    // Обновляем рейтинг книги
+    window.APP_DATA.RatingUtils.updateBookRating(review.bookId, review.rating);
+    
+    // Сохраняем изменения
+    saveAllReviews();
+    saveBooksData();
+    
+    return review;
 }
 
-// Получить отзывы пользователя
 function getUserReviews(userId) {
-    const allReviews = getAllReviews();
-    return allReviews.filter(review => review.userId === userId);
+    return window.APP_DATA.BOOK_REVIEWS.filter(review => 
+        review.userId === userId
+    );
 }
 
-// Получить отзывы для книги
 function getBookReviews(bookId) {
-    const allReviews = getAllReviews();
-    return allReviews
-        .filter(review => review.bookId == bookId) // == для сравнения строки и числа
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    return window.APP_DATA.BOOK_REVIEWS.filter(review => 
+        review.bookId === bookId
+    ).sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
-// Лайкнуть отзыв
 function likeReview(reviewId) {
-    try {
-        const allReviews = getAllReviews();
-        const review = allReviews.find(r => r.id == reviewId);
-        
-        if (review) {
-            review.likes = (review.likes || 0) + 1;
-            saveToStorage(window.APP_DATA.STORAGE_KEYS.SHARED_REVIEWS, allReviews);
-            return review.likes;
-        }
-    } catch (error) {
-        console.error('Ошибка при лайке отзыва:', error);
+    const review = window.APP_DATA.BOOK_REVIEWS.find(r => r.id === reviewId);
+    if (review) {
+        review.likes = (review.likes || 0) + 1;
+        saveAllReviews();
+        return review.likes;
     }
     return 0;
 }
@@ -210,6 +157,7 @@ function saveAllData(userData) {
 function loadAllData() {
     loadBooksData();
     loadLibraryStats();
+    loadAllReviews();
     const userData = loadUserData();
     userData.theme = loadTheme();
     return userData;
@@ -275,7 +223,6 @@ window.STORAGE = {
     likeReview,
     saveAllReviews,
     loadAllReviews,
-    getAllReviews,
     
     // Сервисные функции
     clearAllData,
