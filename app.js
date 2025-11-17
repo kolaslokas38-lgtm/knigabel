@@ -505,6 +505,7 @@ function updateSubmitButton() {
     submitBtn.disabled = !(hasRating && hasComment);
 }
 
+// В функции submitReview замени на:
 function submitReview() {
     if (!currentReviewBookId || !selectedRating) return;
     
@@ -512,45 +513,44 @@ function submitReview() {
     const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === currentReviewBookId);
     
     if (!book) return;
-    
+
     const newReview = {
-        id: Date.now(),
+        userId: userData.telegramId || 'user_' + Date.now(),
         userName: userData.name,
-        bookTitle: book.title,
         bookId: currentReviewBookId,
+        bookTitle: book.title,
         rating: selectedRating,
         comment: comment,
-        date: new Date().toISOString().split('T')[0],
-        likes: 0,
         userAvatar: userData.avatar || '👤'
     };
     
-    window.STORAGE.addNewReview(newReview);
+    const savedReview = window.STORAGE.addNewReview(newReview);
     
-    userData.myReviews.unshift({
-        ...newReview,
-        id: Date.now() + 1
-    });
-    userData.stats.reviewsWritten = userData.myReviews.length;
-    
-    window.STORAGE.saveAllData(userData);
-    
-    tg.showPopup({
-        title: 'Отзыв добавлен! ★',
-        message: 'Ваш отзыв успешно опубликован',
-        buttons: [{ type: 'ok' }]
-    });
-    
-    closeReviewModal();
-    updateMyReviewsList();
-    
-    if (!document.getElementById('bookModal').classList.contains('hidden')) {
-        showBookDetails(currentReviewBookId);
+    if (savedReview) {
+        // Добавляем в личные отзывы пользователя
+        userData.myReviews.unshift(savedReview);
+        userData.stats.reviewsWritten = userData.myReviews.length;
+        
+        window.STORAGE.saveAllData(userData);
+        
+        tg.showPopup({
+            title: 'Отзыв добавлен! ★',
+            message: 'Ваш отзыв теперь видят все пользователи!',
+            buttons: [{ type: 'ok' }]
+        });
+        
+        closeReviewModal();
+        updateMyReviewsList();
+        
+        if (!document.getElementById('bookModal').classList.contains('hidden')) {
+            showBookDetails(currentReviewBookId);
+        }
+    } else {
+        tg.showAlert('Ошибка при сохранении отзыва');
     }
 }
-
 function likeReview(reviewId) {
-    const newLikes = window.STORAGE.likeReview(reviewId);
+    const newLikes = window.STORAGE.likeSharedReview(reviewId);
     if (newLikes > 0) {
         const modalTitle = document.getElementById('modalTitle').textContent;
         const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
