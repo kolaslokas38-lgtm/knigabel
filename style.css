@@ -11,21 +11,44 @@
     --accent-color: #FF9800;
     --danger-color: #f44336;
     --warning-color: #ff9800;
-    --text-dark: #333;
-    --text-light: #666;
+    
+    --bg-primary: #ffffff;
+    --text-primary: #333333;
+    --text-light: #666666;
     --bg-light: #f8f9fa;
+    --bg-card: #ffffff;
     --border-color: #e0e0e0;
+    
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
     --card-radius: 16px;
 }
 
+[data-theme="dark"] {
+    --primary-color: #66BB6A;
+    --primary-dark: #5cb860;
+    --secondary-color: #64B5F6;
+    --accent-color: #FFB74D;
+    --danger-color: #ef5350;
+    
+    --bg-primary: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-light: #b0b0b0;
+    --bg-light: #2d2d2d;
+    --bg-card: #2d2d2d;
+    --border-color: #404040;
+    
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.4);
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
-    color: var(--text-dark);
+    transition: all 0.3s ease;
 }
 
 .container {
@@ -37,8 +60,7 @@ body {
 
 /* Header */
 .header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 25px;
     margin-bottom: 20px;
@@ -48,12 +70,13 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
+    border: 1px solid var(--border-color);
 }
 
 .header-content h1 {
     font-size: 2.5em;
     margin-bottom: 5px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -85,14 +108,38 @@ body {
     color: var(--text-light);
 }
 
+.theme-toggle {
+    margin-left: auto;
+}
+
+.theme-btn {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.theme-btn:hover {
+    transform: scale(1.1);
+    background: var(--primary-dark);
+}
+
 /* Navigation */
 .navigation-section {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 15px;
     margin-bottom: 20px;
     box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .nav-tabs {
@@ -114,6 +161,7 @@ body {
     transition: all 0.3s ease;
     font-size: 14px;
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 .nav-btn.active {
@@ -139,12 +187,12 @@ body {
 
 /* Search Section */
 .search-section {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .search-container {
@@ -160,7 +208,8 @@ body {
     border-radius: 15px;
     font-size: 16px;
     transition: all 0.3s ease;
-    background: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .search-input:focus {
@@ -192,7 +241,8 @@ body {
     border: 2px solid var(--border-color);
     border-radius: 15px;
     font-size: 16px;
-    background: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -221,18 +271,16 @@ body {
 }
 
 .section-header h2 {
-    color: white;
+    color: var(--text-primary);
     font-size: 1.5em;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .books-count, .animals-count {
-    color: white;
+    color: var(--text-light);
     font-size: 0.9em;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--bg-light);
     padding: 5px 12px;
     border-radius: 12px;
-    backdrop-filter: blur(10px);
 }
 
 /* Books Grid */
@@ -244,7 +292,7 @@ body {
 }
 
 .book-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 20px;
     box-shadow: var(--shadow);
@@ -264,60 +312,30 @@ body {
     margin-bottom: 15px;
 }
 
-/* Стили для иконок книг */
-.book-icon, .weekly-book-icon, .book-of-day-icon, .book-icon-large {
+.book-cover {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
-    color: white;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .book-icon {
     width: 80px;
     height: 100px;
     font-size: 2.5em;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
 }
 
 .book-icon:hover {
     transform: scale(1.05);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-}
-
-.weekly-book-icon {
-    width: 70px;
-    height: 100px;
-    font-size: 2.2em;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.book-of-day-icon {
-    width: 120px;
-    height: 170px;
-    font-size: 3.5em;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    border-radius: 20px;
-}
-
-.book-icon-large {
-    width: 180px;
-    height: 250px;
-    font-size: 5em;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    margin: 0 auto 20px;
-}
-
-.book-cover {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
 }
 
 .book-info {
@@ -328,7 +346,7 @@ body {
     font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 8px;
-    color: var(--text-dark);
+    color: var(--text-primary);
     line-height: 1.3;
 }
 
@@ -342,6 +360,28 @@ body {
     color: var(--text-light);
     font-size: 0.9em;
     margin-bottom: 3px;
+}
+
+.book-rating-small {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+.book-rating-small .stars {
+    font-size: 0.9em;
+}
+
+.rating-value {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.reviews-count {
+    font-size: 0.8em;
+    color: var(--text-light);
 }
 
 .book-status {
@@ -363,8 +403,14 @@ body {
     color: #c62828;
 }
 
+.book-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 .borrow-btn {
-    width: 100%;
+    flex: 1;
     padding: 12px;
     background: var(--primary-color);
     color: white;
@@ -374,7 +420,6 @@ body {
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s ease;
-    margin-top: 10px;
 }
 
 .borrow-btn:hover:not(:disabled) {
@@ -388,13 +433,6 @@ body {
     transform: none;
 }
 
-/* Book Actions */
-.book-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
 .favorite-btn {
     padding: 12px;
     background: var(--bg-light);
@@ -404,6 +442,7 @@ body {
     font-size: 16px;
     transition: all 0.3s ease;
     min-width: 50px;
+    color: var(--text-primary);
 }
 
 .favorite-btn:hover {
@@ -416,111 +455,304 @@ body {
     color: white;
 }
 
-/* Animals Grid */
-.animals-container {
+/* Weekly Books */
+.weekly-books-section {
+    margin: 20px 0;
+}
+
+.weekly-books-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.weekly-books-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+/* Book of Day */
+.book-of-day-section {
+    margin: 20px 0;
+}
+
+.book-of-day-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.book-of-day-container {
     margin-bottom: 20px;
 }
 
-.animal-card {
-    background: white;
-    border-radius: var(--card-radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
+/* Review Form Styles */
+.review-form {
+    padding: 10px 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rating-selector {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 5px;
+}
+
+.rating-stars .star {
+    font-size: 2em;
+    cursor: pointer;
     transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.rating-stars .star:hover {
+    transform: scale(1.2);
+    color: #FFD700;
+}
+
+.rating-stars .star.active {
+    color: #FFD700;
+}
+
+.rating-text {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.char-count {
+    text-align: right;
+    font-size: 0.8em;
+    color: var(--text-light);
+    margin-top: 5px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.cancel-btn {
+    padding: 12px 20px;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+}
+
+.submit-btn {
+    padding: 12px 20px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    background: var(--text-light);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* My Reviews in Profile */
+.my-review-item {
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 12px;
     border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.animal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hover);
+.my-review-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
-.animal-header {
+.my-review-header {
     display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.animal-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    object-fit: cover;
-    flex-shrink: 0;
-    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    color: var(--text-light);
-    font-size: 24px;
-}
-
-.animal-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-.animal-info {
-    flex: 1;
-}
-
-.animal-name {
-    font-size: 1.2em;
-    font-weight: bold;
     margin-bottom: 8px;
-    color: var(--text-dark);
 }
 
-.animal-species {
-    color: var(--secondary-color);
-    margin-bottom: 5px;
+.my-review-book {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.my-review-rating {
+    color: var(--accent-color);
     font-weight: 500;
 }
 
-.animal-status {
+.my-review-comment {
+    color: var(--text-light);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.my-review-date {
+    font-size: 0.8em;
+    color: var(--text-light);
+    text-align: right;
+}
+
+/* Reviews in Book Details */
+.reviews-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.reviews-section h5 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.reviews-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.review-item {
+    background: var(--bg-light);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-user {
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-rating {
+    font-size: 0.9em;
+}
+
+.review-comment {
+    line-height: 1.4;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8em;
+}
+
+.review-date {
+    color: var(--text-light);
+}
+
+.like-review-btn {
+    background: none;
+    border: 1px solid var(--border-color);
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 0.8em;
-    font-weight: 500;
-    display: inline-block;
-    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-primary);
 }
 
-.status-endangered {
-    background: #ffebee;
-    color: #c62828;
+.like-review-btn:hover {
+    background: var(--border-color);
 }
 
-.status-vulnerable {
-    background: #fff3e0;
-    color: #ef6c00;
-}
-
-.status-rare {
-    background: #e8f5e8;
-    color: #2e7d32;
-}
-
-.animal-description {
+.no-reviews {
+    text-align: center;
+    padding: 20px;
     color: var(--text-light);
+}
+
+.add-review-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
     font-size: 0.9em;
-    line-height: 1.4;
+    transition: all 0.3s ease;
+}
+
+.add-review-btn:hover {
+    background: #1976d2;
+    transform: translateY(-2px);
 }
 
 /* Profile Section */
-#profileSection {
-    background: transparent;
-}
-
 .profile-header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 30px;
     margin-bottom: 20px;
@@ -528,13 +760,14 @@ body {
     display: flex;
     align-items: center;
     gap: 20px;
+    border: 1px solid var(--border-color);
 }
 
 .user-avatar {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -545,7 +778,7 @@ body {
 
 .user-info h2 {
     margin-bottom: 8px;
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .user-registration {
@@ -557,6 +790,7 @@ body {
 .user-stats {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .user-stat {
@@ -576,21 +810,21 @@ body {
 }
 
 .profile-stat {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 20px;
     box-shadow: var(--shadow);
     display: flex;
     align-items: center;
     gap: 15px;
+    border: 1px solid var(--border-color);
 }
 
 .stat-icon {
     font-size: 2em;
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -612,12 +846,12 @@ body {
 
 /* Profile Cards */
 .profile-section-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .section-title {
@@ -642,12 +876,17 @@ body {
 }
 
 /* Borrowed Books List */
+.borrowed-books-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 .borrowed-book-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background: white;
+    background: var(--bg-light);
     border-radius: 12px;
     margin-bottom: 10px;
     border: 1px solid var(--border-color);
@@ -666,7 +905,7 @@ body {
 .borrowed-book-item .book-title {
     font-weight: 500;
     margin-bottom: 8px;
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .borrow-dates {
@@ -703,9 +942,14 @@ body {
 }
 
 /* History List */
+.history-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 .history-item {
     padding: 15px;
-    background: white;
+    background: var(--bg-light);
     border-radius: 12px;
     margin-bottom: 10px;
     border: 1px solid var(--border-color);
@@ -742,9 +986,14 @@ body {
 }
 
 /* Favorites List */
+.favorites-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 .favorite-item {
     padding: 15px;
-    background: white;
+    background: var(--bg-light);
     border-radius: 12px;
     margin-bottom: 10px;
     border: 1px solid var(--border-color);
@@ -783,6 +1032,20 @@ body {
 
 .remove-favorite:hover {
     background: #d32f2f;
+}
+
+/* My Reviews List */
+.my-reviews-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Animals Grid */
+.animals-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
 /* Empty States */
@@ -851,13 +1114,14 @@ body {
 }
 
 .modal-content {
-    background: white;
+    background: var(--bg-card);
     border-radius: var(--card-radius);
     width: 100%;
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: var(--shadow-hover);
+    border: 1px solid var(--border-color);
 }
 
 .modal-header {
@@ -868,12 +1132,12 @@ body {
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--bg-card);
     border-radius: var(--card-radius) var(--card-radius) 0 0;
 }
 
 .modal-header h3 {
-    color: var(--text-dark);
+    color: var(--text-primary);
     font-size: 1.3em;
 }
 
@@ -895,7 +1159,7 @@ body {
 
 .close-btn:hover {
     background: var(--bg-light);
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .modal-body {
@@ -917,7 +1181,8 @@ body {
 
 .book-info-detailed h4 {
     margin-bottom: 15px;
-    color: var(--text-dark);
+    color: var(--text-primary);
+    font-size: 1.4em;
 }
 
 .book-info-detailed p {
@@ -926,7 +1191,7 @@ body {
 }
 
 .book-info-detailed strong {
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .book-rating-detailed {
@@ -975,99 +1240,6 @@ body {
     box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 }
 
-/* Reviews Section */
-.reviews-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border-color);
-}
-
-.reviews-section h5 {
-    margin-bottom: 15px;
-    color: var(--text-dark);
-}
-
-.reviews-list {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.review-item {
-    background: var(--bg-light);
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-}
-
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.review-user {
-    font-weight: 600;
-    color: var(--text-dark);
-}
-
-.review-rating {
-    font-size: 0.9em;
-}
-
-.review-comment {
-    line-height: 1.4;
-    margin-bottom: 8px;
-    color: var(--text-dark);
-}
-
-.review-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8em;
-}
-
-.review-date {
-    color: var(--text-light);
-}
-
-.like-review-btn {
-    background: none;
-    border: 1px solid var(--border-color);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.like-review-btn:active {
-    background: var(--border-color);
-}
-
-.no-reviews {
-    text-align: center;
-    padding: 20px;
-    color: var(--text-light);
-}
-
-.add-review-btn {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: var(--secondary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9em;
-}
-
-.add-review-btn:active {
-    background: #1976d2;
-}
-
 /* Data Management */
 .data-management {
     text-align: center;
@@ -1096,278 +1268,6 @@ body {
     margin-top: 8px;
 }
 
-/* Книги недели */
-.weekly-books-section {
-    margin: 20px 0;
-    padding: 0 15px;
-}
-
-.weekly-books-title {
-    font-size: 1.4em;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.weekly-books-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.weekly-book-card {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.weekly-book-card:active {
-    transform: scale(0.98);
-    background: var(--bg-light);
-}
-
-.weekly-book-header {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.weekly-book-cover {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.weekly-book-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.weekly-book-title {
-    font-weight: 600;
-    font-size: 1em;
-    margin-bottom: 4px;
-    color: var(--text-dark);
-    line-height: 1.3;
-}
-
-.weekly-book-author {
-    font-size: 0.85em;
-    color: var(--text-light);
-    margin-bottom: 6px;
-}
-
-.weekly-book-rating {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-}
-
-.weekly-book-rating .stars {
-    font-size: 0.9em;
-}
-
-.rating-value {
-    font-weight: 600;
-    font-size: 0.85em;
-    color: var(--accent-color);
-}
-
-.reviews-count {
-    font-size: 0.8em;
-    color: var(--text-light);
-}
-
-.weekly-book-meta {
-    display: flex;
-    gap: 10px;
-    font-size: 0.8em;
-    color: var(--text-light);
-}
-
-.weekly-book-actions {
-    margin-top: 10px;
-}
-
-.borrow-weekly-btn {
-    width: 100%;
-    padding: 10px;
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.borrow-weekly-btn:active {
-    background: #f57c00;
-    transform: scale(0.98);
-}
-
-/* Книга дня */
-.book-of-day-section {
-    margin: 20px 0;
-    padding: 0 15px;
-}
-
-.book-of-day-title {
-    font-size: 1.4em;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.book-of-day-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
-    padding: 20px;
-    color: white;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-.book-of-day-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.75em;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-}
-
-.book-of-day-content {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.book-of-day-cover {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.book-of-day-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.book-of-day-title {
-    font-size: 1.3em;
-    font-weight: 700;
-    margin-bottom: 5px;
-    color: white;
-}
-
-.book-of-day-author {
-    font-size: 1em;
-    margin-bottom: 10px;
-    opacity: 0.9;
-}
-
-.book-of-day-rating {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-.book-of-day-rating .stars {
-    font-size: 1em;
-}
-
-.book-of-day-rating .rating-value {
-    font-weight: 700;
-    color: white;
-}
-
-.book-of-day-rating .reviews-count {
-    font-size: 0.85em;
-    opacity: 0.8;
-    color: white;
-}
-
-.book-of-day-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 10px;
-    font-size: 0.85em;
-    opacity: 0.9;
-}
-
-.book-of-day-description {
-    font-size: 0.9em;
-    line-height: 1.4;
-    opacity: 0.9;
-    margin-bottom: 10px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.special-offer {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 0.85em;
-    margin-top: 10px;
-    backdrop-filter: blur(10px);
-}
-
-.book-of-day-actions {
-    margin-top: 15px;
-}
-
-.borrow-today-btn {
-    width: 100%;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #667eea;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 1em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.borrow-today-btn:active {
-    background: white;
-    transform: scale(0.98);
-}
-
-/* Стили для рейтингов в карточках */
-.book-rating-small {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin: 8px 0;
-    font-size: 0.85em;
-}
-
-.book-rating-small .stars {
-    font-size: 0.8em;
-}
-
 /* Utility Classes */
 .hidden {
     display: none !important;
@@ -1393,7 +1293,7 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .books-container, .animals-container {
+    .books-container {
         grid-template-columns: 1fr;
     }
     
@@ -1421,26 +1321,18 @@ body {
         text-align: center;
     }
     
-    .borrowed-book-item .book-info {
-        width: 100%;
-    }
-    
-    .book-of-day-content {
+    .form-actions {
         flex-direction: column;
-        text-align: center;
     }
     
-    .book-of-day-cover {
-        margin: 0 auto;
-    }
-    
-    .weekly-book-header {
+    .rating-selector {
         flex-direction: column;
-        text-align: center;
+        align-items: flex-start;
+        gap: 10px;
     }
     
-    .weekly-book-cover {
-        align-self: center;
+    .weekly-books-container {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -1453,126 +1345,12 @@ body {
         font-size: 1.5em;
     }
     
-    .book-header, .animal-header {
+    .book-header {
         flex-direction: column;
         text-align: center;
     }
     
-    .book-cover, .animal-image {
+    .book-cover {
         align-self: center;
     }
-    
-    .weekly-books-section,
-    .book-of-day-section {
-        padding: 0 10px;
-    }
-    
-    .book-of-day-card {
-        padding: 15px;
-    }
-    
-    .book-icon {
-        width: 70px;
-        height: 90px;
-        font-size: 2em;
-    }
-    
-    .weekly-book-icon {
-        width: 60px;
-        height: 85px;
-        font-size: 1.8em;
-    }
-    
-    .book-of-day-icon {
-        width: 100px;
-        height: 140px;
-        font-size: 2.8em;
-    }
-    
-    .book-icon-large {
-        width: 140px;
-        height: 200px;
-        font-size: 3.5em;
-    }
-    :root {
-    --bg-primary: #ffffff;
-    --text-primary: #333333;
-    --bg-card: #f8f9fa;
-    --border-primary: #e0e0e0;
-}
-
-.theme-toggle {
-    margin-left: auto;
-}
-
-.theme-btn {
-    background: var(--primary-color);
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 1.5em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-btn:hover {
-    transform: scale(1.1);
-}
-
-/* Форма отзыва */
-.rating-stars .star {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.8em;
-}
-
-.rating-stars .star:hover {
-    transform: scale(1.2);
-}
-
-.rating-stars .star.active {
-    color: #FFD700;
-}
-
-/* Мои отзывы в профиле */
-.my-review-item {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 10px;
-}
-
-.my-review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.my-review-book {
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.my-review-rating {
-    color: var(--accent-color);
-    font-weight: 500;
-}
-
-.my-review-comment {
-    color: var(--text-light);
-    line-height: 1.4;
-    margin-bottom: 8px;
-}
-
-.my-review-date {
-    font-size: 0.8em;
-    color: var(--text-light);
-    text-align: right;
-}
 }

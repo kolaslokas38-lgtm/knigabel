@@ -133,6 +133,7 @@
                     <div class="user-stats">
                         <span class="user-stat">📚 <span id="userTotalBooks">0</span> книг</span>
                         <span class="user-stat">⭐ <span id="userFavorites">0</span> избранных</span>
+                        <span class="user-stat">💬 <span id="userReviewsCount">0</span> отзывов</span>
                     </div>
                 </div>
             </div>
@@ -158,6 +159,13 @@
                     <div class="stat-content">
                         <div class="stat-number" id="readingTime">0</div>
                         <div class="stat-label">Дней с нами</div>
+                    </div>
+                </div>
+                <div class="stat-card profile-stat">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="userReviewsWritten">0</div>
+                        <div class="stat-label">Написано отзывов</div>
                     </div>
                 </div>
             </div>
@@ -243,25 +251,26 @@
                 <div class="modal-body">
                     <div class="review-form">
                         <div class="form-group">
-                            <label for="reviewRating">Ваша оценка:</label>
+                            <label>Ваша оценка:</label>
                             <div class="rating-selector">
                                 <span class="rating-stars">
-                                    <span class="star" data-rating="1">☆</span>
-                                    <span class="star" data-rating="2">☆</span>
-                                    <span class="star" data-rating="3">☆</span>
-                                    <span class="star" data-rating="4">☆</span>
-                                    <span class="star" data-rating="5">☆</span>
+                                    <span class="star" onclick="setRating(1)">☆</span>
+                                    <span class="star" onclick="setRating(2)">☆</span>
+                                    <span class="star" onclick="setRating(3)">☆</span>
+                                    <span class="star" onclick="setRating(4)">☆</span>
+                                    <span class="star" onclick="setRating(5)">☆</span>
                                 </span>
                                 <span class="rating-text" id="ratingText">Выберите оценку</span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="reviewComment">Ваш отзыв:</label>
+                            <label>Ваш отзыв:</label>
                             <textarea 
                                 id="reviewComment" 
                                 placeholder="Поделитесь вашими впечатлениями о книге..."
                                 rows="4"
                                 maxlength="500"
+                                oninput="updateCharCount()"
                             ></textarea>
                             <div class="char-count"><span id="charCount">0</span>/500</div>
                         </div>

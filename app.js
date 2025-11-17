@@ -4,17 +4,19 @@ let currentSearchQuery = '';
 let currentGenre = '';
 let tg = null;
 let userData = null;
+let currentReviewBookId = null;
+let selectedRating = 0;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
     initializeTelegramApp();
     loadInitialData();
     setupEventListeners();
+    initializeTheme();
 });
 
 // Инициализация Telegram Web App
 function initializeTelegramApp() {
-    // СНАЧАЛА загружаем сохраненные данные
     userData = window.STORAGE.loadAllData();
     
     if (window.Telegram && window.Telegram.WebApp) {
@@ -23,12 +25,9 @@ function initializeTelegramApp() {
         tg.enableClosingConfirmation();
         tg.BackButton.onClick(handleBackButton);
         
-        // Получаем данные пользователя из Telegram
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             const tgUser = tg.initDataUnsafe.user;
             userData.name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
-            
-            // Сохраняем ID пользователя для привязки данных
             userData.telegramId = tgUser.id;
             
             if (tgUser.photo_url) {
@@ -40,17 +39,12 @@ function initializeTelegramApp() {
             }
         }
         
-        // Сохраняем данные при закрытии приложения
         tg.onEvent('viewportChanged', () => window.STORAGE.saveAllData(userData));
         tg.onEvent('closing', () => window.STORAGE.saveAllData(userData));
         
-        console.log('Telegram Web App инициализирован, данные загружены');
     } else {
-        // Режим браузера для тестирования
         tg = {
-            showPopup: (params) => {
-                alert(params.title + ": " + params.message);
-            },
+            showPopup: (params) => alert(params.title + ": " + params.message),
             showAlert: (message) => alert(message),
             BackButton: {
                 show: () => console.log('BackButton show'),
@@ -59,22 +53,23 @@ function initializeTelegramApp() {
             },
             onEvent: (event, callback) => console.log('Event listener:', event)
         };
-        console.log('Режим браузера - Telegram Web App не доступен');
     }
 }
 
 function handleBackButton() {
-    if (document.getElementById('bookModal').classList.contains('hidden')) {
+    if (document.getElementById('bookModal').classList.contains('hidden') && 
+        document.getElementById('reviewModal').classList.contains('hidden')) {
         tg.close();
     } else {
         closeModal();
+        closeReviewModal();
     }
 }
 
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
-    
     let searchTimeout;
+    
     searchInput.addEventListener('input', function(e) {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
@@ -85,37 +80,31 @@ function setupEventListeners() {
     });
     
     document.getElementById('bookModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
+        if (e.target === this) closeModal();
+    });
+    
+    document.getElementById('reviewModal').addEventListener('click', function(e) {
+        if (e.target === this) closeReviewModal();
     });
 }
 
 // Навигация по разделам
 function showSection(sectionName) {
-    // Скрыть все секции
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Скрыть/показать поиск
     document.getElementById('searchSection').classList.toggle('hidden', sectionName !== 'catalog');
-    
-    // Показать выбранную секцию
     document.getElementById(sectionName + 'Section').classList.add('active');
     
-    // Обновить навигационные кнопки
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
     
-    // Если открыли профиль - обновить данные
     if (sectionName === 'profile') {
         updateProfileDisplay();
     }
-    
-    // Если открыли Красную книгу - загрузить животных
     if (sectionName === 'redbook') {
         loadRedBookAnimals();
     }
@@ -125,9 +114,7 @@ function showSection(sectionName) {
 async function loadInitialData() {
     try {
         showLoading(true);
-        loadInitialData;
         
-        // Имитируем задержку сети
         setTimeout(() => {
             updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
             populateGenreFilter(window.APP_DATA.MOCK_GENRES);
@@ -142,7 +129,6 @@ async function loadInitialData() {
         console.error('Ошибка загрузки данных:', error);
         showError('Не удалось загрузить данные. Используются демо-данные.');
         
-        // Fallback на mock данные
         updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
         updateStats(window.APP_DATA.MOCK_STATS);
@@ -156,34 +142,23 @@ async function loadInitialData() {
 // Отображение книг недели
 function renderWeeklyBooks() {
     const container = document.getElementById('weeklyBooksContainer');
-    
-    // Выбираем 4 случайные книги для "Книг недели"
     const weeklyBooks = getRandomBooks(4);
     
     container.innerHTML = weeklyBooks.map(book => `
-        <div class="weekly-book-card" onclick="showBookDetails(${book.id})">
-            <div class="weekly-book-header">
-                <div class="weekly-book-cover">
-                    <div class="weekly-book-icon">${book.icon || '📚'}</div>
+        <div class="book-card" onclick="showBookDetails(${book.id})">
+            <div class="book-header">
+                <div class="book-cover">
+                    <div class="book-icon">${book.icon || '📚'}</div>
                 </div>
-                <div class="weekly-book-info">
-                    <div class="weekly-book-title">${escapeHtml(book.title)}</div>
-                    <div class="weekly-book-author">${escapeHtml(book.author)}</div>
-                    <div class="weekly-book-rating">
+                <div class="book-info">
+                    <div class="book-title">${escapeHtml(book.title)}</div>
+                    <div class="book-author">${escapeHtml(book.author)}</div>
+                    <div class="book-rating-small">
                         <span class="stars">${createRatingStars(book.rating)}</span>
                         <span class="rating-value">${book.rating}</span>
-                        <span class="reviews-count">(${book.reviewsCount})</span>
                     </div>
-                    <div class="weekly-book-meta">
-                        <span class="book-year">${book.year} год</span>
-                        <span class="book-pages">${book.pages} стр.</span>
-                    </div>
+                    <div class="book-status status-available">⭐ Рекомендуем</div>
                 </div>
-            </div>
-            <div class="weekly-book-actions">
-                <button class="borrow-weekly-btn" onclick="event.stopPropagation(); borrowBook(${book.id})">
-                    📚 Забронировать
-                </button>
             </div>
         </div>
     `).join('');
@@ -192,44 +167,32 @@ function renderWeeklyBooks() {
 // Отображение книги дня
 function renderBookOfDay() {
     const container = document.getElementById('bookOfDayContainer');
-    
-    // Выбираем случайную книгу для "Книги дня"
     const bookOfDay = getRandomBooks(1)[0];
     
     container.innerHTML = `
-        <div class="book-of-day-card">
-            <div class="book-of-day-badge">⭐ КНИГА ДНЯ</div>
-            <div class="book-of-day-content">
-                <div class="book-of-day-cover">
-                    <div class="book-of-day-icon">${bookOfDay.icon || '📚'}</div>
+        <div class="book-card" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none;">
+            <div class="book-header">
+                <div class="book-cover">
+                    <div class="book-icon">${bookOfDay.icon || '📚'}</div>
                 </div>
-                <div class="book-of-day-info">
-                    <h3 class="book-of-day-title">${escapeHtml(bookOfDay.title)}</h3>
-                    <p class="book-of-day-author">${escapeHtml(bookOfDay.author)}</p>
-                    
-                    <div class="book-of-day-rating">
+                <div class="book-info">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div class="book-title" style="color: white; font-size: 1.3em;">${escapeHtml(bookOfDay.title)}</div>
+                            <div class="book-author" style="color: rgba(255,255,255,0.9);">${escapeHtml(bookOfDay.author)}</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 12px; font-size: 0.8em; white-space: nowrap;">
+                            ⭐ Книга дня
+                        </div>
+                    </div>
+                    <div class="book-rating-small">
                         <span class="stars">${createRatingStars(bookOfDay.rating)}</span>
-                        <span class="rating-value">${bookOfDay.rating}/5</span>
-                        <span class="reviews-count">${bookOfDay.reviewsCount} отзывов</span>
+                        <span class="rating-value" style="color: white;">${bookOfDay.rating}/5</span>
                     </div>
-                    
-                    <div class="book-of-day-meta">
-                        <span class="meta-item">📅 ${bookOfDay.year} год</span>
-                        <span class="meta-item">🏷️ ${bookOfDay.genre}</span>
-                        <span class="meta-item">📄 ${bookOfDay.pages} стр.</span>
-                    </div>
-                    
-                    <p class="book-of-day-description">${escapeHtml(bookOfDay.description)}</p>
-                    
-                    <div class="special-offer">
-                        🎁 Сегодня при бронировании этой книги получаете 2 дополнительных дня чтения!
-                    </div>
+                    <button class="borrow-btn" onclick="event.stopPropagation(); borrowBook(${bookOfDay.id})" style="background: rgba(255,255,255,0.9); color: var(--primary-color); margin-top: 10px;">
+                        📖 Забронировать
+                    </button>
                 </div>
-            </div>
-            <div class="book-of-day-actions">
-                <button class="borrow-today-btn" onclick="borrowBook(${bookOfDay.id})">
-                    📖 Забронировать книгу дня
-                </button>
             </div>
         </div>
     `;
@@ -244,7 +207,6 @@ async function searchBooks() {
     try {
         showLoading(true);
         
-        // Mock поиск
         setTimeout(() => {
             let filteredBooks = window.APP_DATA.MOCK_BOOKS;
             
@@ -278,7 +240,6 @@ async function filterByGenre() {
     try {
         showLoading(true);
         
-        // Mock фильтрация
         setTimeout(() => {
             let filteredBooks = window.APP_DATA.MOCK_BOOKS;
             if (genre && genre !== 'Все жанры') {
@@ -366,20 +327,18 @@ async function showBookDetails(bookId) {
         showLoading(true);
         
         const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
-        
-        if (!book) {
-            throw new Error('Книга не найдена');
-        }
+        if (!book) throw new Error('Книга не найдена');
         
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
-        const bookReviews = window.APP_DATA.BOOK_REVIEWS.filter(review => review.bookId === bookId);
+        const bookReviews = window.STORAGE.getBookReviews(bookId);
+        const userHasReviewed = userData.myReviews.some(review => review.bookId === bookId);
         
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
             <div class="book-details">
                 <div class="book-cover-large">
-                    <div class="book-icon-large">${book.icon || '📚'}</div>
+                    <div class="book-icon">${book.icon || '📚'}</div>
                 </div>
                 <div class="book-info-detailed">
                     <h4>${escapeHtml(book.title)}</h4>
@@ -410,18 +369,25 @@ async function showBookDetails(bookId) {
                     
                     <!-- Отзывы -->
                     <div class="reviews-section">
-                        <h5>💬 Отзывы читателей (${bookReviews.length})</h5>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h5>💬 Отзывы читателей (${bookReviews.length})</h5>
+                            ${!userHasReviewed ? `
+                                <button class="add-review-btn" onclick="openReviewModal(${book.id})">
+                                    ✍️ Написать отзыв
+                                </button>
+                            ` : ''}
+                        </div>
                         <div class="reviews-list">
                             ${bookReviews.length > 0 ? bookReviews.map(review => `
                                 <div class="review-item">
                                     <div class="review-header">
-                                        <div class="review-user">${review.userName}</div>
+                                        <div class="review-user">${review.userAvatar} ${review.userName}</div>
                                         <div class="review-rating">${createRatingStars(review.rating)}</div>
                                     </div>
                                     <div class="review-comment">${escapeHtml(review.comment)}</div>
                                     <div class="review-footer">
                                         <span class="review-date">${formatReviewDate(review.date)}</span>
-                                        <button class="like-review-btn" onclick="likeReview(${review.id})">
+                                        <button class="like-review-btn" onclick="event.stopPropagation(); likeReview(${review.id})">
                                             ❤️ ${review.likes}
                                         </button>
                                     </div>
@@ -429,7 +395,7 @@ async function showBookDetails(bookId) {
                             `).join('') : `
                                 <div class="no-reviews">
                                     <p>Пока нет отзывов. Будьте первым!</p>
-                                    <button class="add-review-btn" onclick="addReview(${book.id})">
+                                    <button class="add-review-btn" onclick="openReviewModal(${book.id})">
                                         ✍️ Написать отзыв
                                     </button>
                                 </div>
@@ -480,16 +446,169 @@ async function showBookDetails(bookId) {
     }
 }
 
+// Система отзывов и рейтингов
+function openReviewModal(bookId) {
+    currentReviewBookId = bookId;
+    selectedRating = 0;
+    
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('ratingText').textContent = 'Выберите оценку';
+    document.querySelector('.submit-btn').disabled = true;
+    
+    document.querySelectorAll('.star').forEach(star => {
+        star.textContent = '☆';
+        star.classList.remove('active');
+    });
+    
+    document.getElementById('reviewModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    tg.BackButton.hide();
+}
+
+function setRating(rating) {
+    selectedRating = rating;
+    const stars = document.querySelectorAll('.star');
+    const ratingText = document.getElementById('ratingText');
+    
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.textContent = '⭐';
+            star.classList.add('active');
+        } else {
+            star.textContent = '☆';
+            star.classList.remove('active');
+        }
+    });
+    
+    const ratingTexts = ['Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'];
+    ratingText.textContent = ratingTexts[rating - 1] || 'Выберите оценку';
+    
+    updateSubmitButton();
+}
+
+function updateCharCount() {
+    const textarea = document.getElementById('reviewComment');
+    const charCount = document.getElementById('charCount');
+    charCount.textContent = textarea.value.length;
+    updateSubmitButton();
+}
+
+function updateSubmitButton() {
+    const submitBtn = document.querySelector('.submit-btn');
+    const hasRating = selectedRating > 0;
+    const hasComment = document.getElementById('reviewComment').value.trim().length > 0;
+    submitBtn.disabled = !(hasRating && hasComment);
+}
+
+function submitReview() {
+    if (!currentReviewBookId || !selectedRating) return;
+    
+    const comment = document.getElementById('reviewComment').value.trim();
+    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === currentReviewBookId);
+    
+    if (!book) return;
+    
+    const newReview = {
+        id: Date.now(),
+        userName: userData.name,
+        bookTitle: book.title,
+        bookId: currentReviewBookId,
+        rating: selectedRating,
+        comment: comment,
+        date: new Date().toISOString().split('T')[0],
+        likes: 0,
+        userAvatar: userData.avatar || '👤'
+    };
+    
+    window.STORAGE.addNewReview(newReview);
+    
+    userData.myReviews.unshift({
+        ...newReview,
+        id: Date.now() + 1
+    });
+    userData.stats.reviewsWritten = userData.myReviews.length;
+    
+    window.STORAGE.saveAllData(userData);
+    
+    tg.showPopup({
+        title: 'Отзыв добавлен! ★',
+        message: 'Ваш отзыв успешно опубликован',
+        buttons: [{ type: 'ok' }]
+    });
+    
+    closeReviewModal();
+    updateMyReviewsList();
+    
+    if (!document.getElementById('bookModal').classList.contains('hidden')) {
+        showBookDetails(currentReviewBookId);
+    }
+}
+
+function likeReview(reviewId) {
+    const newLikes = window.STORAGE.likeReview(reviewId);
+    if (newLikes > 0) {
+        const modalTitle = document.getElementById('modalTitle').textContent;
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
+        if (book) {
+            showBookDetails(book.id);
+        }
+        tg.showAlert('Спасибо за ваш лайк! ❤️');
+    }
+}
+
+// Система тем
+function toggleTheme() {
+    const currentTheme = userData.theme;
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    userData.theme = newTheme;
+    window.STORAGE.saveAllData(userData);
+    applyTheme(newTheme);
+    
+    tg.showPopup({
+        title: 'Тема изменена',
+        message: `Переключено на ${newTheme === 'light' ? 'светлую' : 'тёмную'} тему`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const themeConfig = theme === 'light' ? window.APP_DATA.THEMES.LIGHT : window.APP_DATA.THEMES.DARK;
+    
+    document.documentElement.style.setProperty('--bg-primary', themeConfig.bg);
+    document.documentElement.style.setProperty('--text-primary', themeConfig.text);
+    document.documentElement.style.setProperty('--bg-card', themeConfig.card);
+    document.documentElement.style.setProperty('--border-primary', themeConfig.border);
+    document.documentElement.style.setProperty('--primary-color', themeConfig.primary);
+    document.documentElement.style.setProperty('--secondary-color', themeConfig.secondary);
+    document.documentElement.style.setProperty('--accent-color', themeConfig.accent);
+    
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+}
+
+function initializeTheme() {
+    const savedTheme = window.STORAGE.loadTheme();
+    userData.theme = savedTheme;
+    applyTheme(savedTheme);
+}
+
 // Бронирование книги
 async function borrowBook(bookId) {
     try {
         const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
         if (book && book.available) {
-            // Обновляем статус книги
             book.available = false;
             window.STORAGE.saveAllData(userData);
             
-            // Добавляем в список пользователя
             const borrowRecord = {
                 id: Date.now(),
                 bookId: book.id,
@@ -503,7 +622,6 @@ async function borrowBook(bookId) {
             userData.stats.totalBooks++;
             userData.stats.activeBorrows++;
             
-            // Обновляем статистику библиотеки
             window.APP_DATA.MOCK_STATS.availableBooks--;
             window.APP_DATA.MOCK_STATS.borrowedBooks++;
             
@@ -513,7 +631,6 @@ async function borrowBook(bookId) {
                 buttons: [{ type: 'ok' }]
             });
             
-            // Обновляем отображение
             updateBooksDisplay(currentBooks);
             updateStats(window.APP_DATA.MOCK_STATS);
             updateUserProfile();
@@ -540,17 +657,14 @@ function returnBook(bookId) {
     const borrowIndex = userData.borrowedBooks.findIndex(b => b.bookId === bookId && b.status === 'active');
     
     if (book && borrowIndex !== -1) {
-        // Обновляем статус книги
         book.available = true;
         userData.borrowedBooks[borrowIndex].status = 'returned';
         
-        // Добавляем в историю
         userData.history.unshift({
             ...userData.borrowedBooks[borrowIndex],
             status: 'returned'
         });
         
-        // Обновляем статистику
         userData.stats.activeBorrows--;
         userData.stats.totalRead++;
         
@@ -565,7 +679,6 @@ function returnBook(bookId) {
             buttons: [{ type: 'ok' }]
         });
         
-        // Обновляем отображение
         updateBooksDisplay(currentBooks);
         updateStats(window.APP_DATA.MOCK_STATS);
         updateUserProfile();
@@ -579,7 +692,6 @@ function toggleFavorite(bookId) {
     const favoriteIndex = userData.favorites.indexOf(bookId);
     
     if (favoriteIndex === -1) {
-        // Добавляем в избранное
         userData.favorites.push(bookId);
         tg.showPopup({
             title: 'Добавлено в избранное ★',
@@ -587,7 +699,6 @@ function toggleFavorite(bookId) {
             buttons: [{ type: 'ok' }]
         });
     } else {
-        // Удаляем из избранного
         userData.favorites.splice(favoriteIndex, 1);
         tg.showPopup({
             title: 'Удалено из избранного',
@@ -598,11 +709,9 @@ function toggleFavorite(bookId) {
     
     window.STORAGE.saveAllData(userData);
     
-    // Обновляем отображение
     updateBooksDisplay(currentBooks);
     updateUserProfile();
     
-    // Если открыто модальное окно - обновляем его
     if (!document.getElementById('bookModal').classList.contains('hidden')) {
         const modalTitle = document.getElementById('modalTitle').textContent;
         const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
@@ -630,25 +739,21 @@ function removeFavorite(bookId) {
 
 // Обновление профиля пользователя
 function updateUserProfile() {
-    // Основная информация
     document.getElementById('userName').textContent = userData.name;
     document.getElementById('userRegistration').textContent = `Зарегистрирован: ${userData.registrationDate}`;
     
-    // Статистика
     document.getElementById('userTotalBooks').textContent = userData.stats.totalBooks;
     document.getElementById('userFavorites').textContent = userData.favorites.length;
+    document.getElementById('userReviewsCount').textContent = userData.myReviews.length;
     document.getElementById('activeBorrows').textContent = userData.stats.activeBorrows;
     document.getElementById('totalRead').textContent = userData.stats.totalRead;
     document.getElementById('readingTime').textContent = userData.stats.readingDays;
+    document.getElementById('userReviewsWritten').textContent = userData.stats.reviewsWritten || 0;
     
-    // Активные книги
     updateActiveBooksList();
-    
-    // История
     updateHistoryList();
-    
-    // Избранное
     updateFavoritesList();
+    updateMyReviewsList();
 }
 
 // Обновление списка активных книг
@@ -676,7 +781,7 @@ function updateActiveBooksList() {
                         <span class="return-date">Вернуть до: ${formatDate(borrow.returnDate)}</span>
                     </div>
                 </div>
-                <button class="return-btn" onclick="returnBook(${borrow.bookId})">
+                <button class="return-btn" onclick="event.stopPropagation(); returnBook(${borrow.bookId})">
                     🔄 Вернуть
                 </button>
             </div>
@@ -745,6 +850,35 @@ function updateFavoritesList() {
     }
 }
 
+// Обновление моих отзывов
+function updateMyReviewsList() {
+    const myReviewsList = document.getElementById('myReviewsList');
+    const myReviewsCount = document.getElementById('myReviewsCount');
+    
+    myReviewsCount.textContent = userData.myReviews.length;
+    
+    if (userData.myReviews.length === 0) {
+        myReviewsList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">💬</div>
+                <h4>Нет отзывов</h4>
+                <p>Поделитесь вашим мнением о прочитанных книгах</p>
+            </div>
+        `;
+    } else {
+        myReviewsList.innerHTML = userData.myReviews.map(review => `
+            <div class="my-review-item" onclick="showBookDetails(${review.bookId})">
+                <div class="my-review-header">
+                    <div class="my-review-book">${escapeHtml(review.bookTitle)}</div>
+                    <div class="my-review-rating">${createRatingStars(review.rating)}</div>
+                </div>
+                <div class="my-review-comment">${escapeHtml(review.comment)}</div>
+                <div class="my-review-date">${formatReviewDate(review.date)}</div>
+            </div>
+        `).join('');
+    }
+}
+
 // Функция для отображения животных Красной книги
 function loadRedBookAnimals() {
     const container = document.getElementById('animalsContainer');
@@ -753,24 +887,19 @@ function loadRedBookAnimals() {
     document.getElementById('animalsCount').textContent = `${animals.length} животных`;
     
     container.innerHTML = animals.map(animal => `
-        <div class="animal-card" onclick="showAnimalDetails(${animal.id})">
-            <div class="animal-image">
-                ${animal.image ? 
-                    `<img src="${animal.image}" alt="${animal.name}" class="animal-img"
-                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150/4CAF50/white?text=🐾';">` : 
-                    `<div class="animal-image-placeholder">🐾</div>`
-                }
-                <div class="animal-status ${animal.status}">
-                    ${getStatusText(animal.status)}
+        <div class="book-card" onclick="showAnimalDetails(${animal.id})">
+            <div class="book-header">
+                <div class="book-cover">
+                    <div class="book-icon">🐾</div>
                 </div>
-            </div>
-            <div class="animal-info">
-                <h3 class="animal-name">${escapeHtml(animal.name)}</h3>
-                <p class="animal-species">${escapeHtml(animal.species)}</p>
-                <p class="animal-description">${escapeHtml(animal.description.substring(0, 100))}...</p>
-                <div class="animal-meta">
-                    <span class="meta-item">👥 ${animal.population}</span>
-                    <span class="meta-item">🏞️ ${animal.habitat}</span>
+                <div class="book-info">
+                    <div class="book-title">${escapeHtml(animal.name)}</div>
+                    <div class="book-author">${escapeHtml(animal.species)}</div>
+                    <div class="book-meta">👥 ${animal.population}</div>
+                    <div class="book-meta">🏞️ ${animal.habitat}</div>
+                    <div class="book-status ${animal.status}">
+                        ${getStatusText(animal.status)}
+                    </div>
                 </div>
             </div>
         </div>
@@ -785,26 +914,22 @@ function showAnimalDetails(animalId) {
     
     const modalBody = document.getElementById('modalBody');
     modalBody.innerHTML = `
-        <div class="animal-details">
-            <div class="animal-image-large">
-                ${animal.image ? 
-                    `<img src="${animal.image}" alt="${animal.name}" class="animal-img-large"
-                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/4CAF50/white?text=🐾';">` : 
-                    `<div class="animal-image-large-placeholder">🐾<br>${escapeHtml(animal.name)}</div>`
-                }
+        <div class="book-details">
+            <div class="book-cover-large">
+                <div class="book-icon">🐾</div>
             </div>
-            <div class="animal-info-detailed">
+            <div class="book-info-detailed">
                 <h4>${escapeHtml(animal.name)}</h4>
                 <p><strong>Вид:</strong> <em>${escapeHtml(animal.species)}</em></p>
                 <p><strong>Статус:</strong> 
-                    <span class="animal-status ${animal.status}">
+                    <span class="book-status ${animal.status}">
                         ${getStatusText(animal.status)}
                     </span>
                 </p>
                 <p><strong>Популяция:</strong> ${animal.population}</p>
                 <p><strong>Место обитания:</strong> ${animal.habitat}</p>
                 
-                <div class="animal-description-detailed">
+                <div class="book-description">
                     <strong>Описание:</strong>
                     <p>${escapeHtml(animal.description)}</p>
                 </div>
@@ -824,22 +949,13 @@ function showAnimalDetails(animalId) {
     tg.BackButton.show();
 }
 
-// Функция для получения текста статуса
-function getStatusText(status) {
-    const statusMap = {
-        'endangered': 'На грани исчезновения',
-        'vulnerable': 'Уязвимый',
-        'rare': 'Редкий'
-    };
-    return statusMap[status] || status;
-}
-
 // Вспомогательные функции
 function populateGenreFilter(genres) {
     const genreFilter = document.getElementById('genreFilter');
-    genreFilter.innerHTML = genres.map(genre => 
-        `<option value="${genre}">${genre}</option>`
-    ).join('');
+    genreFilter.innerHTML = '<option value="Все жанры">Все жанры</option>' + 
+        genres.filter(genre => genre !== 'Все жанры').map(genre => 
+            `<option value="${genre}">${genre}</option>`
+        ).join('');
 }
 
 function updateStats() {
@@ -924,30 +1040,8 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-// Новые функции для рейтингов и отзывов
 function createRatingStars(rating) {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    
-    let stars = '';
-    
-    // Полные звезды
-    for (let i = 0; i < fullStars; i++) {
-        stars += '⭐';
-    }
-    
-    // Половина звезды
-    if (hasHalfStar) {
-        stars += '✨';
-    }
-    
-    // Пустые звезды
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    for (let i = 0; i < emptyStars; i++) {
-        stars += '☆';
-    }
-    
-    return stars;
+    return window.APP_DATA.RatingUtils.createStars(rating);
 }
 
 function getRandomBooks(count) {
@@ -955,27 +1049,15 @@ function getRandomBooks(count) {
     return shuffled.slice(0, count);
 }
 
-function likeReview(reviewId) {
-    const review = window.APP_DATA.BOOK_REVIEWS.find(r => r.id === reviewId);
-    if (review) {
-        review.likes++;
-        // Обновляем отображение в модальном окне
-        const modalTitle = document.getElementById('modalTitle').textContent;
-        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
-        if (book) {
-            showBookDetails(book.id);
-        }
-        tg.showAlert('Спасибо за ваш лайк! ❤️');
-    }
+function getStatusText(status) {
+    const statusMap = {
+        'endangered': 'На грани исчезновения',
+        'vulnerable': 'Уязвимый',
+        'rare': 'Редкий'
+    };
+    return statusMap[status] || status;
 }
 
-function addReview(bookId) {
-    tg.showPopup({
-        title: 'Написать отзыв',
-        message: 'Функция добавления отзывов скоро будет доступна!',
-        buttons: [{ type: 'ok' }]
-    });
-}
 function calculateStats() {
     const books = window.APP_DATA.MOCK_BOOKS;
     return {
@@ -985,180 +1067,11 @@ function calculateStats() {
         totalGenres: window.APP_DATA.MOCK_GENRES.length - 1
     };
 }
-function toggleTheme() {
-    const currentTheme = userData.theme;
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
-    userData.theme = newTheme;
-    window.STORAGE.saveAllData(userData);
-    applyTheme(newTheme);
-    
-    tg.showPopup({
-        title: 'Тема изменена',
-        message: `Переключено на ${newTheme === 'light' ? 'светлую' : 'тёмную'} тему`,
-        buttons: [{ type: 'ok' }]
-    });
-}
 
-function applyTheme(theme) {
-    const root = document.documentElement;
-    const themeConfig = theme === 'light' ? THEMES.LIGHT : THEMES.DARK;
-    
-    root.style.setProperty('--bg-primary', themeConfig.bg);
-    root.style.setProperty('--text-primary', themeConfig.text);
-    root.style.setProperty('--bg-card', themeConfig.card);
-    root.style.setProperty('--border-primary', themeConfig.border);
-    
-    // Обновляем иконку темы
-    const themeIcon = document.getElementById('themeIcon');
-    if (themeIcon) {
-        themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+function clearAllData() {
+    if (confirm('Вы уверены, что хотите сбросить все данные? Это действие нельзя отменить.')) {
+        window.STORAGE.clearAllData();
     }
-}
-
-// Функции для отзывов
-let currentReviewBookId = null;
-let selectedRating = 0;
-
-function openReviewModal(bookId) {
-    currentReviewBookId = bookId;
-    selectedRating = 0;
-    
-    // Сброс формы
-    document.getElementById('reviewComment').value = '';
-    document.getElementById('charCount').textContent = '0';
-    document.getElementById('ratingText').textContent = 'Выберите оценку';
-    document.querySelector('.submit-btn').disabled = true;
-    
-    // Сброс звезд
-    document.querySelectorAll('.star').forEach(star => {
-        star.textContent = '☆';
-        star.classList.remove('active');
-    });
-    
-    document.getElementById('reviewModal').classList.remove('hidden');
-    tg.BackButton.show();
-}
-
-function closeReviewModal() {
-    document.getElementById('reviewModal').classList.add('hidden');
-    tg.BackButton.hide();
-}
-
-function setRating(rating) {
-    selectedRating = rating;
-    const stars = document.querySelectorAll('.star');
-    const ratingText = document.getElementById('ratingText');
-    
-    stars.forEach((star, index) => {
-        if (index < rating) {
-            star.textContent = '⭐';
-            star.classList.add('active');
-        } else {
-            star.textContent = '☆';
-            star.classList.remove('active');
-        }
-    });
-    
-    const ratingTexts = ['Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'];
-    ratingText.textContent = ratingTexts[rating - 1] || 'Выберите оценку';
-    
-    updateSubmitButton();
-}
-
-function updateCharCount() {
-    const textarea = document.getElementById('reviewComment');
-    const charCount = document.getElementById('charCount');
-    charCount.textContent = textarea.value.length;
-    updateSubmitButton();
-}
-
-function updateSubmitButton() {
-    const submitBtn = document.querySelector('.submit-btn');
-    const hasRating = selectedRating > 0;
-    const hasComment = document.getElementById('reviewComment').value.trim().length > 0;
-    submitBtn.disabled = !(hasRating && hasComment);
-}
-
-function submitReview() {
-    if (!currentReviewBookId || !selectedRating) return;
-    
-    const comment = document.getElementById('reviewComment').value.trim();
-    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === currentReviewBookId);
-    
-    if (!book) return;
-    
-    // Создаем новый отзыв
-    const newReview = {
-        id: Date.now(),
-        userName: userData.name,
-        bookTitle: book.title,
-        bookId: currentReviewBookId,
-        rating: selectedRating,
-        comment: comment,
-        date: new Date().toISOString().split('T')[0],
-        likes: 0
-    };
-    
-    // Добавляем в общие отзывы
-    window.APP_DATA.BOOK_REVIEWS.unshift(newReview);
-    
-    // Добавляем в отзывы пользователя
-    userData.myReviews.unshift({
-        ...newReview,
-        id: Date.now() + 1 // Уникальный ID для пользовательского отзыва
-    });
-    
-    window.STORAGE.saveAllData(userData);
-    
-    tg.showPopup({
-        title: 'Отзыв добавлен! ★',
-        message: 'Ваш отзыв успешно опубликован',
-        buttons: [{ type: 'ok' }]
-    });
-    
-    closeReviewModal();
-    updateMyReviewsList();
-    
-    // Если открыта детальная страница книги - обновляем ее
-    if (!document.getElementById('bookModal').classList.contains('hidden')) {
-        showBookDetails(currentReviewBookId);
-    }
-}
-
-function updateMyReviewsList() {
-    const myReviewsList = document.getElementById('myReviewsList');
-    const myReviewsCount = document.getElementById('myReviewsCount');
-    
-    myReviewsCount.textContent = userData.myReviews.length;
-    
-    if (userData.myReviews.length === 0) {
-        myReviewsList.innerHTML = `
-            <div class="empty-profile">
-                <div class="empty-icon">💬</div>
-                <h4>Нет отзывов</h4>
-                <p>Поделитесь вашим мнением о прочитанных книгах</p>
-            </div>
-        `;
-    } else {
-        myReviewsList.innerHTML = userData.myReviews.map(review => `
-            <div class="my-review-item">
-                <div class="my-review-header">
-                    <div class="my-review-book">${escapeHtml(review.bookTitle)}</div>
-                    <div class="my-review-rating">${createRatingStars(review.rating)}</div>
-                </div>
-                <div class="my-review-comment">${escapeHtml(review.comment)}</div>
-                <div class="my-review-date">${formatReviewDate(review.date)}</div>
-            </div>
-        `).join('');
-    }
-}
-
-// Инициализация темы при загрузке
-function initializeTheme() {
-    const savedTheme = window.STORAGE.loadTheme();
-    userData.theme = savedTheme;
-    applyTheme(savedTheme);
 }
 
 // Экспортируем глобальные функции
@@ -1173,6 +1086,12 @@ window.showSection = showSection;
 window.closeModal = closeModal;
 window.clearFilters = clearFilters;
 window.likeReview = likeReview;
-window.addReview = addReview;
+window.openReviewModal = openReviewModal;
+window.closeReviewModal = closeReviewModal;
+window.setRating = setRating;
+window.updateCharCount = updateCharCount;
+window.submitReview = submitReview;
+window.toggleTheme = toggleTheme;
 window.loadRedBookAnimals = loadRedBookAnimals;
 window.showAnimalDetails = showAnimalDetails;
+window.clearAllData = clearAllData;

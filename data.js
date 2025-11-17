@@ -583,12 +583,6 @@ const RED_BOOK_ANIMALS = [
   },
   ]
 
-const STORAGE_KEYS = {
-    USER_DATA: 'knigabel_user_data',
-    BOOKS_DATA: 'knigabel_books_data',
-    LIBRARY_STATS: 'knigabel_library_stats',
-    USER_REVIEWS: 'knigabel_user_reviews'
-};
 
 // Отзывы пользователей
 const BOOK_REVIEWS = [
@@ -653,13 +647,46 @@ const BOOK_REVIEWS = [
     likes: 18
   }
 ];
+const THEMES = {
+    LIGHT: {
+        name: 'light',
+        bg: '#ffffff',
+        text: '#333333',
+        card: '#f8f9fa',
+        border: '#e0e0e0',
+        primary: '#4CAF50',
+        secondary: '#2196F3',
+        accent: '#FF9800'
+    },
+    DARK: {
+        name: 'dark',
+        bg: '#1a1a1a',
+        text: '#ffffff',
+        card: '#2d2d2d',
+        border: '#404040',
+        primary: '#66BB6A',
+        secondary: '#64B5F6',
+        accent: '#FFB74D'
+    }
+};
+
+// Ключи для localStorage
+const STORAGE_KEYS = {
+    USER_DATA: 'knigabel_user_data',
+    BOOKS_DATA: 'knigabel_books_data',
+    LIBRARY_STATS: 'knigabel_library_stats',
+    USER_REVIEWS: 'knigabel_user_reviews',
+    THEME: 'knigabel_theme',
+    BOOK_REVIEWS: 'knigabel_all_reviews'
+};
 
 // Рассчитываем статистику библиотеки
 const MOCK_STATS = {
     totalBooks: MOCK_BOOKS.length,
     availableBooks: MOCK_BOOKS.filter(book => book.available).length,
     borrowedBooks: MOCK_BOOKS.filter(book => !book.available).length,
-    totalGenres: MOCK_GENRES.length - 1
+    totalGenres: MOCK_GENRES.length - 1,
+    totalReviews: BOOK_REVIEWS.length
 };
 
 // Данные пользователя по умолчанию
@@ -667,6 +694,8 @@ const DEFAULT_USER_DATA = {
     name: 'Пользователь',
     avatar: '👤',
     registrationDate: new Date().toLocaleDateString('ru-RU'),
+    telegramId: null,
+    theme: 'light',
     borrowedBooks: [
         {
             id: 1,
@@ -676,7 +705,6 @@ const DEFAULT_USER_DATA = {
             returnDate: "2024-01-24",
             status: "active"
         }
-        
     ],
     history: [
         {
@@ -697,27 +725,47 @@ const DEFAULT_USER_DATA = {
         }
     ],
     favorites: [1, 2],
+    myReviews: [], // Новое поле для отзывов пользователя
     stats: {
         totalBooks: 25,
         activeBorrows: 1,
         totalRead: 2,
-        readingDays: 45
+        readingDays: 45,
+        reviewsWritten: 0
     }
 };
-const THEMES = {
-    LIGHT: {
-        name: 'light',
-        bg: '#ffffff',
-        text: '#333333',
-        card: '#f8f9fa',
-        border: '#e0e0e0'
+
+// Функции для работы с рейтингами
+const RatingUtils = {
+    // Обновление рейтинга книги при добавлении нового отзыва
+    updateBookRating(bookId, newRating) {
+        const book = MOCK_BOOKS.find(b => b.id === bookId);
+        if (book) {
+            book.totalRating = (book.totalRating || 0) + newRating;
+            book.ratingsCount = (book.ratingsCount || 0) + 1;
+            book.rating = Math.round((book.totalRating / book.ratingsCount) * 10) / 10;
+            book.reviewsCount = book.ratingsCount;
+        }
     },
-    DARK: {
-        name: 'dark', 
-        bg: '#1a1a1a',
-        text: '#ffffff',
-        card: '#2d2d2d',
-        border: '#404040'
+
+    // Создание звезд рейтинга
+    createStars(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        
+        let stars = '';
+        for (let i = 0; i < fullStars; i++) stars += '⭐';
+        if (hasHalfStar) stars += '✨';
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        for (let i = 0; i < emptyStars; i++) stars += '☆';
+        
+        return stars;
+    },
+
+    // Текстовое описание рейтинга
+    getRatingText(rating) {
+        const texts = ['Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'];
+        return texts[Math.floor(rating) - 1] || 'Не оценено';
     }
 };
 
@@ -730,5 +778,7 @@ window.APP_DATA = {
     STORAGE_KEYS,
     BOOK_REVIEWS,
     MOCK_STATS,
-    DEFAULT_USER_DATA
+    DEFAULT_USER_DATA,
+    THEMES,
+    RatingUtils
 };

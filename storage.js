@@ -27,13 +27,21 @@ function saveUserData(userData) {
 function saveBooksData() {
     const booksToSave = window.APP_DATA.MOCK_BOOKS.map(book => ({
         id: book.id,
-        available: book.available
+        available: book.available,
+        totalRating: book.totalRating,
+        ratingsCount: book.ratingsCount,
+        rating: book.rating,
+        reviewsCount: book.reviewsCount
     }));
     return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOKS_DATA, booksToSave);
 }
 
 function saveLibraryStats() {
     return saveToStorage(window.APP_DATA.STORAGE_KEYS.LIBRARY_STATS, window.APP_DATA.MOCK_STATS);
+}
+
+function saveAllReviews() {
+    return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
 }
 
 // Функции для загрузки данных
@@ -48,7 +56,8 @@ function loadUserData() {
                 ...window.APP_DATA.DEFAULT_USER_DATA.stats,
                 ...(saved.stats || {})
             },
-            myReviews: saved.myReviews || []
+            myReviews: saved.myReviews || [],
+            theme: saved.theme || 'light'
         };
     }
     return window.APP_DATA.DEFAULT_USER_DATA;
@@ -57,11 +66,15 @@ function loadUserData() {
 function loadBooksData() {
     const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOKS_DATA);
     if (saved) {
-        // Восстанавливаем статусы книг из сохраненных данных
+        // Восстанавливаем статусы книг и рейтинги из сохраненных данных
         saved.forEach(savedBook => {
             const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === savedBook.id);
             if (book) {
                 book.available = savedBook.available;
+                book.totalRating = savedBook.totalRating || book.totalRating;
+                book.ratingsCount = savedBook.ratingsCount || book.ratingsCount;
+                book.rating = savedBook.rating || book.rating;
+                book.reviewsCount = savedBook.reviewsCount || book.reviewsCount;
             }
         });
     }
@@ -76,6 +89,15 @@ function loadLibraryStats() {
     }
 }
 
+function loadAllReviews() {
+    const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS);
+    if (saved && saved.length > 0) {
+        // Заменяем mock отзывы сохраненными
+        window.APP_DATA.BOOK_REVIEWS.length = 0;
+        window.APP_DATA.BOOK_REVIEWS.push(...saved);
+    }
+}
+
 // Функция для сохранения темы
 function saveTheme(theme) {
     return saveToStorage(window.APP_DATA.STORAGE_KEYS.THEME, theme);
@@ -85,11 +107,49 @@ function loadTheme() {
     return loadFromStorage(window.APP_DATA.STORAGE_KEYS.THEME, 'light');
 }
 
+// Функции для работы с отзывами
+function addNewReview(review) {
+    // Добавляем отзыв в общий список
+    window.APP_DATA.BOOK_REVIEWS.unshift(review);
+    
+    // Обновляем рейтинг книги
+    window.APP_DATA.RatingUtils.updateBookRating(review.bookId, review.rating);
+    
+    // Сохраняем изменения
+    saveAllReviews();
+    saveBooksData();
+    
+    return review;
+}
+
+function getUserReviews(userId) {
+    return window.APP_DATA.BOOK_REVIEWS.filter(review => 
+        review.userId === userId
+    );
+}
+
+function getBookReviews(bookId) {
+    return window.APP_DATA.BOOK_REVIEWS.filter(review => 
+        review.bookId === bookId
+    ).sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function likeReview(reviewId) {
+    const review = window.APP_DATA.BOOK_REVIEWS.find(r => r.id === reviewId);
+    if (review) {
+        review.likes = (review.likes || 0) + 1;
+        saveAllReviews();
+        return review.likes;
+    }
+    return 0;
+}
+
 // Функция для полного сохранения всех данных
 function saveAllData(userData) {
     saveUserData(userData);
     saveBooksData();
     saveLibraryStats();
+    saveAllReviews();
     saveTheme(userData.theme);
 }
 
@@ -97,13 +157,52 @@ function saveAllData(userData) {
 function loadAllData() {
     loadBooksData();
     loadLibraryStats();
+    loadAllReviews();
     const userData = loadUserData();
     userData.theme = loadTheme();
     return userData;
 }
 
+// Функция для очистки всех данных (для тестирования)
+function clearAllData() {
+    try {
+        Object.values(window.APP_DATA.STORAGE_KEYS).forEach(key => {
+            localStorage.removeItem(key);
+        });
+        
+        // Восстанавливаем дефолтные данные
+        window.location.reload();
+        return true;
+    } catch (error) {
+        console.error('Ошибка очистки данных:', error);
+        return false;
+    }
+}
+
+// Функция для получения статистики хранилища
+function getStorageStats() {
+    const stats = {
+        totalSize: 0,
+        items: {}
+    };
+    
+    Object.values(window.APP_DATA.STORAGE_KEYS).forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data) {
+            stats.items[key] = {
+                size: new Blob([data]).size,
+                length: data.length
+            };
+            stats.totalSize += new Blob([data]).size;
+        }
+    });
+    
+    return stats;
+}
+
 // Экспортируем функции хранилища
 window.STORAGE = {
+    // Основные функции
     saveToStorage,
     loadFromStorage,
     saveUserData,
@@ -115,5 +214,17 @@ window.STORAGE = {
     saveTheme,
     loadTheme,
     saveAllData,
-    loadAllData
+    loadAllData,
+    
+    // Функции для отзывов
+    addNewReview,
+    getUserReviews,
+    getBookReviews,
+    likeReview,
+    saveAllReviews,
+    loadAllReviews,
+    
+    // Сервисные функции
+    clearAllData,
+    getStorageStats
 };
