@@ -39,6 +39,10 @@
                     <span class="nav-icon">📚</span>
                     <span class="nav-text">Каталог</span>
                 </button>
+                <button class="nav-btn" onclick="showSection('events')">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">События</span>
+                </button>
                 <button class="nav-btn" onclick="showSection('redbook')">
                     <span class="nav-icon">🐾</span>
                     <span class="nav-text">Красная Книга</span>
@@ -106,6 +110,29 @@
                 <h3>Книги не найдены</h3>
                 <p>Попробуйте изменить поисковый запрос или фильтр</p>
                 <button onclick="clearFilters()" class="clear-btn">Сбросить фильтры</button>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section class="content-section" id="eventsSection">
+            <div class="section-header">
+                <h2>📅 Литературные события</h2>
+                <span class="events-count" id="eventsCount">0 событий</span>
+            </div>
+
+            <div class="events-container" id="eventsContainer">
+                <!-- Events will be loaded here -->
+            </div>
+
+            <div class="loading hidden" id="eventsLoading">
+                <div class="spinner"></div>
+                <p>Загрузка событий...</p>
+            </div>
+
+            <div class="empty-state hidden" id="eventsEmptyState">
+                <div class="empty-icon">📅</div>
+                <h3>Событий пока нет</h3>
+                <p>Следите за обновлениями!</p>
             </div>
         </section>
 
@@ -214,6 +241,17 @@
                 </div>
             </div>
 
+            <!-- Booked Events -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>🎫 Мои события</h3>
+                    <span class="section-badge" id="bookedEventsCount">0</span>
+                </div>
+                <div class="booked-events-list" id="bookedEventsList">
+                    <!-- Booked events will be loaded here -->
+                </div>
+            </div>
+
             <!-- Data Management -->
             <div class="profile-section-card">
                 <div class="section-title">
@@ -277,6 +315,49 @@
                         <div class="form-actions">
                             <button type="button" class="cancel-btn" onclick="closeReviewModal()">Отмена</button>
                             <button type="button" class="submit-btn" onclick="submitReview()" disabled>Опубликовать отзыв</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Modal -->
+        <div class="modal hidden" id="eventModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="eventModalTitle">Детали события</h3>
+                    <button onclick="closeEventModal()" class="close-btn">×</button>
+                </div>
+                <div class="modal-body" id="eventModalBody">
+                    <!-- Event details will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Modal -->
+        <div class="modal hidden" id="bookingModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🎫 Бронирование билета</h3>
+                    <button onclick="closeBookingModal()" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="booking-form">
+                        <div class="form-group">
+                            <label>Количество билетов:</label>
+                            <div class="ticket-selector">
+                                <button type="button" onclick="changeTicketCount(-1)" class="ticket-btn">-</button>
+                                <span id="ticketCount">1</span>
+                                <button type="button" onclick="changeTicketCount(1)" class="ticket-btn">+</button>
+                            </div>
+                        </div>
+                        <div class="booking-summary">
+                            <p>Цена за билет: <span id="ticketPrice">0</span> BYN</p>
+                            <p>Итого: <span id="totalPrice">0</span> BYN</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="cancel-btn" onclick="closeBookingModal()">Отмена</button>
+                            <button type="button" class="book-btn" onclick="confirmBooking()" id="bookBtn">Забронировать</button>
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,8 @@ let tg = null;
 let userData = null;
 let currentReviewBookId = null;
 let selectedRating = 0;
+let currentBookingEventId = null;
+let ticketCount = 1;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -107,6 +109,9 @@ function showSection(sectionName) {
     }
     if (sectionName === 'redbook') {
         loadRedBookAnimals();
+    }
+    if (sectionName === 'events') {
+        loadEvents();
     }
 }
 
@@ -754,6 +759,7 @@ function updateUserProfile() {
     updateHistoryList();
     updateFavoritesList();
     updateMyReviewsList();
+    updateBookedEventsList();
 }
 
 // Обновление списка активных книг
@@ -784,6 +790,40 @@ function updateActiveBooksList() {
                 <button class="return-btn" onclick="event.stopPropagation(); returnBook(${borrow.bookId})">
                     🔄 Вернуть
                 </button>
+            </div>
+        `).join('');
+    }
+}
+
+// Обновление списка забронированных событий
+function updateBookedEventsList() {
+    const bookedEventsList = document.getElementById('bookedEventsList');
+
+    document.getElementById('bookedEventsCount').textContent = userData.bookedEvents.length;
+
+    if (userData.bookedEvents.length === 0) {
+        bookedEventsList.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">🎫</div>
+                <h4>Нет забронированных событий</h4>
+                <p>Забронируйте билеты на интересные мероприятия</p>
+            </div>
+        `;
+    } else {
+        bookedEventsList.innerHTML = userData.bookedEvents.map(booking => `
+            <div class="booked-event-item">
+                <div class="event-info">
+                    <div class="event-title">${booking.eventTitle}</div>
+                    <div class="event-details">
+                        <span>📅 ${formatEventDate(booking.eventDate)} в ${booking.eventTime}</span>
+                        <span>📍 ${booking.location}</span>
+                        <span>🎫 ${booking.ticketCount} билет${booking.ticketCount > 1 ? 'ов' : ''}</span>
+                        <span>💰 ${booking.totalPrice} BYN</span>
+                    </div>
+                    <div class="booking-date">
+                        Забронировано: ${formatEventDate(booking.bookingDate)}
+                    </div>
+                </div>
             </div>
         `).join('');
     }
@@ -883,9 +923,9 @@ function updateMyReviewsList() {
 function loadRedBookAnimals() {
     const container = document.getElementById('animalsContainer');
     const animals = window.APP_DATA.RED_BOOK_ANIMALS;
-    
+
     document.getElementById('animalsCount').textContent = `${animals.length} животных`;
-    
+
     container.innerHTML = animals.map(animal => `
         <div class="book-card" onclick="showAnimalDetails(${animal.id})">
             <div class="book-header">
@@ -904,6 +944,203 @@ function loadRedBookAnimals() {
             </div>
         </div>
     `).join('');
+}
+
+// Функция для загрузки событий
+function loadEvents() {
+    const container = document.getElementById('eventsContainer');
+    const eventsLoading = document.getElementById('eventsLoading');
+    const eventsEmptyState = document.getElementById('eventsEmptyState');
+    const events = window.APP_DATA.MOCK_EVENTS;
+
+    eventsLoading.classList.remove('hidden');
+    container.innerHTML = '';
+    eventsEmptyState.classList.add('hidden');
+
+    setTimeout(() => {
+        if (!events || events.length === 0) {
+            eventsEmptyState.classList.remove('hidden');
+        } else {
+            container.innerHTML = events.map(event => {
+                const isBooked = userData.bookedEvents.some(be => be.eventId === event.id);
+                const ticketsStatus = event.availableTickets === 0 ? 'sold-out' :
+                                    event.availableTickets < 10 ? 'low' : 'available';
+
+                return `
+                <div class="event-card" onclick="showEventDetails(${event.id})">
+                    <div class="event-header">
+                        <div class="event-cover">
+                            <div class="event-icon">${event.image || '📅'}</div>
+                        </div>
+                        <div class="event-info">
+                            <div class="event-title">${escapeHtml(event.title)}</div>
+                            <div class="event-meta">${event.category}</div>
+                            <div class="event-date-time">
+                                <span class="event-date">📅 ${formatEventDate(event.date)}</span>
+                                <span class="event-time">🕐 ${event.time}</span>
+                            </div>
+                            <div class="event-location">📍 ${escapeHtml(event.location)}</div>
+                            <div class="event-price">💰 ${event.price} BYN</div>
+                            <div class="event-tickets tickets-${ticketsStatus}">
+                                🎫 ${event.availableTickets}/${event.totalTickets} билетов
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-actions">
+                        <button
+                            class="book-event-btn"
+                            onclick="event.stopPropagation(); openBookingModal(${event.id})"
+                            ${event.availableTickets === 0 || isBooked ? 'disabled' : ''}
+                        >
+                            ${isBooked ? '🎫 Уже забронировано' : (event.availableTickets === 0 ? 'Распродано' : 'Забронировать')}
+                        </button>
+                        <button
+                            class="view-event-btn"
+                            onclick="event.stopPropagation(); showEventDetails(${event.id})"
+                        >
+                            👁️
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        updateEventsCount(events.length);
+        eventsLoading.classList.add('hidden');
+    }, 500);
+}
+
+// Функция для показа деталей события
+function showEventDetails(eventId) {
+    const event = window.APP_DATA.MOCK_EVENTS.find(e => e.id === eventId);
+    if (!event) return;
+
+    const isBooked = userData.bookedEvents.some(be => be.eventId === event.id);
+    const modalBody = document.getElementById('eventModalBody');
+
+    modalBody.innerHTML = `
+        <div class="event-details">
+            <div class="event-cover-large">
+                <div class="event-icon">${event.image || '📅'}</div>
+            </div>
+            <div class="event-info-detailed">
+                <h4>${escapeHtml(event.title)}</h4>
+                <p><strong>Тип:</strong> ${event.type}</p>
+                <p><strong>Категория:</strong> ${event.category}</p>
+                <p><strong>Дата:</strong> ${formatEventDate(event.date)}</p>
+                <p><strong>Время:</strong> ${event.time}</p>
+                <p><strong>Место:</strong> ${escapeHtml(event.location)}</p>
+                <p><strong>Цена билета:</strong> ${event.price} BYN</p>
+                <p><strong>Доступно билетов:</strong>
+                    <span class="event-tickets tickets-${event.availableTickets === 0 ? 'sold-out' : (event.availableTickets < 10 ? 'low' : 'available')}">
+                        ${event.availableTickets}/${event.totalTickets}
+                    </span>
+                </p>
+
+                <div class="event-description">
+                    <strong>Описание:</strong>
+                    <p>${escapeHtml(event.description)}</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button
+                class="book-event-btn"
+                onclick="openBookingModal(${event.id})"
+                ${event.availableTickets === 0 || isBooked ? 'disabled' : ''}
+                style="flex: 1; margin-right: 10px;"
+            >
+                ${isBooked ? '🎫 Уже забронировано' : (event.availableTickets === 0 ? 'Распродано' : 'Забронировать билет')}
+            </button>
+            <button class="view-event-btn" onclick="closeEventModal()" style="padding: 12px;">
+                Закрыть
+            </button>
+        </div>
+    `;
+
+    document.getElementById('eventModalTitle').textContent = event.title;
+    document.getElementById('eventModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+// Функция для открытия модала бронирования
+function openBookingModal(eventId) {
+    const event = window.APP_DATA.MOCK_EVENTS.find(e => e.id === eventId);
+    if (!event) return;
+
+    currentBookingEventId = eventId;
+    ticketCount = 1;
+
+    document.getElementById('ticketCount').textContent = ticketCount;
+    document.getElementById('ticketPrice').textContent = event.price;
+    document.getElementById('totalPrice').textContent = event.price * ticketCount;
+
+    document.getElementById('bookingModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+// Функция для закрытия модала события
+function closeEventModal() {
+    document.getElementById('eventModal').classList.add('hidden');
+    tg.BackButton.hide();
+}
+
+// Функция для закрытия модала бронирования
+function closeBookingModal() {
+    document.getElementById('bookingModal').classList.add('hidden');
+    tg.BackButton.hide();
+}
+
+// Функция для изменения количества билетов
+function changeTicketCount(delta) {
+    const event = window.APP_DATA.MOCK_EVENTS.find(e => e.id === currentBookingEventId);
+    if (!event) return;
+
+    ticketCount = Math.max(1, Math.min(event.availableTickets, ticketCount + delta));
+    document.getElementById('ticketCount').textContent = ticketCount;
+    document.getElementById('totalPrice').textContent = event.price * ticketCount;
+}
+
+// Функция для подтверждения бронирования
+function confirmBooking() {
+    const event = window.APP_DATA.MOCK_EVENTS.find(e => e.id === currentBookingEventId);
+    if (!event || ticketCount > event.availableTickets) return;
+
+    // Обновляем данные события
+    event.availableTickets -= ticketCount;
+
+    // Добавляем бронирование пользователю
+    const booking = {
+        id: Date.now(),
+        eventId: event.id,
+        eventTitle: event.title,
+        ticketCount: ticketCount,
+        totalPrice: event.price * ticketCount,
+        bookingDate: new Date().toISOString().split('T')[0],
+        eventDate: event.date,
+        eventTime: event.time,
+        location: event.location
+    };
+
+    userData.bookedEvents.push(booking);
+    userData.stats.totalEvents = (userData.stats.totalEvents || 0) + 1;
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Показываем уведомление
+    tg.showPopup({
+        title: 'Успех! 🎫',
+        message: `Билеты на "${event.title}" успешно забронированы!\nКоличество: ${ticketCount}\nИтого: ${booking.totalPrice} BYN`,
+        buttons: [{ type: 'ok' }]
+    });
+
+    // Обновляем интерфейс
+    loadEvents();
+    updateUserProfile();
+    closeBookingModal();
+    closeEventModal();
 }
 
 // Функция для показа деталей животного
@@ -1068,6 +1305,25 @@ function calculateStats() {
     };
 }
 
+function updateEventsCount(count) {
+    document.getElementById('eventsCount').textContent = `${count} ${getEventWord(count)}`;
+}
+
+function getEventWord(count) {
+    if (count % 10 === 1 && count % 100 !== 11) return 'событие';
+    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'события';
+    return 'событий';
+}
+
+function formatEventDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
 function clearAllData() {
     if (confirm('Вы уверены, что хотите сбросить все данные? Это действие нельзя отменить.')) {
         window.STORAGE.clearAllData();
@@ -1094,4 +1350,11 @@ window.submitReview = submitReview;
 window.toggleTheme = toggleTheme;
 window.loadRedBookAnimals = loadRedBookAnimals;
 window.showAnimalDetails = showAnimalDetails;
+window.loadEvents = loadEvents;
+window.showEventDetails = showEventDetails;
+window.openBookingModal = openBookingModal;
+window.closeEventModal = closeEventModal;
+window.closeBookingModal = closeBookingModal;
+window.changeTicketCount = changeTicketCount;
+window.confirmBooking = confirmBooking;
 window.clearAllData = clearAllData;

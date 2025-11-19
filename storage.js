@@ -57,6 +57,7 @@ function loadUserData() {
                 ...(saved.stats || {})
             },
             myReviews: saved.myReviews || [],
+            bookedEvents: saved.bookedEvents || [],
             theme: saved.theme || 'light'
         };
     }
