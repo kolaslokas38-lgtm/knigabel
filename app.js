@@ -9,10 +9,12 @@ let selectedRating = 0;
 let currentBookingEventId = null;
 let ticketCount = 1;
 let bookRecommendations = [];
+let reviewsChannel = null; // Для синхронизации отзывов между вкладками
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
     initializeTelegramApp();
+    initializeReviewsSync();
     loadInitialData();
     setupEventListeners();
     initializeTheme();
@@ -20,8 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Инициализация Telegram Web App
 function initializeTelegramApp() {
+    // Инициализируем глобальные отзывы перед загрузкой пользовательских данных
+    window.STORAGE.initializeGlobalReviews();
     userData = window.STORAGE.loadAllData();
-    
+
     if (window.Telegram && window.Telegram.WebApp) {
         tg = window.Telegram.WebApp;
         tg.expand();
@@ -379,12 +383,17 @@ async function showBookDetails(bookId) {
                     <div class="reviews-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h5>💬 Отзывы читателей (${bookReviews.length})</h5>
-                            ${!userHasReviewed ? `
+                            <div style="font-size: 0.8em; color: var(--text-light);">
+                                Всего в приложении: ${window.APP_DATA.BOOK_REVIEWS.length} отзывов
+                            </div>
+                        </div>
+                        ${!userHasReviewed ? `
+                            <div style="text-align: center; margin-bottom: 15px;">
                                 <button class="add-review-btn" onclick="openReviewModal(${book.id})">
                                     ✍️ Написать отзыв
                                 </button>
-                            ` : ''}
-                        </div>
+                            </div>
+                        ` : ''}
                         <div class="reviews-list">
                             ${bookReviews.length > 0 ? bookReviews.map(review => `
                                 <div class="review-item">
@@ -560,9 +569,12 @@ function submitReview() {
 
     window.STORAGE.saveAllData(userData);
 
+    // Уведомляем другие вкладки об обновлении отзывов
+    notifyReviewsUpdate();
+
     tg.showPopup({
         title: 'Отзыв добавлен! ★',
-        message: 'Ваш отзыв успешно опубликован и виден всем пользователям',
+        message: 'Ваш отзыв успешно опубликован и виден всем пользователям в этом браузере',
         buttons: [{ type: 'ok' }]
     });
 
@@ -628,6 +640,60 @@ function initializeTheme() {
     const savedTheme = window.STORAGE.loadTheme();
     userData.theme = savedTheme;
     applyTheme(savedTheme);
+}
+
+// Инициализация синхронизации отзывов между вкладками
+function initializeReviewsSync() {
+    const syncIndicator = document.getElementById('syncIndicator');
+
+    if (typeof BroadcastChannel !== 'undefined') {
+        reviewsChannel = new BroadcastChannel('knigabel_reviews_sync');
+
+        if (syncIndicator) {
+            syncIndicator.textContent = 'активна';
+            syncIndicator.style.color = '#4CAF50';
+        }
+
+        reviewsChannel.onmessage = function(event) {
+            if (event.data.type === 'reviews_updated') {
+                // Перезагружаем отзывы из localStorage
+                window.STORAGE.initializeGlobalReviews();
+
+                // Обновляем отображение, если модал открыт
+                if (!document.getElementById('bookModal').classList.contains('hidden')) {
+                    const modalTitle = document.getElementById('modalTitle').textContent;
+                    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
+                    if (book) {
+                        showBookDetails(book.id);
+                    }
+                }
+
+                // Обновляем личные отзывы
+                updateMyReviewsList();
+
+                // Показываем уведомление о синхронизации
+                showSyncNotification();
+            }
+        };
+    } else {
+        if (syncIndicator) {
+            syncIndicator.textContent = 'недоступна';
+            syncIndicator.style.color = '#f44336';
+        }
+    }
+}
+
+// Функция для показа уведомления о синхронизации
+function showSyncNotification() {
+    // Можно добавить визуальное уведомление, но пока просто console.log
+    console.log('📡 Отзывы синхронизированы между вкладками');
+}
+
+// Функция для уведомления других вкладок об обновлении отзывов
+function notifyReviewsUpdate() {
+    if (reviewsChannel) {
+        reviewsChannel.postMessage({ type: 'reviews_updated' });
+    }
 }
 
 // Бронирование книги
@@ -1483,6 +1549,23 @@ function clearAllData() {
     }
 }
 
+function clearAllReviews() {
+    if (confirm('Вы уверены, что хотите удалить все отзывы? Это действие нельзя отменить.')) {
+        window.APP_DATA.BOOK_REVIEWS = [];
+        window.STORAGE.saveGlobalReviews();
+        // Обновляем все отображения
+        if (!document.getElementById('bookModal').classList.contains('hidden')) {
+            const modalTitle = document.getElementById('modalTitle').textContent;
+            const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
+            if (book) {
+                showBookDetails(book.id);
+            }
+        }
+        updateMyReviewsList();
+        tg.showAlert('Все отзывы удалены!');
+    }
+}
+
 // Экспортируем глобальные функции
 window.searchBooks = searchBooks;
 window.filterByGenre = filterByGenre;
@@ -1513,3 +1596,4 @@ window.confirmBooking = confirmBooking;
 window.updateRecommendations = updateRecommendations;
 window.renderRecommendations = renderRecommendations;
 window.clearAllData = clearAllData;
+window.clearAllReviews = clearAllReviews;
