@@ -39,6 +39,14 @@
                     <span class="nav-icon">📚</span>
                     <span class="nav-text">Каталог</span>
                 </button>
+                <button class="nav-btn" onclick="showSection('authors')">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Авторы</span>
+                </button>
+                <button class="nav-btn" onclick="showSection('challenges')">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-text">Челленджи</span>
+                </button>
                 <button class="nav-btn" onclick="showSection('events')">
                     <span class="nav-icon">📅</span>
                     <span class="nav-text">События</span>
@@ -118,6 +126,68 @@
                 <h3>Книги не найдены</h3>
                 <p>Попробуйте изменить поисковый запрос или фильтр</p>
                 <button onclick="clearFilters()" class="clear-btn">Сбросить фильтры</button>
+            </div>
+        </section>
+
+        <!-- Authors Section -->
+        <section class="content-section" id="authorsSection">
+            <div class="section-header">
+                <h2>👥 Знаменитые авторы</h2>
+                <span class="authors-count" id="authorsCount">3 автора</span>
+            </div>
+
+            <div class="authors-grid" id="authorsGrid">
+                <!-- Authors will be loaded here -->
+            </div>
+
+            <!-- Daily Quote -->
+            <div class="daily-quote-section">
+                <h3>💭 Цитата дня</h3>
+                <div class="quote-card" id="dailyQuote">
+                    <!-- Daily quote will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Challenges Section -->
+        <section class="content-section" id="challengesSection">
+            <div class="section-header">
+                <h2>🎯 Челленджи</h2>
+                <span class="challenges-count" id="challengesCount">0/8 выполнено</span>
+            </div>
+
+            <!-- Daily Challenges -->
+            <div class="challenges-category">
+                <h3>📅 Ежедневные челленджи</h3>
+                <div class="challenges-grid" id="dailyChallengesGrid">
+                    <!-- Daily challenges will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Weekly Challenges -->
+            <div class="challenges-category">
+                <h3>📊 Недельные челленджи</h3>
+                <div class="challenges-grid" id="weeklyChallengesGrid">
+                    <!-- Weekly challenges will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Progress Summary -->
+            <div class="challenges-summary">
+                <div class="summary-card">
+                    <div class="summary-icon">🎯</div>
+                    <div class="summary-content">
+                        <div class="summary-number" id="totalChallengesCompleted">0</div>
+                        <div class="summary-label">Выполнено челленджей</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">⭐</div>
+                    <div class="summary-content">
+                        <div class="summary-number" id="totalRewardsEarned">0</div>
+                        <div class="summary-label">Получено опыта</div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -353,6 +423,19 @@
                             <button type="button" class="submit-btn" onclick="submitReview()" disabled>Опубликовать отзыв</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Author Modal -->
+        <div class="modal hidden" id="authorModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="authorModalTitle">Биография автора</h3>
+                    <button onclick="closeAuthorModal()" class="close-btn">×</button>
+                </div>
+                <div class="modal-body" id="authorModalBody">
+                    <!-- Author details will be loaded here -->
                 </div>
             </div>
         </div>

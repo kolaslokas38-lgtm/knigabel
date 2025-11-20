@@ -122,6 +122,12 @@ function showSection(sectionName) {
     if (sectionName === 'events') {
         loadEvents();
     }
+    if (sectionName === 'challenges') {
+        loadChallenges();
+    }
+    if (sectionName === 'authors') {
+        loadAuthors();
+    }
 }
 
 // Загрузка начальных данных
@@ -1145,6 +1151,180 @@ function loadRedBookAnimals() {
     `).join('');
 }
 
+// Функция для загрузки челленджей
+function loadChallenges() {
+    const dailyContainer = document.getElementById('dailyChallengesGrid');
+    const weeklyContainer = document.getElementById('weeklyChallengesGrid');
+    const challengesCount = document.getElementById('challengesCount');
+    const totalCompleted = document.getElementById('totalChallengesCompleted');
+    const totalRewards = document.getElementById('totalRewardsEarned');
+
+    // Проверяем и сбрасываем челленджи при необходимости
+    checkAndResetChallenges();
+
+    const dailyChallenges = window.APP_DATA.DAILY_CHALLENGES;
+    const weeklyChallenges = window.APP_DATA.WEEKLY_CHALLENGES;
+
+    dailyContainer.innerHTML = dailyChallenges.map(challenge => {
+        const isCompleted = userData.challenges.daily.completed.includes(challenge.id);
+        return `
+            <div class="challenge-card ${isCompleted ? 'completed' : ''}" onclick="completeChallenge('${challenge.id}')">
+                <div class="challenge-header">
+                    <span class="challenge-icon">${challenge.icon}</span>
+                    <div class="challenge-info">
+                        <div class="challenge-title">${challenge.title}</div>
+                        <div class="challenge-description">${challenge.description}</div>
+                        <div class="challenge-reward">+${challenge.reward} XP</div>
+                    </div>
+                    <span class="challenge-status ${isCompleted ? 'completed' : 'pending'}">
+                        ${isCompleted ? '✓' : '○'}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    weeklyContainer.innerHTML = weeklyChallenges.map(challenge => {
+        const isCompleted = userData.challenges.weekly.completed.includes(challenge.id);
+        return `
+            <div class="challenge-card ${isCompleted ? 'completed' : ''}" onclick="completeChallenge('${challenge.id}')">
+                <div class="challenge-header">
+                    <span class="challenge-icon">${challenge.icon}</span>
+                    <div class="challenge-info">
+                        <div class="challenge-title">${challenge.title}</div>
+                        <div class="challenge-description">${challenge.description}</div>
+                        <div class="challenge-reward">+${challenge.reward} XP</div>
+                    </div>
+                    <span class="challenge-status ${isCompleted ? 'completed' : 'pending'}">
+                        ${isCompleted ? '✓' : '○'}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    const totalCompletedCount = userData.challenges.daily.completed.length + userData.challenges.weekly.completed.length;
+    const totalChallenges = dailyChallenges.length + weeklyChallenges.length;
+
+    challengesCount.textContent = `${totalCompletedCount}/${totalChallenges} выполнено`;
+    totalCompleted.textContent = totalCompletedCount;
+    totalRewards.textContent = userData.stats.totalRewardsEarned || 0;
+}
+
+// Функция для загрузки авторов
+function loadAuthors() {
+    const authorsGrid = document.getElementById('authorsGrid');
+    const dailyQuote = document.getElementById('dailyQuote');
+
+    const authors = Object.keys(window.APP_DATA.AUTHOR_BIOS);
+
+    authorsGrid.innerHTML = authors.map(authorName => {
+        const author = window.APP_DATA.AUTHOR_BIOS[authorName];
+        return `
+            <div class="author-card" onclick="showAuthorDetails('${authorName}')">
+                <div class="author-header">
+                    <div class="author-avatar">${authorName[0]}</div>
+                    <div class="author-info">
+                        <div class="author-name">${authorName}</div>
+                        <div class="author-bio">${author.bio.substring(0, 100)}...</div>
+                        <div class="author-works">
+                            <strong>Известные произведения:</strong> ${author.famousWorks.slice(0, 2).join(', ')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Показываем цитату дня
+    const today = new Date().toDateString();
+    const dailyQuoteData = window.APP_DATA.BOOK_QUOTES[Math.floor(Math.random() * window.APP_DATA.BOOK_QUOTES.length)];
+
+    dailyQuote.innerHTML = `
+        <div class="quote-text">${dailyQuoteData.quote}</div>
+        <div class="quote-author">— ${dailyQuoteData.author}, "${dailyQuoteData.book}"</div>
+    `;
+}
+
+// Функция для проверки и сброса челленджей
+function checkAndResetChallenges() {
+    const now = new Date();
+    const today = now.toDateString();
+    const weekStart = new Date(now.setDate(now.getDate() - now.getDay())).toDateString();
+
+    // Сбрасываем ежедневные челленджи
+    if (userData.challenges.daily.lastReset !== today) {
+        userData.challenges.daily.completed = [];
+        userData.challenges.daily.lastReset = today;
+    }
+
+    // Сбрасываем недельные челленджи
+    if (userData.challenges.weekly.lastReset !== weekStart) {
+        userData.challenges.weekly.completed = [];
+        userData.challenges.weekly.lastReset = weekStart;
+    }
+
+    window.STORAGE.saveAllData(userData);
+}
+
+// Функция для выполнения челленджа
+function completeChallenge(challengeId) {
+    const allChallenges = [...window.APP_DATA.DAILY_CHALLENGES, ...window.APP_DATA.WEEKLY_CHALLENGES];
+    const challenge = allChallenges.find(c => c.id === challengeId);
+
+    if (!challenge) return;
+
+    const isDaily = window.APP_DATA.DAILY_CHALLENGES.some(c => c.id === challengeId);
+    const challengeList = isDaily ? userData.challenges.daily.completed : userData.challenges.weekly.completed;
+
+    if (!challengeList.includes(challengeId)) {
+        challengeList.push(challengeId);
+        handleExperienceAndAchievements(userData, challenge.reward);
+
+        userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + challenge.reward;
+
+        window.STORAGE.saveAllData(userData);
+        loadChallenges(); // Перезагружаем челленджи
+    }
+}
+
+// Функция для показа деталей автора
+function showAuthorDetails(authorName) {
+    const author = window.APP_DATA.AUTHOR_BIOS[authorName];
+    if (!author) return;
+
+    const modalBody = document.getElementById('authorModalBody');
+    modalBody.innerHTML = `
+        <div class="author-details">
+            <div class="author-header-large">
+                <div class="author-avatar-large">${authorName[0]}</div>
+                <div class="author-info-large">
+                    <h3>${authorName}</h3>
+                    <p class="author-bio-full">${author.bio}</p>
+                </div>
+            </div>
+            <div class="author-works-section">
+                <h4>Известные произведения:</h4>
+                <ul>
+                    ${author.famousWorks.map(work => `<li>${work}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="author-quotes-section">
+                <h4>Цитаты:</h4>
+                ${author.quotes.map(quote => `<blockquote>"${quote}"</blockquote>`).join('')}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('authorModalTitle').textContent = authorName;
+    document.getElementById('authorModal').classList.remove('hidden');
+}
+
+// Функция для закрытия модала автора
+function closeAuthorModal() {
+    document.getElementById('authorModal').classList.add('hidden');
+}
+
 // Функция для загрузки событий
 function loadEvents() {
     const container = document.getElementById('eventsContainer');
@@ -2086,3 +2266,8 @@ window.markPageAsRead = markPageAsRead;
 window.finishBook = finishBook;
 window.handleExperienceAndAchievements = handleExperienceAndAchievements;
 window.showAchievementNotification = showAchievementNotification;
+window.loadChallenges = loadChallenges;
+window.loadAuthors = loadAuthors;
+window.completeChallenge = completeChallenge;
+window.showAuthorDetails = showAuthorDetails;
+window.closeAuthorModal = closeAuthorModal;
