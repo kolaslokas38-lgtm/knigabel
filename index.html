@@ -43,9 +43,9 @@
                     <span class="nav-icon">👥</span>
                     <span class="nav-text">Авторы</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('challenges')">
-                    <span class="nav-icon">🎯</span>
-                    <span class="nav-text">Челленджи</span>
+                <button class="nav-btn" onclick="showSection('games')">
+                    <span class="nav-icon">🎮</span>
+                    <span class="nav-text">Игры</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('events')">
                     <span class="nav-icon">📅</span>
@@ -58,6 +58,14 @@
                 <button class="nav-btn" onclick="showSection('profile')">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Мой профиль</span>
+                </button>
+                <button class="nav-btn" onclick="showSection('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Настройки</span>
+                </button>
+                <button class="nav-btn" onclick="showSection('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Настройки</span>
                 </button>
             </div>
         </section>
@@ -81,13 +89,6 @@
             </div>
         </section>
 
-        <!-- Рекомендации -->
-        <section class="recommendations-section" id="recommendationsSection">
-            <h2 class="recommendations-title">🎯 Рекомендуем вам</h2>
-            <div class="recommendations-container" id="recommendationsContainer">
-                <!-- Рекомендации будут загружены здесь -->
-            </div>
-        </section>
 
         <!-- Книги недели -->
         <section class="weekly-books-section">
@@ -149,44 +150,74 @@
             </div>
         </section>
 
-        <!-- Challenges Section -->
-        <section class="content-section" id="challengesSection">
+        <!-- Games Section -->
+        <section class="content-section" id="gamesSection">
             <div class="section-header">
-                <h2>🎯 Челленджи</h2>
-                <span class="challenges-count" id="challengesCount">0/8 выполнено</span>
+                <h2>🎮 Игровые механики</h2>
+                <span class="games-count" id="gamesCount">Уровень 1</span>
             </div>
 
-            <!-- Daily Challenges -->
-            <div class="challenges-category">
-                <h3>📅 Ежедневные челленджи</h3>
-                <div class="challenges-grid" id="dailyChallengesGrid">
-                    <!-- Daily challenges will be loaded here -->
+            <!-- Player Stats -->
+            <div class="games-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="playerLevel">1</div>
+                        <div class="stat-label">Уровень</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="playerCoins">0</div>
+                        <div class="stat-label">Монеты</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="streakDays">0</div>
+                        <div class="stat-label">Дней подряд</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="achievementsCount">0</div>
+                        <div class="stat-label">Достижений</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Quests -->
+            <div class="games-category">
+                <h3>📅 Ежедневные задания</h3>
+                <div class="quests-grid" id="dailyQuestsGrid">
+                    <!-- Daily quests will be loaded here -->
                 </div>
             </div>
 
             <!-- Weekly Challenges -->
-            <div class="challenges-category">
+            <div class="games-category">
                 <h3>📊 Недельные челленджи</h3>
                 <div class="challenges-grid" id="weeklyChallengesGrid">
                     <!-- Weekly challenges will be loaded here -->
                 </div>
             </div>
 
-            <!-- Progress Summary -->
-            <div class="challenges-summary">
-                <div class="summary-card">
-                    <div class="summary-icon">🎯</div>
-                    <div class="summary-content">
-                        <div class="summary-number" id="totalChallengesCompleted">0</div>
-                        <div class="summary-label">Выполнено челленджей</div>
-                    </div>
+            <!-- Special Events -->
+            <div class="games-category">
+                <h3>🎪 Специальные события</h3>
+                <div class="events-grid" id="specialEventsGrid">
+                    <!-- Special events will be loaded here -->
                 </div>
-                <div class="summary-card">
-                    <div class="summary-icon">⭐</div>
-                    <div class="summary-content">
-                        <div class="summary-number" id="totalRewardsEarned">0</div>
-                        <div class="summary-label">Получено опыта</div>
-                    </div>
+            </div>
+
+            <!-- Rewards Shop -->
+            <div class="games-category">
+                <h3>🛍️ Магазин наград</h3>
+                <div class="shop-grid" id="rewardsShopGrid">
+                    <!-- Shop items will be loaded here -->
                 </div>
             </div>
         </section>
@@ -250,6 +281,20 @@
                         <span class="user-stat">⭐ <span id="userFavorites">0</span> избранных</span>
                         <span class="user-stat">💬 <span id="userReviewsCount">0</span> отзывов</span>
                         <span class="user-stat">📖 <span id="totalPagesRead">0</span> стр.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level and XP -->
+            <div class="level-section">
+                <div class="level-display">
+                    <div class="level-info">
+                        <span class="level-label">Уровень</span>
+                        <span class="level-number" id="userLevel">1</span>
+                    </div>
+                    <div class="xp-bar">
+                        <div class="xp-fill" id="expFill"></div>
+                        <div class="xp-text" id="expText">0/100 XP</div>
                     </div>
                 </div>
             </div>
@@ -368,6 +413,109 @@
                     <div id="syncStatus" class="sync-status" style="margin-top: 10px; padding: 8px; background: var(--bg-light); border-radius: 8px; font-size: 0.8em; color: var(--text-light);">
                         📡 Синхронизация: <span id="syncIndicator">активна</span>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="content-section" id="settingsSection">
+            <div class="section-header">
+                <h2>⚙️ Настройки профиля</h2>
+            </div>
+
+            <div class="settings-container">
+                <div class="settings-group">
+                    <h3>👤 Информация профиля</h3>
+                    <div class="setting-item">
+                        <label>Имя пользователя:</label>
+                        <input type="text" id="settingsName" class="settings-input" placeholder="Введите имя">
+                    </div>
+                    <div class="setting-item">
+                        <label>Аватар:</label>
+                        <div class="avatar-options">
+                            <div class="avatar-option" onclick="selectAvatar('👤')">👤</div>
+                            <div class="avatar-option" onclick="selectAvatar('📚')">📚</div>
+                            <div class="avatar-option" onclick="selectAvatar('🎓')">🎓</div>
+                            <div class="avatar-option" onclick="selectAvatar('✍️')">✍️</div>
+                            <div class="avatar-option" onclick="selectAvatar('🧙')">🧙</div>
+                            <div class="avatar-option" onclick="selectAvatar('👑')">👑</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>🎨 Внешний вид</h3>
+                    <div class="setting-item">
+                        <label>Фон профиля:</label>
+                        <div class="background-options">
+                            <div class="bg-option" onclick="selectBackground('default')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">По умолчанию</div>
+                            <div class="bg-option" onclick="selectBackground('dark')" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);">Тёмный</div>
+                            <div class="bg-option" onclick="selectBackground('blue')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Синий</div>
+                            <div class="bg-option" onclick="selectBackground('purple')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Фиолетовый</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="save-settings-btn" onclick="saveSettings()">💾 Сохранить настройки</button>
+                    <button class="reset-settings-btn" onclick="resetSettings()">🔄 Сбросить</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="content-section" id="settingsSection">
+            <div class="section-header">
+                <h2>⚙️ Настройки профиля</h2>
+            </div>
+
+            <!-- Profile Settings -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>👤 Основные настройки</h3>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label>Имя пользователя:</label>
+                        <input type="text" id="settingsName" placeholder="Введите имя" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label>Аватар:</label>
+                        <div class="avatar-selector">
+                            <div class="avatar-option" onclick="selectAvatar('👤')">👤</div>
+                            <div class="avatar-option" onclick="selectAvatar('📚')">📚</div>
+                            <div class="avatar-option" onclick="selectAvatar('🎓')">🎓</div>
+                            <div class="avatar-option" onclick="selectAvatar('✍️')">✍️</div>
+                            <div class="avatar-option" onclick="selectAvatar('🧙')">🧙</div>
+                            <div class="avatar-option" onclick="selectAvatar('👑')">👑</div>
+                            <div class="avatar-option" onclick="selectAvatar('🌟')">🌟</div>
+                            <div class="avatar-option" onclick="selectAvatar('🎭')">🎭</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Фон профиля:</label>
+                        <div class="bg-selector">
+                            <div class="bg-option" onclick="selectBackground('default')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">По умолчанию</div>
+                            <div class="bg-option" onclick="selectBackground('blue')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Синий</div>
+                            <div class="bg-option" onclick="selectBackground('green')" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Зелёный</div>
+                            <div class="bg-option" onclick="selectBackground('purple')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Фиолетовый</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="save-btn" onclick="saveSettings()">💾 Сохранить</button>
+                        <button type="button" class="reset-btn" onclick="resetSettings()">🔄 Сбросить</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Titles Section -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>🏆 Титулы</h3>
+                    <span class="section-badge" id="titlesCount">0</span>
+                </div>
+                <div class="titles-container" id="titlesContainer">
+                    <!-- Titles will be loaded here -->
                 </div>
             </div>
         </section>

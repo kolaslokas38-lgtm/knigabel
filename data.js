@@ -380,6 +380,381 @@ const MOCK_BOOKS = [
     pages: 320,
     rating: 4.8,
     reviewsCount: 189
+  },
+  {
+    id: 26,
+    title: "Шерлок Холмс: Собака Баскервилей",
+    author: "Артур Конан Дойл",
+    year: 1902,
+    genre: "Детектив",
+    description: "Классический детективный роман о знаменитом сыщике Шерлоке Холмсе и докторе Ватсоне.",
+    isbn: "978-5-699-80706-7",
+    available: true,
+    icon: "🕵️",
+    readLink: "https://ilibrary.ru/text/1190/p.1/index.html",
+    pages: 256,
+    rating: 4.6,
+    reviewsCount: 145
+  },
+  {
+    id: 27,
+    title: "Гарри Поттер и философский камень",
+    author: "Джоан Роулинг",
+    year: 1997,
+    genre: "Фэнтези",
+    description: "Первая книга о приключениях юного волшебника Гарри Поттера в Хогвартсе.",
+    isbn: "978-5-699-80707-4",
+    available: true,
+    icon: "🧙",
+    readLink: "https://ilibrary.ru/text/1200/p.1/index.html",
+    pages: 336,
+    rating: 4.9,
+    reviewsCount: 312
+  },
+  {
+    id: 28,
+    title: "Убить пересмешника",
+    author: "Харпер Ли",
+    year: 1960,
+    genre: "Драма",
+    description: "Роман о расовой несправедливости и детской невинности в Америке 1930-х годов.",
+    isbn: "978-5-699-80708-1",
+    available: true,
+    icon: "⚖️",
+    readLink: "https://ilibrary.ru/text/1210/p.1/index.html",
+    pages: 376,
+    rating: 4.7,
+    reviewsCount: 198
+  },
+  {
+    id: 29,
+    title: "Великий Гэтсби",
+    author: "Фрэнсис Скотт Фицджеральд",
+    year: 1925,
+    genre: "Роман",
+    description: "История о американской мечте, любви и трагедии в эпоху джаза.",
+    isbn: "978-5-699-80709-8",
+    available: true,
+    icon: "🎺",
+    readLink: "https://ilibrary.ru/text/1220/p.1/index.html",
+    pages: 180,
+    rating: 4.4,
+    reviewsCount: 167
+  },
+  {
+    id: 30,
+    title: "Над пропастью во ржи",
+    author: "Джером Дэвид Сэлинджер",
+    year: 1951,
+    genre: "Роман",
+    description: "История подростка Холдена Колфилда и его видения мира.",
+    isbn: "978-5-699-80710-4",
+    available: true,
+    icon: "👦",
+    readLink: "https://ilibrary.ru/text/1230/p.1/index.html",
+    pages: 277,
+    rating: 4.5,
+    reviewsCount: 234
+  },
+  {
+    id: 31,
+    title: "Сто лет одиночества",
+    author: "Габриэль Гарсия Маркес",
+    year: 1967,
+    genre: "Магический реализм",
+    description: "Эпопея семьи Буэндиа в вымышленном городе Макондо.",
+    isbn: "978-5-699-80711-1",
+    available: true,
+    icon: "🌪️",
+    readLink: "https://ilibrary.ru/text/1240/p.1/index.html",
+    pages: 448,
+    rating: 4.8,
+    reviewsCount: 189
+  },
+  {
+    id: 32,
+    title: "Лолита",
+    author: "Владимир Набоков",
+    year: 1955,
+    genre: "Роман",
+    description: "Скандальный роман о сложных взаимоотношениях.",
+    isbn: "978-5-699-80712-8",
+    available: true,
+    icon: "🦋",
+    readLink: "https://ilibrary.ru/text/1250/p.1/index.html",
+    pages: 336,
+    rating: 4.3,
+    reviewsCount: 156
+  },
+  {
+    id: 33,
+    title: "Властелин колец: Братство кольца",
+    author: "Джон Рональд Руэл Толкин",
+    year: 1954,
+    genre: "Фэнтези",
+    description: "Первая часть эпической трилогии о Средиземье.",
+    isbn: "978-5-699-80713-5",
+    available: true,
+    icon: "💍",
+    readLink: "https://ilibrary.ru/text/1260/p.1/index.html",
+    pages: 576,
+    rating: 4.9,
+    reviewsCount: 278
+  },
+  {
+    id: 34,
+    title: "Дон Кихот",
+    author: "Мигель де Сервантес",
+    year: 1605,
+    genre: "Роман",
+    description: "Классический роман о рыцаре и его оруженосце.",
+    isbn: "978-5-699-80714-2",
+    available: true,
+    icon: "⚔️",
+    readLink: "https://ilibrary.ru/text/1270/p.1/index.html",
+    pages: 1024,
+    rating: 4.6,
+    reviewsCount: 134
+  },
+  {
+    id: 35,
+    title: "Фауст",
+    author: "Иоганн Вольфганг Гёте",
+    year: 1808,
+    genre: "Трагедия",
+    description: "Философская трагедия о сделке с дьяволом.",
+    isbn: "978-5-699-80715-9",
+    available: true,
+    icon: "😈",
+    readLink: "https://ilibrary.ru/text/1280/p.1/index.html",
+    pages: 464,
+    rating: 4.4,
+    reviewsCount: 98
+  },
+  {
+    id: 36,
+    title: "Божественная комедия",
+    author: "Данте Алигьери",
+    year: 1320,
+    genre: "Поэма",
+    description: "Эпическая поэма о путешествии по загробному миру.",
+    isbn: "978-5-699-80716-6",
+    available: true,
+    icon: "👼",
+    readLink: "https://ilibrary.ru/text/1290/p.1/index.html",
+    pages: 688,
+    rating: 4.7,
+    reviewsCount: 87
+  },
+  {
+    id: 37,
+    title: "Искусство войны",
+    author: "Сунь Цзы",
+    year: -500,
+    genre: "Трактат",
+    description: "Древний китайский трактат о стратегии и войне.",
+    isbn: "978-5-699-80717-3",
+    available: true,
+    icon: "⚔️",
+    readLink: "https://ilibrary.ru/text/1300/p.1/index.html",
+    pages: 96,
+    rating: 4.5,
+    reviewsCount: 145
+  },
+  {
+    id: 38,
+    title: "Краткая история времени",
+    author: "Стивен Хокинг",
+    year: 1988,
+    genre: "Научно-популярная",
+    description: "Введение в современную космологию для широкой аудитории.",
+    isbn: "978-5-699-80718-0",
+    available: true,
+    icon: "🌌",
+    readLink: "https://ilibrary.ru/text/1310/p.1/index.html",
+    pages: 256,
+    rating: 4.6,
+    reviewsCount: 203
+  },
+  {
+    id: 39,
+    title: "Солярис",
+    author: "Станислав Лем",
+    year: 1961,
+    genre: "Научная фантастика",
+    description: "Философский роман о контакте с инопланетным разумом.",
+    isbn: "978-5-699-80719-7",
+    available: true,
+    icon: "🌀",
+    readLink: "https://ilibrary.ru/text/1320/p.1/index.html",
+    pages: 224,
+    rating: 4.4,
+    reviewsCount: 167
+  },
+  {
+    id: 40,
+    title: "Дюна",
+    author: "Фрэнк Герберт",
+    year: 1965,
+    genre: "Научная фантастика",
+    description: "Эпическая сага о пустынной планете Арракис.",
+    isbn: "978-5-699-80720-3",
+    available: true,
+    icon: "🏜️",
+    readLink: "https://ilibrary.ru/text/1330/p.1/index.html",
+    pages: 688,
+    rating: 4.8,
+    reviewsCount: 245
+  },
+  {
+    id: 41,
+    title: "Метро 2033",
+    author: "Дмитрий Глуховский",
+    year: 2005,
+    genre: "Постапокалипсис",
+    description: "Роман о выживании в московском метро после ядерной войны.",
+    isbn: "978-5-699-80721-0",
+    available: true,
+    icon: "🚇",
+    readLink: "https://ilibrary.ru/text/1340/p.1/index.html",
+    pages: 352,
+    rating: 4.7,
+    reviewsCount: 189
+  },
+  {
+    id: 42,
+    title: "Тёмные аллеи",
+    author: "Иван Бунин",
+    year: 1943,
+    genre: "Проза",
+    description: "Сборник рассказов о любви и человеческих страстях.",
+    isbn: "978-5-699-80722-7",
+    available: true,
+    icon: "🌳",
+    readLink: "https://ilibrary.ru/text/1350/p.1/index.html",
+    pages: 288,
+    rating: 4.5,
+    reviewsCount: 98
+  },
+  {
+    id: 43,
+    title: "Чайка по имени Джонатан Ливингстон",
+    author: "Ричард Бах",
+    year: 1970,
+    genre: "Философская притча",
+    description: "История о чайке, которая стремится к совершенству.",
+    isbn: "978-5-699-80723-4",
+    available: true,
+    icon: "🦅",
+    readLink: "https://ilibrary.ru/text/1360/p.1/index.html",
+    pages: 128,
+    rating: 4.6,
+    reviewsCount: 234
+  },
+  {
+    id: 44,
+    title: "Атлант расправил плечи",
+    author: "Айн Рэнд",
+    year: 1957,
+    genre: "Философский роман",
+    description: "Роман о роли разума и индивидуализма в обществе.",
+    isbn: "978-5-699-80724-1",
+    available: true,
+    icon: "🏗️",
+    readLink: "https://ilibrary.ru/text/1370/p.1/index.html",
+    pages: 1168,
+    rating: 4.3,
+    reviewsCount: 145
+  },
+  {
+    id: 45,
+    title: "Общество потребления",
+    author: "Жан Бодрийяр",
+    year: 1970,
+    genre: "Философия",
+    description: "Критика общества потребления и симулякров.",
+    isbn: "978-5-699-80725-8",
+    available: true,
+    icon: "🛒",
+    readLink: "https://ilibrary.ru/text/1380/p.1/index.html",
+    pages: 272,
+    rating: 4.2,
+    reviewsCount: 76
+  },
+  {
+    id: 46,
+    title: "Смерть Ивана Ильича",
+    author: "Лев Толстой",
+    year: 1886,
+    genre: "Философская повесть",
+    description: "Размышления о смысле жизни и смерти.",
+    isbn: "978-5-699-80726-5",
+    available: true,
+    icon: "⚰️",
+    readLink: "https://ilibrary.ru/text/1390/p.1/index.html",
+    pages: 96,
+    rating: 4.7,
+    reviewsCount: 123
+  },
+  {
+    id: 47,
+    title: "Записки из подполья",
+    author: "Федор Достоевский",
+    year: 1864,
+    genre: "Философская повесть",
+    description: "Монолог «подпольного» человека о свободе воли.",
+    isbn: "978-5-699-80727-2",
+    available: true,
+    icon: "🏠",
+    readLink: "https://ilibrary.ru/text/1400/p.1/index.html",
+    pages: 112,
+    rating: 4.5,
+    reviewsCount: 156
+  },
+  {
+    id: 48,
+    title: "Шум и ярость",
+    author: "Уильям Фолкнер",
+    year: 1929,
+    genre: "Модернизм",
+    description: "Экспериментальный роман о семье Компсонов.",
+    isbn: "978-5-699-80728-9",
+    available: true,
+    icon: "🌪️",
+    readLink: "https://ilibrary.ru/text/1410/p.1/index.html",
+    pages: 416,
+    rating: 4.4,
+    reviewsCount: 89
+  },
+  {
+    id: 49,
+    title: "Процесс",
+    author: "Франц Кафка",
+    year: 1925,
+    genre: "Абсурдистская проза",
+    description: "История Йозефа К., обвиненного в неизвестном преступлении.",
+    isbn: "978-5-699-80729-6",
+    available: true,
+    icon: "⚖️",
+    readLink: "https://ilibrary.ru/text/1420/p.1/index.html",
+    pages: 256,
+    rating: 4.6,
+    reviewsCount: 178
+  },
+  {
+    id: 50,
+    title: "Замок",
+    author: "Франц Кафка",
+    year: 1926,
+    genre: "Абсурдистская проза",
+    description: "История землемера К., пытающегося проникнуть в замок.",
+    isbn: "978-5-699-80730-2",
+    available: true,
+    icon: "🏰",
+    readLink: "https://ilibrary.ru/text/1430/p.1/index.html",
+    pages: 352,
+    rating: 4.5,
+    reviewsCount: 134
   }
 ];
 const MOCK_GENRES = [
@@ -539,6 +914,7 @@ const BOOK_QUOTES = [
   }
 ];
 
+
 const MOCK_EVENTS = [
   {
     id: 1,
@@ -623,6 +999,102 @@ const MOCK_EVENTS = [
     price: 20,
     image: "🏛️",
     category: "экскурсия"
+  }
+];
+
+const TITLES = [
+  // Бесплатные титулы за достижения
+  {
+    id: 'first_reader',
+    name: 'Первый читатель',
+    description: 'За первое прочтение книги',
+    icon: '📖',
+    type: 'achievement',
+    condition: (user) => user.stats.booksCompleted >= 1,
+    rarity: 'common'
+  },
+  {
+    id: 'bookworm',
+    name: 'Книжный червь',
+    description: 'Прочитано 10 книг',
+    icon: '🐛',
+    type: 'achievement',
+    condition: (user) => user.stats.booksCompleted >= 10,
+    rarity: 'uncommon'
+  },
+  {
+    id: 'literary_critic',
+    name: 'Литературный критик',
+    description: 'Написано 5 отзывов',
+    icon: '📝',
+    type: 'achievement',
+    condition: (user) => user.myReviews.length >= 5,
+    rarity: 'uncommon'
+  },
+  {
+    id: 'event_goer',
+    name: 'Посетитель мероприятий',
+    description: 'Посещено 3 события',
+    icon: '🎭',
+    type: 'achievement',
+    condition: (user) => (user.stats.totalEvents || 0) >= 3,
+    rarity: 'rare'
+  },
+  {
+    id: 'level_master',
+    name: 'Мастер уровней',
+    description: 'Достигнут 10 уровень',
+    icon: '⭐',
+    type: 'achievement',
+    condition: (user) => user.level >= 10,
+    rarity: 'epic'
+  },
+
+  // Покупаемые титулы
+  {
+    id: 'vip_reader',
+    name: 'VIP Читатель',
+    description: 'Эксклюзивный статус для активных читателей',
+    icon: '👑',
+    type: 'purchase',
+    price: 500,
+    rarity: 'legendary'
+  },
+  {
+    id: 'book_collector',
+    name: 'Коллекционер книг',
+    description: 'Для истинных ценителей литературы',
+    icon: '📚',
+    type: 'purchase',
+    price: 300,
+    rarity: 'epic'
+  },
+  {
+    id: 'literary_expert',
+    name: 'Литературный эксперт',
+    description: 'Статус для знатоков литературы',
+    icon: '🎓',
+    type: 'purchase',
+    price: 200,
+    rarity: 'rare'
+  },
+  {
+    id: 'event_organizer',
+    name: 'Организатор событий',
+    description: 'Для тех, кто любит культурные мероприятия',
+    icon: '🎪',
+    type: 'purchase',
+    price: 150,
+    rarity: 'uncommon'
+  },
+  {
+    id: 'supporter',
+    name: 'Поддержка проекта',
+    description: 'Благодарность за поддержку библиотеки',
+    icon: '❤️',
+    type: 'purchase',
+    price: 100,
+    rarity: 'common'
   }
 ];
 
@@ -855,6 +1327,239 @@ const STORAGE_KEYS = {
     BOOK_REVIEWS: 'knigabel_global_reviews_v2' // Изменен ключ для сброса старых отзывов
 };
 
+// Игровые данные
+const GAME_DATA = {
+    // Ежедневные задания
+    dailyQuests: [
+        {
+            id: 'read_pages',
+            title: 'Читатель страниц',
+            description: 'Прочитайте 10 страниц',
+            icon: '📖',
+            reward: { exp: 20, coins: 5 },
+            progress: 0,
+            target: 10,
+            completed: false
+        },
+        {
+            id: 'borrow_book',
+            title: 'Книжный гурман',
+            description: 'Забронируйте книгу',
+            icon: '📚',
+            reward: { exp: 15, coins: 3 },
+            progress: 0,
+            target: 1,
+            completed: false
+        },
+        {
+            id: 'write_review',
+            title: 'Критик',
+            description: 'Напишите отзыв о книге',
+            icon: '✍️',
+            reward: { exp: 25, coins: 7 },
+            progress: 0,
+            target: 1,
+            completed: false
+        },
+        {
+            id: 'favorite_book',
+            title: 'Любитель книг',
+            description: 'Добавьте книгу в избранное',
+            icon: '❤️',
+            reward: { exp: 10, coins: 2 },
+            progress: 0,
+            target: 1,
+            completed: false
+        }
+    ],
+
+    // Недельные челленджи
+    weeklyChallenges: [
+        {
+            id: 'read_books_week',
+            title: 'Недельный читатель',
+            description: 'Прочитайте 5 книг за неделю',
+            icon: '📚',
+            reward: { exp: 100, coins: 25 },
+            progress: 0,
+            target: 5,
+            completed: false
+        },
+        {
+            id: 'pages_week',
+            title: 'Марафонец чтения',
+            description: 'Прочитайте 200 страниц за неделю',
+            icon: '🏃',
+            reward: { exp: 80, coins: 20 },
+            progress: 0,
+            target: 200,
+            completed: false
+        },
+        {
+            id: 'reviews_week',
+            title: 'Супер-критик',
+            description: 'Напишите 3 отзыва за неделю',
+            icon: '⭐',
+            reward: { exp: 60, coins: 15 },
+            progress: 0,
+            target: 3,
+            completed: false
+        }
+    ],
+
+    // Специальные события
+    specialEvents: [
+        {
+            id: 'reading_challenge',
+            title: 'Челлендж чтения',
+            description: 'Прочитайте как можно больше страниц за 24 часа',
+            icon: '⏰',
+            active: true,
+            endDate: '2024-12-31',
+            reward: { exp: 50, coins: 10 }
+        },
+        {
+            id: 'author_quiz',
+            title: 'Викторина об авторах',
+            description: 'Ответьте на вопросы об авторах книг',
+            icon: '🧠',
+            active: true,
+            endDate: '2024-12-31',
+            reward: { exp: 30, coins: 8 }
+        }
+    ],
+
+    // Магазин наград
+    rewardsShop: [
+        {
+            id: 'avatar_frame',
+            title: 'Рамка для аватара',
+            description: 'Золотая рамка для профиля',
+            icon: '👑',
+            price: 50,
+            owned: false
+        },
+        {
+            id: 'theme_unlock',
+            title: 'Новая тема',
+            description: 'Разблокируйте тёмную тему',
+            icon: '🌙',
+            price: 100,
+            owned: false
+        },
+        {
+            id: 'special_badge',
+            title: 'Специальный значок',
+            description: 'Уникальный значок профиля',
+            icon: '🏅',
+            price: 75,
+            owned: false
+        },
+        {
+            id: 'bonus_exp',
+            title: 'Бонус опыта',
+            description: '+50 опыта мгновенно',
+            icon: '⚡',
+            price: 25,
+            consumable: true
+        }
+    ],
+
+    // Система титулов
+    titles: [
+        {
+            id: 'novice_reader',
+            name: 'Начинающий читатель',
+            description: 'Первый шаг в мир книг',
+            icon: '📖',
+            price: 100,
+            unlocked: false,
+            condition: (user) => user.stats.booksCompleted >= 1
+        },
+        {
+            id: 'bookworm',
+            name: 'Книжный червь',
+            description: 'Любитель чтения',
+            icon: '📚',
+            price: 250,
+            unlocked: false,
+            condition: (user) => user.stats.booksCompleted >= 10
+        },
+        {
+            id: 'literature_expert',
+            name: 'Эксперт литературы',
+            description: 'Знаток книжного мира',
+            icon: '🎓',
+            price: 500,
+            unlocked: false,
+            condition: (user) => user.stats.booksCompleted >= 25
+        },
+        {
+            id: 'bibliophile',
+            name: 'Библиофил',
+            description: 'Истинный ценитель книг',
+            icon: '🏛️',
+            price: 1000,
+            unlocked: false,
+            condition: (user) => user.stats.booksCompleted >= 50
+        },
+        {
+            id: 'reading_legend',
+            name: 'Легенда чтения',
+            description: 'Мастер книжного искусства',
+            icon: '👑',
+            price: 2000,
+            unlocked: false,
+            condition: (user) => user.stats.booksCompleted >= 100
+        },
+        {
+            id: 'critic',
+            name: 'Критик',
+            description: 'Знаток литературной критики',
+            icon: '✍️',
+            price: 300,
+            unlocked: false,
+            condition: (user) => user.stats.reviewsWritten >= 10
+        },
+        {
+            id: 'social_reader',
+            name: 'Социальный читатель',
+            description: 'Общительный книголюб',
+            icon: '👥',
+            price: 400,
+            unlocked: false,
+            condition: (user) => user.stats.totalEvents >= 5
+        },
+        {
+            id: 'speed_demon',
+            name: 'Скоростной демон',
+            description: 'Быстрый читатель',
+            icon: '⚡',
+            price: 600,
+            unlocked: false,
+            condition: (user) => user.stats.fastestRead <= 2
+        },
+        {
+            id: 'marathon_runner',
+            name: 'Марафонец',
+            description: 'Выносливый читатель',
+            icon: '🏃',
+            price: 800,
+            unlocked: false,
+            condition: (user) => user.readingStreak >= 30
+        },
+        {
+            id: 'achievement_hunter',
+            name: 'Охотник за достижениями',
+            description: 'Мастер достижений',
+            icon: '🎯',
+            price: 1500,
+            unlocked: false,
+            condition: (user) => user.achievements.length >= 15
+        }
+    ]
+};
+
 // Рассчитываем статистику библиотеки
 const MOCK_STATS = {
     totalBooks: MOCK_BOOKS.length,
@@ -871,6 +1576,7 @@ const DEFAULT_USER_DATA = {
     registrationDate: new Date().toLocaleDateString('ru-RU'),
     telegramId: null,
     theme: 'light',
+    profileBackground: 'default',
     // Система уровней и достижений
     level: 1,
     experience: 0,
@@ -879,6 +1585,20 @@ const DEFAULT_USER_DATA = {
     readingStreak: 0,
     achievements: [],
     bookProgress: {}, // {bookId: {pagesRead: number, completed: boolean, achievements: []}}
+    // Игровые данные
+    coins: 0,
+    gameStats: {
+        dailyQuestsCompleted: 0,
+        weeklyChallengesCompleted: 0,
+        totalCoinsEarned: 0,
+        specialEventsParticipated: 0
+    },
+    gameProgress: {
+        dailyQuests: [],
+        weeklyChallenges: [],
+        specialEvents: [],
+        shopItems: []
+    },
     borrowedBooks: [
         {
             id: 1,
@@ -910,6 +1630,7 @@ const DEFAULT_USER_DATA = {
     favorites: [1, 2],
     myReviews: [], // Новое поле для отзывов пользователя
     bookedEvents: [], // Новое поле для забронированных событий
+    titles: [], // Новое поле для титулов
     stats: {
         totalBooks: 25,
         activeBorrows: 1,
@@ -995,7 +1716,32 @@ const ACHIEVEMENTS = [
 
     // Специальные достижения
     { id: 'early_bird', name: 'Ранняя пташка', description: 'Используйте приложение в первые 7 дней', icon: '🐦', type: 'special', condition: (user) => user.stats.readingDays >= 7 },
-    { id: 'streak_master', name: 'Мастер серии', description: 'Поддерживайте серию чтения 7 дней', icon: '🔥', type: 'special', condition: (user) => user.readingStreak >= 7 }
+    { id: 'streak_master', name: 'Мастер серии', description: 'Поддерживайте серию чтения 7 дней', icon: '🔥', type: 'special', condition: (user) => user.readingStreak >= 7 },
+
+    // Достижения за жанры
+    { id: 'classic_reader', name: 'Классик', description: 'Прочитайте 5 классических произведений', icon: '📜', type: 'genres', condition: (user) => user.stats.booksCompleted >= 5 },
+    { id: 'fantasy_explorer', name: 'Исследователь фантастики', description: 'Прочитайте 3 фантастических книги', icon: '🧙', type: 'genres', condition: (user) => user.stats.booksCompleted >= 3 },
+    { id: 'mystery_solver', name: 'Разгадыватель тайн', description: 'Прочитайте 3 детективных книги', icon: '🕵️', type: 'genres', condition: (user) => user.stats.booksCompleted >= 3 },
+
+    // Достижения за социальную активность
+    { id: 'social_butterfly', name: 'Социальная бабочка', description: 'Добавьте 10 друзей', icon: '🦋', type: 'social', condition: (user) => user.stats.friendsCount >= 10 },
+    { id: 'review_master', name: 'Мастер отзывов', description: 'Получите 50 лайков на отзывы', icon: '👍', type: 'social', condition: (user) => user.stats.reviewLikes >= 50 },
+
+    // Достижения за события
+    { id: 'event_attendee', name: 'Посетитель', description: 'Посетите 10 мероприятий', icon: '🎭', type: 'events', condition: (user) => user.stats.totalEvents >= 10 },
+    { id: 'event_organizer', name: 'Организатор', description: 'Организуйте мероприятие', icon: '🎪', type: 'events', condition: (user) => user.stats.eventsOrganized >= 1 },
+
+    // Достижения за коллекционирование
+    { id: 'collection_starter', name: 'Коллекционер', description: 'Соберите 10 книг в избранное', icon: '⭐', type: 'collection', condition: (user) => user.favorites.length >= 10 },
+    { id: 'collection_master', name: 'Мастер коллекций', description: 'Соберите 50 книг в избранное', icon: '🏆', type: 'collection', condition: (user) => user.favorites.length >= 50 },
+
+    // Достижения за производительность
+    { id: 'speed_reader', name: 'Быстрый читатель', description: 'Прочитайте книгу за 1 день', icon: '⚡', type: 'performance', condition: (user) => user.stats.fastestRead <= 1 },
+    { id: 'consistent_reader', name: 'Последовательный читатель', description: 'Чтение 30 дней подряд', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 30 },
+
+    // Достижения за достижения
+    { id: 'achievement_hunter', name: 'Охотник за достижениями', description: 'Получите 10 достижений', icon: '🎯', type: 'meta', condition: (user) => user.achievements.length >= 10 },
+    { id: 'achievement_master', name: 'Мастер достижений', description: 'Получите все достижения', icon: '👑', type: 'meta', condition: (user) => user.achievements.length >= ACHIEVEMENTS.length }
 ];
 
 // Функции для работы с достижениями
@@ -1069,6 +1815,7 @@ window.APP_DATA = {
     MOCK_BOOKS,
     MOCK_GENRES,
     MOCK_EVENTS,
+    TITLES,
     RED_BOOK_ANIMALS,
     STORAGE_KEYS,
     BOOK_REVIEWS,
@@ -1082,5 +1829,6 @@ window.APP_DATA = {
     DAILY_CHALLENGES,
     WEEKLY_CHALLENGES,
     AUTHOR_BIOS,
-    BOOK_QUOTES
+    BOOK_QUOTES,
+    GAME_DATA
 };

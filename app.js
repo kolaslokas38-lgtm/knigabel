@@ -10,7 +10,6 @@ let currentEventId = null;
 let selectedTickets = 1;
 let currentBookingEventId = null;
 let ticketCount = 1;
-let bookRecommendations = [];
 let reviewsChannel = null; // Для синхронизации отзывов между вкладками
 let currentReadingBook = null;
 let currentPage = 1;
@@ -122,6 +121,13 @@ function showSection(sectionName) {
     if (sectionName === 'events') {
         loadEvents();
     }
+    if (sectionName === 'settings') {
+        loadSettings();
+        loadTitles();
+    }
+    if (sectionName === 'games') {
+        loadGamesSection();
+    }
     if (sectionName === 'challenges') {
         loadChallenges();
     }
@@ -153,7 +159,6 @@ async function loadInitialData() {
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
         updateStats(window.APP_DATA.MOCK_STATS);
         updateUserProfile();
-        updateRecommendations();
         renderWeeklyBooks();
         renderBookOfDay();
         showLoading(false);
@@ -602,8 +607,6 @@ function submitReview() {
         showBookDetails(currentReviewBookId);
     }
 
-    // Обновляем рекомендации, так как рейтинг книги изменился
-    updateRecommendations();
 }
 
 function likeReview(reviewId) {
@@ -782,7 +785,6 @@ async function borrowBook(bookId) {
             updateBooksDisplay(currentBooks);
             updateStats(window.APP_DATA.MOCK_STATS);
             updateUserProfile();
-            updateRecommendations();
             renderWeeklyBooks();
             renderBookOfDay();
             closeModal();
@@ -834,7 +836,6 @@ function returnBook(bookId) {
         updateBooksDisplay(currentBooks);
         updateStats(window.APP_DATA.MOCK_STATS);
         updateUserProfile();
-        updateRecommendations();
         renderWeeklyBooks();
         renderBookOfDay();
     }
@@ -864,7 +865,6 @@ function toggleFavorite(bookId) {
     
     updateBooksDisplay(currentBooks);
     updateUserProfile();
-    updateRecommendations();
 
     if (!document.getElementById('bookModal').classList.contains('hidden')) {
         const modalTitle = document.getElementById('modalTitle').textContent;
@@ -915,6 +915,9 @@ function updateUserProfile() {
     updateHistoryList();
     updateFavoritesList();
     updateMyReviewsList();
+
+    // Проверяем и разблокируем титулы
+    checkAndUnlockTitles();
     updateBookedEventsList();
     updateAchievementsList();
 }
@@ -1325,73 +1328,6 @@ function closeAuthorModal() {
     document.getElementById('authorModal').classList.add('hidden');
 }
 
-// Функция для загрузки событий
-function loadEvents() {
-    const container = document.getElementById('eventsContainer');
-    const loading = document.getElementById('eventsLoading');
-    const emptyState = document.getElementById('eventsEmptyState');
-    const events = window.APP_DATA.MOCK_EVENTS;
-
-    loading.classList.remove('hidden');
-    container.innerHTML = '';
-    emptyState.classList.add('hidden');
-
-    setTimeout(() => {
-        if (!events || events.length === 0) {
-            emptyState.classList.remove('hidden');
-            updateEventsCount(0);
-            loading.classList.add('hidden');
-            return;
-        }
-
-        container.innerHTML = events.map(event => {
-            const isBooked = userData.bookedEvents.some(b => b.eventId === event.id);
-            const ticketsLeft = event.availableTickets;
-            const ticketStatus = ticketsLeft === 0 ? 'sold-out' : ticketsLeft <= 5 ? 'low' : 'available';
-
-            return `
-                <div class="event-card">
-                    <div class="event-header">
-                        <div class="event-cover">
-                            <div class="event-icon">${event.image}</div>
-                        </div>
-                        <div class="event-info">
-                            <div class="event-title">${escapeHtml(event.title)}</div>
-                            <div class="event-meta">${event.type}</div>
-                            <div class="event-date-time">
-                                <span class="event-date">📅 ${formatDate(event.date)}</span>
-                                <span class="event-time">🕐 ${event.time}</span>
-                            </div>
-                            <div class="event-location">📍 ${escapeHtml(event.location)}</div>
-                            <div class="event-price">💰 ${event.price} BYN</div>
-                            <div class="event-tickets tickets-${ticketStatus}">
-                                ${ticketsLeft === 0 ? 'Распродано' : `Осталось ${ticketsLeft} билетов`}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="event-actions">
-                        <button
-                            class="view-event-btn"
-                            onclick="showEventDetails(${event.id})"
-                        >
-                            👁️ Подробнее
-                        </button>
-                        <button
-                            class="book-event-btn"
-                            onclick="openBookingModal(${event.id})"
-                            ${ticketsLeft === 0 || isBooked ? 'disabled' : ''}
-                        >
-                            ${isBooked ? '🎫 Уже забронировано' : (ticketsLeft === 0 ? 'Распродано' : 'Забронировать')}
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        updateEventsCount(events.length);
-        loading.classList.add('hidden');
-    }, 500);
-}
 
 // Функция для показа деталей события
 function showEventDetails(eventId) {
@@ -1765,8 +1701,24 @@ function generatePageContent(book, page) {
         return content.map(paragraph => `<p>${paragraph}</p>`).join('');
     }
 
-    // Сообщение о недоступности текста для книг без реального контента
-    return '<div style="text-align: center; padding: 50px; color: var(--text-light);"><h3>Текст книги временно недоступен</h3><p>Мы работаем над добавлением полных текстов произведений.</p><p>Приносим извинения за неудобства.</p></div>';
+    // Генерируем демо-контент для книг без реального текста
+    const demoContent = [];
+    const words = [
+        'книга', 'читатель', 'история', 'автор', 'герой', 'событие', 'время', 'место',
+        'любовь', 'жизнь', 'счастье', 'горе', 'радость', 'печаль', 'надежда', 'страх',
+        'друг', 'враг', 'путешествие', 'приключение', 'тайна', 'открытие', 'знание', 'мудрость'
+    ];
+
+    for (let i = 0; i < 15; i++) {
+        const sentenceLength = Math.floor(Math.random() * 10) + 5;
+        const sentence = [];
+        for (let j = 0; j < sentenceLength; j++) {
+            sentence.push(words[Math.floor(Math.random() * words.length)]);
+        }
+        demoContent.push(sentence.join(' ') + '.');
+    }
+
+    return demoContent.map(paragraph => `<p>${paragraph}</p>`).join('');
 }
 
 function getRandomWord() {
@@ -2053,6 +2005,11 @@ function updateEventsCount(count) {
     document.getElementById('eventsCount').textContent = `${count} ${getEventWord(count)}`;
 }
 
+function updateTitlesCount() {
+    const unlockedCount = userData.titles ? userData.titles.length : 0;
+    document.getElementById('titlesCount').textContent = unlockedCount;
+}
+
 function getEventWord(count) {
     if (count % 10 === 1 && count % 100 !== 11) return 'событие';
     if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'события';
@@ -2077,131 +2034,6 @@ function formatAchievementDate(dateString) {
     });
 }
 
-// Функция для генерации рекомендаций книг
-function generateBookRecommendations() {
-    if (!userData) return [];
-
-    const allBooks = window.APP_DATA.MOCK_BOOKS;
-    const userHistory = userData.history || [];
-    const userFavorites = userData.favorites || [];
-    const userReviews = userData.myReviews || [];
-
-    // Получить прочитанные книги
-    const readBookIds = new Set([
-        ...userHistory.map(h => h.bookId),
-        ...userFavorites,
-        ...userReviews.map(r => r.bookId)
-    ]);
-
-    // Определить любимые жанры
-    const genreScores = {};
-    userHistory.forEach(record => {
-        const book = allBooks.find(b => b.id === record.bookId);
-        if (book) {
-            genreScores[book.genre] = (genreScores[book.genre] || 0) + 1;
-        }
-    });
-
-    userFavorites.forEach(bookId => {
-        const book = allBooks.find(b => b.id === bookId);
-        if (book) {
-            genreScores[book.genre] = (genreScores[book.genre] || 0) + 2; // Фавориты весят больше
-        }
-    });
-
-    // Найти топ жанры
-    const topGenres = Object.entries(genreScores)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 3)
-        .map(([genre]) => genre);
-
-    // Рекомендовать книги из топ жанров, которые пользователь не читал
-    let recommendations = allBooks.filter(book =>
-        !readBookIds.has(book.id) &&
-        topGenres.includes(book.genre) &&
-        book.available &&
-        book.rating >= 4.0
-    );
-
-    // Если рекомендаций мало, добавить популярные книги
-    if (recommendations.length < 6) {
-        const popularBooks = allBooks.filter(book =>
-            !readBookIds.has(book.id) &&
-            book.rating >= 4.5 &&
-            book.reviewsCount >= 10
-        ).sort((a, b) => b.rating - a.rating);
-
-        recommendations = [...recommendations, ...popularBooks.slice(0, 6 - recommendations.length)];
-    }
-
-    // Убрать дубликаты и ограничить до 6 рекомендаций
-    const uniqueRecommendations = [];
-    const seen = new Set();
-    for (const book of recommendations) {
-        if (!seen.has(book.id)) {
-            uniqueRecommendations.push(book);
-            seen.add(book.id);
-            if (uniqueRecommendations.length >= 6) break;
-        }
-    }
-
-    return uniqueRecommendations;
-}
-
-// Функция для обновления рекомендаций
-function updateRecommendations() {
-    bookRecommendations = generateBookRecommendations();
-    renderRecommendations();
-}
-
-// Функция для отображения рекомендаций
-function renderRecommendations() {
-    const section = document.getElementById('recommendationsSection');
-    const container = document.getElementById('recommendationsContainer');
-
-    if (!section || !container) return;
-
-    if (bookRecommendations.length === 0) {
-        section.style.display = 'none';
-        return;
-    }
-
-    section.style.display = 'block';
-    container.innerHTML = bookRecommendations.map(book => `
-        <div class="book-card" onclick="showBookDetails(${book.id})">
-            <div class="book-header">
-                <div class="book-cover">
-                    <div class="book-icon">${book.icon || '📚'}</div>
-                </div>
-                <div class="book-info">
-                    <div class="book-title">${escapeHtml(book.title)}</div>
-                    <div class="book-author">${escapeHtml(book.author)}</div>
-                    <div class="book-meta">${book.genre}</div>
-                    <div class="book-rating-small">
-                        <span class="stars">${createRatingStars(book.rating)}</span>
-                        <span class="rating-value">${book.rating}</span>
-                    </div>
-                    <div class="book-status status-available">⭐ Рекомендуем</div>
-                </div>
-            </div>
-            <div class="book-actions">
-                <button
-                    class="borrow-btn"
-                    onclick="event.stopPropagation(); borrowBook(${book.id})"
-                    ${!book.available ? 'disabled' : ''}
-                >
-                    ${book.available ? '📚 Забронировать' : 'Недоступна'}
-                </button>
-                <button
-                    class="favorite-btn"
-                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
-                >
-                    ☆
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
 
 function clearAllData() {
     if (confirm('Вы уверены, что хотите сбросить все данные? Это действие нельзя отменить.')) {
@@ -2223,6 +2055,422 @@ function clearAllReviews() {
         }
         updateMyReviewsList();
         tg.showAlert('Все отзывы удалены!');
+    }
+}
+
+// Функции для игровой механики
+function loadGamesSection() {
+    updateGamesStats();
+    loadDailyQuests();
+    loadWeeklyChallenges();
+    loadSpecialEvents();
+    loadRewardsShop();
+}
+
+function updateGamesStats() {
+    document.getElementById('playerLevel').textContent = userData.level;
+    document.getElementById('playerCoins').textContent = userData.coins || 0;
+    document.getElementById('streakDays').textContent = userData.readingStreak || 0;
+    document.getElementById('achievementsCount').textContent = userData.achievements.length;
+}
+
+function loadDailyQuests() {
+    const container = document.getElementById('dailyQuestsGrid');
+    const quests = window.APP_DATA.GAME_DATA.dailyQuests;
+
+    container.innerHTML = quests.map(quest => {
+        const progress = calculateQuestProgress(quest.id);
+        const isCompleted = progress >= quest.target;
+
+        return `
+            <div class="quest-card ${isCompleted ? 'completed' : ''}">
+                <div class="quest-header">
+                    <div class="quest-icon">${quest.icon}</div>
+                    <div class="quest-info">
+                        <div class="quest-title">${quest.title}</div>
+                        <div class="quest-description">${quest.description}</div>
+                    </div>
+                </div>
+                <div class="quest-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(progress / quest.target) * 100}%"></div>
+                    </div>
+                    <div class="progress-text">${progress}/${quest.target}</div>
+                </div>
+                <div class="quest-reward">
+                    <span class="reward-exp">⭐ ${quest.reward.exp} XP</span>
+                    <span class="reward-coins">💎 ${quest.reward.coins}</span>
+                </div>
+                ${isCompleted ? '<div class="quest-completed">✅ Выполнено!</div>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function loadWeeklyChallenges() {
+    const container = document.getElementById('weeklyChallengesGrid');
+    const challenges = window.APP_DATA.GAME_DATA.weeklyChallenges;
+
+    container.innerHTML = challenges.map(challenge => {
+        const progress = calculateChallengeProgress(challenge.id);
+        const isCompleted = progress >= challenge.target;
+
+        return `
+            <div class="challenge-card ${isCompleted ? 'completed' : ''}">
+                <div class="challenge-header">
+                    <div class="challenge-icon">${challenge.icon}</div>
+                    <div class="challenge-info">
+                        <div class="challenge-title">${challenge.title}</div>
+                        <div class="challenge-description">${challenge.description}</div>
+                    </div>
+                </div>
+                <div class="challenge-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(progress / challenge.target) * 100}%"></div>
+                    </div>
+                    <div class="progress-text">${progress}/${challenge.target}</div>
+                </div>
+                <div class="challenge-reward">
+                    <span class="reward-exp">⭐ ${challenge.reward.exp} XP</span>
+                    <span class="reward-coins">💎 ${challenge.reward.coins}</span>
+                </div>
+                ${isCompleted ? '<div class="challenge-completed">✅ Выполнено!</div>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function loadSpecialEvents() {
+    const container = document.getElementById('specialEventsGrid');
+    const events = window.APP_DATA.GAME_DATA.specialEvents.filter(event => event.active);
+
+    container.innerHTML = events.map(event => `
+        <div class="event-card">
+            <div class="event-header">
+                <div class="event-icon">${event.icon}</div>
+                <div class="event-info">
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-description">${event.description}</div>
+                    <div class="event-deadline">До ${formatDate(event.endDate)}</div>
+                </div>
+            </div>
+            <div class="event-reward">
+                <span class="reward-exp">⭐ ${event.reward.exp} XP</span>
+                <span class="reward-coins">💎 ${event.reward.coins}</span>
+            </div>
+            <button class="event-join-btn" onclick="joinSpecialEvent('${event.id}')">
+                Участвовать
+            </button>
+        </div>
+    `).join('');
+}
+
+function loadRewardsShop() {
+    const container = document.getElementById('rewardsShopGrid');
+    const items = window.APP_DATA.GAME_DATA.rewardsShop;
+
+    container.innerHTML = items.map(item => {
+        const owned = userData.gameProgress?.shopItems?.includes(item.id);
+        const canAfford = (userData.coins || 0) >= item.price;
+
+        return `
+            <div class="shop-item ${owned ? 'owned' : ''}">
+                <div class="shop-item-header">
+                    <div class="shop-item-icon">${item.icon}</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-title">${item.title}</div>
+                        <div class="shop-item-description">${item.description}</div>
+                    </div>
+                </div>
+                <div class="shop-item-price">💎 ${item.price}</div>
+                <button
+                    class="shop-buy-btn"
+                    onclick="buyShopItem('${item.id}')"
+                    ${owned ? 'disabled' : ''}
+                    ${!canAfford ? 'disabled' : ''}
+                >
+                    ${owned ? '✅ Куплено' : 'Купить'}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function calculateQuestProgress(questId) {
+    switch (questId) {
+        case 'read_pages':
+            return userData.totalPagesRead || 0;
+        case 'borrow_book':
+            return userData.borrowedBooks.filter(b => b.status === 'active').length;
+        case 'write_review':
+            return userData.myReviews.length;
+        case 'favorite_book':
+            return userData.favorites.length;
+        default:
+            return 0;
+    }
+}
+
+function calculateChallengeProgress(challengeId) {
+    switch (challengeId) {
+        case 'read_books_week':
+            return userData.history.filter(h => {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return new Date(h.returnDate) > weekAgo;
+            }).length;
+        case 'pages_week':
+            return userData.totalPagesRead || 0; // В реальности нужно считать за неделю
+        case 'reviews_week':
+            return userData.myReviews.filter(r => {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return new Date(r.date) > weekAgo;
+            }).length;
+        default:
+            return 0;
+    }
+}
+
+function joinSpecialEvent(eventId) {
+    if (!userData.gameProgress.specialEvents) {
+        userData.gameProgress.specialEvents = [];
+    }
+
+    if (!userData.gameProgress.specialEvents.includes(eventId)) {
+        userData.gameProgress.specialEvents.push(eventId);
+        userData.gameStats.specialEventsParticipated = (userData.gameStats.specialEventsParticipated || 0) + 1;
+        window.STORAGE.saveAllData(userData);
+        tg.showAlert('Вы присоединились к специальному событию!');
+        loadSpecialEvents();
+    } else {
+        tg.showAlert('Вы уже участвуете в этом событии!');
+    }
+}
+
+function buyShopItem(itemId) {
+    const item = window.APP_DATA.GAME_DATA.rewardsShop.find(i => i.id === itemId);
+    if (!item) return;
+
+    if ((userData.coins || 0) < item.price) {
+        tg.showAlert('Недостаточно монет!');
+        return;
+    }
+
+    if (!userData.gameProgress.shopItems) {
+        userData.gameProgress.shopItems = [];
+    }
+
+    if (userData.gameProgress.shopItems.includes(itemId)) {
+        tg.showAlert('Этот предмет уже куплен!');
+        return;
+    }
+
+    // Списываем монеты
+    userData.coins -= item.price;
+    userData.gameProgress.shopItems.push(itemId);
+
+    // Применяем эффект предмета
+    applyShopItemEffect(itemId);
+
+    window.STORAGE.saveAllData(userData);
+    updateGamesStats();
+    loadRewardsShop();
+
+    tg.showAlert(`Предмет "${item.title}" успешно куплен!`);
+}
+
+function applyShopItemEffect(itemId) {
+    switch (itemId) {
+        case 'bonus_exp':
+            const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, 50);
+            if (levelUp.leveledUp) {
+                tg.showPopup({
+                    title: 'Уровень повышен!',
+                    message: `Поздравляем! Вы достигли ${levelUp.newLevel} уровня!`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }
+            break;
+        case 'theme_unlock':
+            // Разблокировать тёмную тему
+            break;
+        // Другие эффекты...
+    }
+}
+
+// Функции настроек профиля
+function loadSettings() {
+    // Загружаем текущие настройки
+    document.getElementById('settingsName').value = userData.name || '';
+    document.getElementById('userAvatar').innerHTML = userData.avatar || '👤';
+
+    // Устанавливаем выбранные опции
+    document.querySelectorAll('.avatar-option').forEach(option => {
+        option.classList.toggle('selected', option.textContent === userData.avatar);
+    });
+
+    document.querySelectorAll('.bg-option').forEach(option => {
+        option.classList.toggle('selected', option.style.background.includes(userData.profileBackground || 'default'));
+    });
+}
+
+function selectAvatar(avatar) {
+    document.querySelectorAll('.avatar-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+    document.getElementById('userAvatar').innerHTML = avatar;
+}
+
+function selectBackground(background) {
+    document.querySelectorAll('.bg-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+}
+
+function saveSettings() {
+    const newName = document.getElementById('settingsName').value.trim();
+    const newAvatar = document.querySelector('.avatar-option.selected')?.textContent || userData.avatar;
+    const newBackground = Array.from(document.querySelectorAll('.bg-option')).find(option =>
+        option.classList.contains('selected')
+    )?.textContent.toLowerCase().replace(/\s+/g, '') || userData.profileBackground;
+
+    if (newName) {
+        userData.name = newName;
+    }
+    userData.avatar = newAvatar;
+    userData.profileBackground = newBackground;
+
+    window.STORAGE.saveAllData(userData);
+    updateUserProfile();
+
+    tg.showPopup({
+        title: 'Настройки сохранены',
+        message: 'Ваши настройки профиля успешно обновлены!',
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+function resetSettings() {
+    if (confirm('Вы уверены, что хотите сбросить настройки к значениям по умолчанию?')) {
+        userData.name = window.APP_DATA.DEFAULT_USER_DATA.name;
+        userData.avatar = window.APP_DATA.DEFAULT_USER_DATA.avatar;
+        userData.profileBackground = window.APP_DATA.DEFAULT_USER_DATA.profileBackground;
+
+        window.STORAGE.saveAllData(userData);
+        loadSettings();
+        updateUserProfile();
+
+        tg.showAlert('Настройки сброшены к значениям по умолчанию.');
+    }
+}
+
+// Функции для работы с титулами
+function loadTitles() {
+    const container = document.getElementById('titlesContainer');
+    const titles = window.APP_DATA.TITLES;
+
+    container.innerHTML = titles.map(title => {
+        const isUnlocked = title.type === 'achievement' ? title.condition(userData) :
+                          userData.titles?.includes(title.id);
+        const canAfford = userData.coins >= (title.price || 0);
+
+        return `
+            <div class="title-card ${isUnlocked ? 'unlocked' : ''} ${title.rarity}">
+                <div class="title-header">
+                    <div class="title-icon">${title.icon}</div>
+                    <div class="title-info">
+                        <div class="title-name">${title.name}</div>
+                        <div class="title-description">${title.description}</div>
+                        <div class="title-rarity">${getRarityText(title.rarity)}</div>
+                    </div>
+                </div>
+                <div class="title-actions">
+                    ${isUnlocked ?
+                        '<div class="title-unlocked">✅ Получен</div>' :
+                        title.type === 'purchase' ?
+                            `<button class="title-buy-btn" onclick="buyTitle('${title.id}')" ${!canAfford ? 'disabled' : ''}>
+                                💎 ${title.price}
+                            </button>` :
+                            '<div class="title-locked">🔒 Не получен</div>'
+                    }
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    updateTitlesCount();
+}
+
+function buyTitle(titleId) {
+    const title = window.APP_DATA.TITLES.find(t => t.id === titleId);
+    if (!title || title.type !== 'purchase') return;
+
+    if (userData.coins < title.price) {
+        tg.showAlert('Недостаточно монет!');
+        return;
+    }
+
+    if (!userData.titles) userData.titles = [];
+    if (userData.titles.includes(titleId)) {
+        tg.showAlert('Этот титул уже куплен!');
+        return;
+    }
+
+    userData.coins -= title.price;
+    userData.titles.push(titleId);
+
+    window.STORAGE.saveAllData(userData);
+    loadTitles();
+    updateUserProfile();
+
+    tg.showPopup({
+        title: 'Титул куплен!',
+        message: `Вы успешно купили титул "${title.name}"!`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+function getRarityText(rarity) {
+    const rarityMap = {
+        common: 'Обычный',
+        uncommon: 'Необычный',
+        rare: 'Редкий',
+        epic: 'Эпический',
+        legendary: 'Легендарный'
+    };
+    return rarityMap[rarity] || rarity;
+}
+
+function checkAndUnlockTitles() {
+    const titles = window.APP_DATA.TITLES;
+    let newTitles = [];
+
+    titles.forEach(title => {
+        if (title.type === 'achievement' && title.condition(userData)) {
+            if (!userData.titles?.includes(title.id)) {
+                if (!userData.titles) userData.titles = [];
+                userData.titles.push(title.id);
+                newTitles.push(title);
+            }
+        }
+    });
+
+    if (newTitles.length > 0) {
+        window.STORAGE.saveAllData(userData);
+        loadTitles();
+
+        newTitles.forEach(title => {
+            setTimeout(() => {
+                tg.showPopup({
+                    title: 'Новый титул!',
+                    message: `Вы получили титул "${title.name}"!\n${title.description}`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }, 1000);
+        });
     }
 }
 
@@ -2253,8 +2501,6 @@ window.closeEventModal = closeEventModal;
 window.closeBookingModal = closeBookingModal;
 window.changeTicketCount = changeTicketCount;
 window.confirmBooking = confirmBooking;
-window.updateRecommendations = updateRecommendations;
-window.renderRecommendations = renderRecommendations;
 window.clearAllData = clearAllData;
 window.clearAllReviews = clearAllReviews;
 window.startReading = startReading;
@@ -2264,6 +2510,9 @@ window.previousPage = previousPage;
 window.goToPage = goToPage;
 window.markPageAsRead = markPageAsRead;
 window.finishBook = finishBook;
+window.loadGamesSection = loadGamesSection;
+window.joinSpecialEvent = joinSpecialEvent;
+window.buyShopItem = buyShopItem;
 window.handleExperienceAndAchievements = handleExperienceAndAchievements;
 window.showAchievementNotification = showAchievementNotification;
 window.loadChallenges = loadChallenges;
@@ -2271,3 +2520,11 @@ window.loadAuthors = loadAuthors;
 window.completeChallenge = completeChallenge;
 window.showAuthorDetails = showAuthorDetails;
 window.closeAuthorModal = closeAuthorModal;
+window.loadSettings = loadSettings;
+window.selectAvatar = selectAvatar;
+window.selectBackground = selectBackground;
+window.saveSettings = saveSettings;
+window.resetSettings = resetSettings;
+window.loadTitles = loadTitles;
+window.buyTitle = buyTitle;
+window.checkAndUnlockTitles = checkAndUnlockTitles;
