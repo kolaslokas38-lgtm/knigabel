@@ -44,6 +44,19 @@ function saveAllReviews() {
     return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
 }
 
+// Глобальная система отзывов
+function initializeGlobalReviews() {
+    const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS);
+    if (saved && Array.isArray(saved)) {
+        // Загружаем сохраненные отзывы
+        window.APP_DATA.BOOK_REVIEWS = saved;
+    } else {
+        // Если нет сохраненных отзывов, начинаем с пустого массива
+        window.APP_DATA.BOOK_REVIEWS = [];
+        saveGlobalReviews();
+    }
+}
+
 function addGlobalReview(review) {
     // Добавляем отзыв в глобальный массив
     window.APP_DATA.BOOK_REVIEWS.unshift(review);
@@ -52,19 +65,18 @@ function addGlobalReview(review) {
     window.APP_DATA.RatingUtils.updateBookRating(review.bookId, review.rating);
 
     // Сохраняем глобально
-    saveAllReviews();
+    saveGlobalReviews();
     saveBooksData();
 
     return review;
 }
 
+function saveGlobalReviews() {
+    return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
+}
+
 function loadGlobalReviews() {
-    const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS);
-    if (saved && saved.length > 0) {
-        // Заменяем mock отзывы сохраненными глобальными
-        window.APP_DATA.BOOK_REVIEWS.length = 0;
-        window.APP_DATA.BOOK_REVIEWS.push(...saved);
-    }
+    return loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, []);
 }
 
 // Функции для загрузки данных
@@ -181,7 +193,7 @@ function saveAllData(userData) {
 function loadAllData() {
     loadBooksData();
     loadLibraryStats();
-    loadGlobalReviews();
+    initializeGlobalReviews();
     const userData = loadUserData();
     userData.theme = loadTheme();
     return userData;
@@ -249,6 +261,8 @@ window.STORAGE = {
     loadAllReviews,
     addGlobalReview,
     loadGlobalReviews,
+    initializeGlobalReviews,
+    saveGlobalReviews,
     
     // Сервисные функции
     clearAllData,

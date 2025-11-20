@@ -672,7 +672,7 @@ const RED_BOOK_ANIMALS = [
 
 
 // Отзывы пользователей (глобальные, сохраняются для всех)
-const BOOK_REVIEWS = [];
+let BOOK_REVIEWS = [];
 const THEMES = {
     LIGHT: {
         name: 'light',
@@ -703,7 +703,7 @@ const STORAGE_KEYS = {
     LIBRARY_STATS: 'knigabel_library_stats',
     USER_REVIEWS: 'knigabel_user_reviews',
     THEME: 'knigabel_theme',
-    BOOK_REVIEWS: 'knigabel_all_reviews'
+    BOOK_REVIEWS: 'knigabel_global_reviews_v2' // Изменен ключ для сброса старых отзывов
 };
 
 // Рассчитываем статистику библиотеки

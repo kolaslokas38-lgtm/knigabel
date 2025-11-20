@@ -569,9 +569,13 @@ function submitReview() {
     closeReviewModal();
     updateMyReviewsList();
 
+    // Обновляем отображение книги, если модал открыт
     if (!document.getElementById('bookModal').classList.contains('hidden')) {
         showBookDetails(currentReviewBookId);
     }
+
+    // Обновляем рекомендации, так как рейтинг книги изменился
+    updateRecommendations();
 }
 
 function likeReview(reviewId) {
