@@ -339,7 +339,8 @@ async function showBookDetails(bookId) {
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
         const bookReviews = window.STORAGE.getBookReviews(bookId);
-        const userHasReviewed = userData.myReviews.some(review => review.bookId === bookId);
+        const userId = userData.telegramId || 'anonymous';
+        const userHasReviewed = bookReviews.some(review => review.userId === userId);
         
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
@@ -457,17 +458,28 @@ async function showBookDetails(bookId) {
 function openReviewModal(bookId) {
     currentReviewBookId = bookId;
     selectedRating = 0;
-    
+
+    // Проверяем, не писал ли уже пользователь отзыв
+    const userId = userData.telegramId || 'anonymous';
+    const existingReview = window.APP_DATA.BOOK_REVIEWS.find(review =>
+        review.bookId === bookId && review.userId === userId
+    );
+
+    if (existingReview) {
+        tg.showAlert('Вы уже писали отзыв на эту книгу!');
+        return;
+    }
+
     document.getElementById('reviewComment').value = '';
     document.getElementById('charCount').textContent = '0';
     document.getElementById('ratingText').textContent = 'Выберите оценку';
     document.querySelector('.submit-btn').disabled = true;
-    
+
     document.querySelectorAll('.star').forEach(star => {
         star.textContent = '☆';
         star.classList.remove('active');
     });
-    
+
     document.getElementById('reviewModal').classList.remove('hidden');
     tg.BackButton.show();
 }
@@ -514,15 +526,19 @@ function updateSubmitButton() {
 
 function submitReview() {
     if (!currentReviewBookId || !selectedRating) return;
-    
+
     const comment = document.getElementById('reviewComment').value.trim();
     const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === currentReviewBookId);
-    
+
     if (!book) return;
-    
+
+    const userId = userData.telegramId || 'anonymous_' + Date.now();
+    const userName = userData.name || 'Анонимный пользователь';
+
     const newReview = {
         id: Date.now(),
-        userName: userData.name,
+        userId: userId,
+        userName: userName,
         bookTitle: book.title,
         bookId: currentReviewBookId,
         rating: selectedRating,
@@ -531,26 +547,28 @@ function submitReview() {
         likes: 0,
         userAvatar: userData.avatar || '👤'
     };
-    
-    window.STORAGE.addNewReview(newReview);
-    
+
+    // Сохраняем глобально
+    window.STORAGE.addGlobalReview(newReview);
+
+    // Добавляем в личные отзывы пользователя
     userData.myReviews.unshift({
         ...newReview,
         id: Date.now() + 1
     });
     userData.stats.reviewsWritten = userData.myReviews.length;
-    
+
     window.STORAGE.saveAllData(userData);
-    
+
     tg.showPopup({
         title: 'Отзыв добавлен! ★',
-        message: 'Ваш отзыв успешно опубликован',
+        message: 'Ваш отзыв успешно опубликован и виден всем пользователям',
         buttons: [{ type: 'ok' }]
     });
-    
+
     closeReviewModal();
     updateMyReviewsList();
-    
+
     if (!document.getElementById('bookModal').classList.contains('hidden')) {
         showBookDetails(currentReviewBookId);
     }

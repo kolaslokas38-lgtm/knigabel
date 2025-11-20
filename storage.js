@@ -44,6 +44,29 @@ function saveAllReviews() {
     return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
 }
 
+function addGlobalReview(review) {
+    // Добавляем отзыв в глобальный массив
+    window.APP_DATA.BOOK_REVIEWS.unshift(review);
+
+    // Обновляем рейтинг книги
+    window.APP_DATA.RatingUtils.updateBookRating(review.bookId, review.rating);
+
+    // Сохраняем глобально
+    saveAllReviews();
+    saveBooksData();
+
+    return review;
+}
+
+function loadGlobalReviews() {
+    const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS);
+    if (saved && saved.length > 0) {
+        // Заменяем mock отзывы сохраненными глобальными
+        window.APP_DATA.BOOK_REVIEWS.length = 0;
+        window.APP_DATA.BOOK_REVIEWS.push(...saved);
+    }
+}
+
 // Функции для загрузки данных
 function loadUserData() {
     const saved = loadFromStorage(window.APP_DATA.STORAGE_KEYS.USER_DATA);
@@ -158,7 +181,7 @@ function saveAllData(userData) {
 function loadAllData() {
     loadBooksData();
     loadLibraryStats();
-    loadAllReviews();
+    loadGlobalReviews();
     const userData = loadUserData();
     userData.theme = loadTheme();
     return userData;
@@ -224,6 +247,8 @@ window.STORAGE = {
     likeReview,
     saveAllReviews,
     loadAllReviews,
+    addGlobalReview,
+    loadGlobalReviews,
     
     // Сервисные функции
     clearAllData,
