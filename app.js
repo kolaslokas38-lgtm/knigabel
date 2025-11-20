@@ -8,6 +8,7 @@ let currentReviewBookId = null;
 let selectedRating = 0;
 let currentBookingEventId = null;
 let ticketCount = 1;
+let bookRecommendations = [];
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -138,6 +139,7 @@ async function loadInitialData() {
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
         updateStats(window.APP_DATA.MOCK_STATS);
         updateUserProfile();
+        updateRecommendations();
         renderWeeklyBooks();
         renderBookOfDay();
         showLoading(false);
@@ -639,6 +641,7 @@ async function borrowBook(bookId) {
             updateBooksDisplay(currentBooks);
             updateStats(window.APP_DATA.MOCK_STATS);
             updateUserProfile();
+            updateRecommendations();
             renderWeeklyBooks();
             renderBookOfDay();
             closeModal();
@@ -687,6 +690,7 @@ function returnBook(bookId) {
         updateBooksDisplay(currentBooks);
         updateStats(window.APP_DATA.MOCK_STATS);
         updateUserProfile();
+        updateRecommendations();
         renderWeeklyBooks();
         renderBookOfDay();
     }
@@ -716,7 +720,8 @@ function toggleFavorite(bookId) {
     
     updateBooksDisplay(currentBooks);
     updateUserProfile();
-    
+    updateRecommendations();
+
     if (!document.getElementById('bookModal').classList.contains('hidden')) {
         const modalTitle = document.getElementById('modalTitle').textContent;
         const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
@@ -1324,6 +1329,132 @@ function formatEventDate(dateString) {
     });
 }
 
+// Функция для генерации рекомендаций книг
+function generateBookRecommendations() {
+    if (!userData) return [];
+
+    const allBooks = window.APP_DATA.MOCK_BOOKS;
+    const userHistory = userData.history || [];
+    const userFavorites = userData.favorites || [];
+    const userReviews = userData.myReviews || [];
+
+    // Получить прочитанные книги
+    const readBookIds = new Set([
+        ...userHistory.map(h => h.bookId),
+        ...userFavorites,
+        ...userReviews.map(r => r.bookId)
+    ]);
+
+    // Определить любимые жанры
+    const genreScores = {};
+    userHistory.forEach(record => {
+        const book = allBooks.find(b => b.id === record.bookId);
+        if (book) {
+            genreScores[book.genre] = (genreScores[book.genre] || 0) + 1;
+        }
+    });
+
+    userFavorites.forEach(bookId => {
+        const book = allBooks.find(b => b.id === bookId);
+        if (book) {
+            genreScores[book.genre] = (genreScores[book.genre] || 0) + 2; // Фавориты весят больше
+        }
+    });
+
+    // Найти топ жанры
+    const topGenres = Object.entries(genreScores)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3)
+        .map(([genre]) => genre);
+
+    // Рекомендовать книги из топ жанров, которые пользователь не читал
+    let recommendations = allBooks.filter(book =>
+        !readBookIds.has(book.id) &&
+        topGenres.includes(book.genre) &&
+        book.available &&
+        book.rating >= 4.0
+    );
+
+    // Если рекомендаций мало, добавить популярные книги
+    if (recommendations.length < 6) {
+        const popularBooks = allBooks.filter(book =>
+            !readBookIds.has(book.id) &&
+            book.rating >= 4.5 &&
+            book.reviewsCount >= 10
+        ).sort((a, b) => b.rating - a.rating);
+
+        recommendations = [...recommendations, ...popularBooks.slice(0, 6 - recommendations.length)];
+    }
+
+    // Убрать дубликаты и ограничить до 6 рекомендаций
+    const uniqueRecommendations = [];
+    const seen = new Set();
+    for (const book of recommendations) {
+        if (!seen.has(book.id)) {
+            uniqueRecommendations.push(book);
+            seen.add(book.id);
+            if (uniqueRecommendations.length >= 6) break;
+        }
+    }
+
+    return uniqueRecommendations;
+}
+
+// Функция для обновления рекомендаций
+function updateRecommendations() {
+    bookRecommendations = generateBookRecommendations();
+    renderRecommendations();
+}
+
+// Функция для отображения рекомендаций
+function renderRecommendations() {
+    const section = document.getElementById('recommendationsSection');
+    const container = document.getElementById('recommendationsContainer');
+
+    if (!section || !container) return;
+
+    if (bookRecommendations.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = bookRecommendations.map(book => `
+        <div class="book-card" onclick="showBookDetails(${book.id})">
+            <div class="book-header">
+                <div class="book-cover">
+                    <div class="book-icon">${book.icon || '📚'}</div>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">${escapeHtml(book.title)}</div>
+                    <div class="book-author">${escapeHtml(book.author)}</div>
+                    <div class="book-meta">${book.genre}</div>
+                    <div class="book-rating-small">
+                        <span class="stars">${createRatingStars(book.rating)}</span>
+                        <span class="rating-value">${book.rating}</span>
+                    </div>
+                    <div class="book-status status-available">⭐ Рекомендуем</div>
+                </div>
+            </div>
+            <div class="book-actions">
+                <button
+                    class="borrow-btn"
+                    onclick="event.stopPropagation(); borrowBook(${book.id})"
+                    ${!book.available ? 'disabled' : ''}
+                >
+                    ${book.available ? '📚 Забронировать' : 'Недоступна'}
+                </button>
+                <button
+                    class="favorite-btn"
+                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
+                >
+                    ☆
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
 function clearAllData() {
     if (confirm('Вы уверены, что хотите сбросить все данные? Это действие нельзя отменить.')) {
         window.STORAGE.clearAllData();
@@ -1357,4 +1488,6 @@ window.closeEventModal = closeEventModal;
 window.closeBookingModal = closeBookingModal;
 window.changeTicketCount = changeTicketCount;
 window.confirmBooking = confirmBooking;
+window.updateRecommendations = updateRecommendations;
+window.renderRecommendations = renderRecommendations;
 window.clearAllData = clearAllData;

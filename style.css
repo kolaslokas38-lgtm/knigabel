@@ -105,6 +105,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .favorite-btn:hover{background:var(--border)}
 .favorite-active{background:var(--accent);border-color:var(--accent);color:#fff}
 
+/* Recommendations */
+.recommendations-section{margin:20px 0}
+.recommendations-title{font-size:1.4em;font-weight:600;margin-bottom:15px;color:var(--text)}
+.recommendations-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:20px}
+
 /* Weekly & Featured */
 .weekly-books-section,.book-of-day-section{margin:20px 0}
 .weekly-books-title,.book-of-day-title{font-size:1.4em;font-weight:600;margin-bottom:15px;color:var(--text)}
