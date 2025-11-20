@@ -10,6 +10,8 @@ let currentBookingEventId = null;
 let ticketCount = 1;
 let bookRecommendations = [];
 let reviewsChannel = null; // Для синхронизации отзывов между вкладками
+let currentReadingBook = null;
+let currentPage = 1;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
@@ -420,16 +422,19 @@ async function showBookDetails(bookId) {
                         </div>
                     </div>
                     
-                    ${book.readLink ? `
                     <div class="read-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                        <a href="${book.readLink}" target="_blank" class="read-btn">
-                            📖 Читать книгу онлайн
+                        <button onclick="startReading(${book.id})" class="read-online-btn">
+                            📖 Читать онлайн
+                        </button>
+                        ${book.readLink ? `
+                        <a href="${book.readLink}" target="_blank" class="read-link-btn">
+                            🔗 Читать на внешнем ресурсе
                         </a>
+                        ` : ''}
                         <p style="font-size: 0.8em; color: var(--text-light); margin-top: 5px;">
-                            Откроется в новом окне
+                            Чтение онлайн доступно в приложении
                         </p>
                     </div>
-                    ` : ''}
                 </div>
             </div>
             <div class="modal-actions">
@@ -839,20 +844,28 @@ function removeFavorite(bookId) {
 function updateUserProfile() {
     document.getElementById('userName').textContent = userData.name;
     document.getElementById('userRegistration').textContent = `Зарегистрирован: ${userData.registrationDate}`;
-    
+
+    // Обновляем уровень и опыт
+    document.getElementById('userLevel').textContent = userData.level;
+    const expPercent = ((userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)) / 100) * 100;
+    document.getElementById('expFill').style.width = `${Math.min(100, expPercent)}%`;
+    document.getElementById('expText').textContent = `${userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)}/${userData.experienceToNext} XP`;
+
     document.getElementById('userTotalBooks').textContent = userData.stats.totalBooks;
     document.getElementById('userFavorites').textContent = userData.favorites.length;
     document.getElementById('userReviewsCount').textContent = userData.myReviews.length;
+    document.getElementById('totalPagesRead').textContent = userData.totalPagesRead;
     document.getElementById('activeBorrows').textContent = userData.stats.activeBorrows;
     document.getElementById('totalRead').textContent = userData.stats.totalRead;
     document.getElementById('readingTime').textContent = userData.stats.readingDays;
     document.getElementById('userReviewsWritten').textContent = userData.stats.reviewsWritten || 0;
-    
+
     updateActiveBooksList();
     updateHistoryList();
     updateFavoritesList();
     updateMyReviewsList();
     updateBookedEventsList();
+    updateAchievementsList();
 }
 
 // Обновление списка активных книг
@@ -983,13 +996,61 @@ function updateFavoritesList() {
     }
 }
 
+// Обновление достижений
+function updateAchievementsList() {
+    const achievementsGrid = document.getElementById('achievementsGrid');
+    const achievementsCount = document.getElementById('achievementsCount');
+
+    achievementsCount.textContent = userData.achievements.length;
+
+    if (userData.achievements.length === 0) {
+        achievementsGrid.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">🏆</div>
+                <h4>Нет достижений</h4>
+                <p>Начните читать книги, чтобы получать достижения!</p>
+            </div>
+        `;
+    } else {
+        achievementsGrid.innerHTML = userData.achievements.map(achievement => `
+            <div class="achievement-item unlocked">
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-info">
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-desc">${achievement.description}</div>
+                    <div class="achievement-date">Получено: ${formatAchievementDate(achievement.unlockedAt)}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Добавляем заблокированные достижения
+    const lockedAchievements = window.APP_DATA.ACHIEVEMENTS.filter(achievement =>
+        !userData.achievements.some(a => a.id === achievement.id)
+    );
+
+    if (lockedAchievements.length > 0) {
+        const lockedHtml = lockedAchievements.slice(0, 6).map(achievement => `
+            <div class="achievement-item locked">
+                <div class="achievement-icon">🔒</div>
+                <div class="achievement-info">
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-desc">${achievement.description}</div>
+                </div>
+            </div>
+        `).join('');
+
+        achievementsGrid.innerHTML += lockedHtml;
+    }
+}
+
 // Обновление моих отзывов
 function updateMyReviewsList() {
     const myReviewsList = document.getElementById('myReviewsList');
     const myReviewsCount = document.getElementById('myReviewsCount');
-    
+
     myReviewsCount.textContent = userData.myReviews.length;
-    
+
     if (userData.myReviews.length === 0) {
         myReviewsList.innerHTML = `
             <div class="empty-profile">
@@ -1236,6 +1297,199 @@ function confirmBooking() {
     closeEventModal();
 }
 
+// Функции для чтения книг
+function startReading(bookId) {
+    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
+    if (!book) return;
+
+    currentReadingBook = book;
+    currentPage = 1;
+
+    // Инициализируем прогресс книги, если его нет
+    if (!userData.bookProgress[bookId]) {
+        userData.bookProgress[bookId] = {
+            pagesRead: 0,
+            completed: false,
+            achievements: []
+        };
+    }
+
+    // Устанавливаем текущую страницу на последнюю прочитанную + 1
+    const progress = userData.bookProgress[bookId];
+    currentPage = Math.max(1, progress.pagesRead + 1);
+
+    loadReadingContent();
+    document.getElementById('readingModal').classList.remove('hidden');
+    document.getElementById('readingTitle').textContent = `Чтение: ${book.title}`;
+    tg.BackButton.show();
+}
+
+function loadReadingContent() {
+    if (!currentReadingBook) return;
+
+    const totalPages = currentReadingBook.pages;
+    const progress = (currentPage / totalPages) * 100;
+
+    document.getElementById('currentPage').textContent = currentPage;
+    document.getElementById('totalPages').textContent = totalPages;
+    document.getElementById('readingProgress').style.width = `${progress}%`;
+
+    // Генерируем контент страницы (в реальном приложении здесь был бы настоящий текст)
+    const content = generatePageContent(currentReadingBook, currentPage);
+    document.getElementById('readingContent').innerHTML = content;
+
+    // Обновляем состояние кнопок
+    document.getElementById('prevBtn').disabled = currentPage <= 1;
+    document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+    document.getElementById('pageInput').value = currentPage;
+    document.getElementById('pageInput').max = totalPages;
+}
+
+function generatePageContent(book, page) {
+    // Mock-генерация контента страницы
+    const paragraphs = [];
+    const wordsPerPage = 250; // Примерно 250 слов на страницу
+
+    for (let i = 0; i < 8; i++) {
+        const sentenceCount = Math.floor(Math.random() * 3) + 3;
+        let paragraph = '';
+
+        for (let j = 0; j < sentenceCount; j++) {
+            const wordCount = Math.floor(Math.random() * 10) + 5;
+            let sentence = '';
+
+            for (let k = 0; k < wordCount; k++) {
+                sentence += getRandomWord() + ' ';
+            }
+
+            sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1).trim() + '. ';
+            paragraph += sentence;
+        }
+
+        paragraphs.push(`<p>${paragraph.trim()}</p>`);
+    }
+
+    return paragraphs.join('');
+}
+
+function getRandomWord() {
+    const words = [
+        'книга', 'читатель', 'история', 'автор', 'герой', 'событие', 'время', 'место',
+        'любовь', 'жизнь', 'счастье', 'горе', 'радость', 'печаль', 'надежда', 'страх',
+        'друг', 'враг', 'путешествие', 'приключение', 'тайна', 'открытие', 'знание', 'мудрость'
+    ];
+    return words[Math.floor(Math.random() * words.length)];
+}
+
+function nextPage() {
+    if (currentPage < currentReadingBook.pages) {
+        currentPage++;
+        loadReadingContent();
+    }
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadReadingContent();
+    }
+}
+
+function goToPage(page) {
+    const pageNum = parseInt(page);
+    if (pageNum >= 1 && pageNum <= currentReadingBook.pages) {
+        currentPage = pageNum;
+        loadReadingContent();
+    }
+}
+
+function markPageAsRead() {
+    if (!currentReadingBook || !userData.bookProgress[currentReadingBook.id]) return;
+
+    const progress = userData.bookProgress[currentReadingBook.id];
+
+    // Отмечаем текущую страницу как прочитанную
+    if (currentPage > progress.pagesRead) {
+        const pagesAdded = currentPage - progress.pagesRead;
+        progress.pagesRead = currentPage;
+
+        // Добавляем опыт за прочитанные страницы
+        const expGained = pagesAdded * 2; // 2 опыта за страницу
+        const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, expGained);
+
+        userData.totalPagesRead += pagesAdded;
+
+        // Проверяем достижения
+        const newAchievements = window.APP_DATA.AchievementSystem.checkAchievements(userData);
+        if (newAchievements.length > 0) {
+            window.APP_DATA.AchievementSystem.unlockAchievements(userData, newAchievements);
+            showAchievementNotification(newAchievements);
+        }
+
+        // Показываем уведомление о полученном опыте
+        tg.showPopup({
+            title: 'Страница прочитана! 📖',
+            message: `Получено ${expGained} опыта!${levelUp.leveledUp ? `\n🎉 Новый уровень: ${levelUp.newLevel}!` : ''}`,
+            buttons: [{ type: 'ok' }]
+        });
+
+        window.STORAGE.saveAllData(userData);
+        updateUserProfile();
+    }
+}
+
+function finishBook() {
+    if (!currentReadingBook) return;
+
+    const progress = userData.bookProgress[currentReadingBook.id];
+    if (!progress.completed) {
+        progress.completed = true;
+        progress.pagesRead = currentReadingBook.pages;
+        userData.stats.booksCompleted++;
+
+        // Добавляем опыт за завершение книги
+        const expGained = 50; // 50 опыта за завершение книги
+        const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, expGained);
+
+        // Проверяем достижения
+        const newAchievements = window.APP_DATA.AchievementSystem.checkAchievements(userData);
+        if (newAchievements.length > 0) {
+            window.APP_DATA.AchievementSystem.unlockAchievements(userData, newAchievements);
+            showAchievementNotification(newAchievements);
+        }
+
+        tg.showPopup({
+            title: 'Книга завершена! 🎉',
+            message: `Поздравляем! Вы прочитали "${currentReadingBook.title}"!\nПолучено ${expGained} опыта!${levelUp.leveledUp ? `\n🎉 Новый уровень: ${levelUp.newLevel}!` : ''}`,
+            buttons: [{ type: 'ok' }]
+        });
+
+        window.STORAGE.saveAllData(userData);
+        updateUserProfile();
+    }
+
+    closeReadingModal();
+}
+
+function showAchievementNotification(achievements) {
+    achievements.forEach(achievement => {
+        setTimeout(() => {
+            tg.showPopup({
+                title: `Новое достижение! ${achievement.icon}`,
+                message: `${achievement.name}\n${achievement.description}`,
+                buttons: [{ type: 'ok' }]
+            });
+        }, 1000);
+    });
+}
+
+function closeReadingModal() {
+    document.getElementById('readingModal').classList.add('hidden');
+    currentReadingBook = null;
+    currentPage = 1;
+    tg.BackButton.hide();
+}
+
 // Функция для показа деталей животного
 function showAnimalDetails(animalId) {
     const animal = window.APP_DATA.RED_BOOK_ANIMALS.find(a => a.id === animalId);
@@ -1413,6 +1667,15 @@ function formatEventDate(dateString) {
     return date.toLocaleDateString('ru-RU', {
         day: 'numeric',
         month: 'long',
+        year: 'numeric'
+    });
+}
+
+function formatAchievementDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short',
         year: 'numeric'
     });
 }
@@ -1597,3 +1860,10 @@ window.updateRecommendations = updateRecommendations;
 window.renderRecommendations = renderRecommendations;
 window.clearAllData = clearAllData;
 window.clearAllReviews = clearAllReviews;
+window.startReading = startReading;
+window.closeReadingModal = closeReadingModal;
+window.nextPage = nextPage;
+window.previousPage = previousPage;
+window.goToPage = goToPage;
+window.markPageAsRead = markPageAsRead;
+window.finishBook = finishBook;

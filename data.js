@@ -722,6 +722,14 @@ const DEFAULT_USER_DATA = {
     registrationDate: new Date().toLocaleDateString('ru-RU'),
     telegramId: null,
     theme: 'light',
+    // Система уровней и достижений
+    level: 1,
+    experience: 0,
+    experienceToNext: 100,
+    totalPagesRead: 0,
+    readingStreak: 0,
+    achievements: [],
+    bookProgress: {}, // {bookId: {pagesRead: number, completed: boolean, achievements: []}}
     borrowedBooks: [
         {
             id: 1,
@@ -759,7 +767,9 @@ const DEFAULT_USER_DATA = {
         totalRead: 2,
         readingDays: 45,
         reviewsWritten: 0,
-        totalEvents: 0 // Новое поле для статистики событий
+        totalEvents: 0, // Новое поле для статистики событий
+        booksCompleted: 0,
+        achievementsUnlocked: 0
     }
 };
 
@@ -797,6 +807,100 @@ const RatingUtils = {
     }
 };
 
+// Система достижений
+const ACHIEVEMENTS = [
+    // Достижения за чтение
+    { id: 'first_book', name: 'Первый шаг', description: 'Прочитайте первую книгу', icon: '📖', type: 'reading', condition: (user) => user.stats.booksCompleted >= 1 },
+    { id: 'bookworm', name: 'Книжный червь', description: 'Прочитайте 5 книг', icon: '📚', type: 'reading', condition: (user) => user.stats.booksCompleted >= 5 },
+    { id: 'literature_lover', name: 'Любитель литературы', description: 'Прочитайте 10 книг', icon: '❤️', type: 'reading', condition: (user) => user.stats.booksCompleted >= 10 },
+    { id: 'bibliophile', name: 'Библиофил', description: 'Прочитайте 25 книг', icon: '🏆', type: 'reading', condition: (user) => user.stats.booksCompleted >= 25 },
+
+    // Достижения за страницы
+    { id: 'page_master', name: 'Мастер страниц', description: 'Прочитайте 1000 страниц', icon: '📄', type: 'pages', condition: (user) => user.totalPagesRead >= 1000 },
+    { id: 'page_legend', name: 'Легенда страниц', description: 'Прочитайте 5000 страниц', icon: '📜', type: 'pages', condition: (user) => user.totalPagesRead >= 5000 },
+
+    // Достижения за отзывы
+    { id: 'first_review', name: 'Критик', description: 'Напишите первый отзыв', icon: '✍️', type: 'reviews', condition: (user) => user.stats.reviewsWritten >= 1 },
+    { id: 'review_expert', name: 'Эксперт по отзывам', description: 'Напишите 10 отзывов', icon: '⭐', type: 'reviews', condition: (user) => user.stats.reviewsWritten >= 10 },
+
+    // Достижения за уровень
+    { id: 'level_up', name: 'Рост уровня', description: 'Достигните 5 уровня', icon: '⬆️', type: 'level', condition: (user) => user.level >= 5 },
+    { id: 'high_level', name: 'Высокий уровень', description: 'Достигните 10 уровня', icon: '🎯', type: 'level', condition: (user) => user.level >= 10 },
+
+    // Достижения за события
+    { id: 'first_event', name: 'Посетитель событий', description: 'Посетите первое мероприятие', icon: '🎫', type: 'events', condition: (user) => user.stats.totalEvents >= 1 },
+    { id: 'event_regular', name: 'Постоянный посетитель', description: 'Посетите 5 мероприятий', icon: '🎪', type: 'events', condition: (user) => user.stats.totalEvents >= 5 },
+
+    // Специальные достижения
+    { id: 'early_bird', name: 'Ранняя пташка', description: 'Используйте приложение в первые 7 дней', icon: '🐦', type: 'special', condition: (user) => user.stats.readingDays >= 7 },
+    { id: 'streak_master', name: 'Мастер серии', description: 'Поддерживайте серию чтения 7 дней', icon: '🔥', type: 'special', condition: (user) => user.readingStreak >= 7 }
+];
+
+// Функции для работы с достижениями
+const AchievementSystem = {
+    checkAchievements(user) {
+        const newAchievements = [];
+        ACHIEVEMENTS.forEach(achievement => {
+            if (!user.achievements.some(a => a.id === achievement.id) && achievement.condition(user)) {
+                newAchievements.push({
+                    ...achievement,
+                    unlockedAt: new Date().toISOString()
+                });
+            }
+        });
+        return newAchievements;
+    },
+
+    unlockAchievements(user, newAchievements) {
+        user.achievements.push(...newAchievements);
+        user.stats.achievementsUnlocked = user.achievements.length;
+    },
+
+    getAchievementProgress(user, achievementId) {
+        const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+        if (!achievement) return null;
+
+        // Здесь можно добавить логику для расчета прогресса
+        return {
+            current: 0,
+            target: 1,
+            percentage: 0
+        };
+    }
+};
+
+// Функции для работы с уровнями
+const LevelSystem = {
+    calculateLevel(experience) {
+        // Уровень = floor(опыт / 100) + 1
+        return Math.floor(experience / 100) + 1;
+    },
+
+    getExperienceForLevel(level) {
+        return (level - 1) * 100;
+    },
+
+    getExperienceToNextLevel(currentExp) {
+        const currentLevel = this.calculateLevel(currentExp);
+        const nextLevelExp = this.getExperienceForLevel(currentLevel + 1);
+        return nextLevelExp - currentExp;
+    },
+
+    addExperience(user, amount) {
+        user.experience += amount;
+        const newLevel = this.calculateLevel(user.experience);
+
+        if (newLevel > user.level) {
+            user.level = newLevel;
+            // Показать уведомление о новом уровне
+            return { leveledUp: true, newLevel: newLevel };
+        }
+
+        user.experienceToNext = this.getExperienceToNextLevel(user.experience);
+        return { leveledUp: false };
+    }
+};
+
 // Экспортируем все данные
 window.APP_DATA = {
     CONFIG,
@@ -809,5 +913,8 @@ window.APP_DATA = {
     MOCK_STATS,
     DEFAULT_USER_DATA,
     THEMES,
-    RatingUtils
+    RatingUtils,
+    ACHIEVEMENTS,
+    AchievementSystem,
+    LevelSystem
 };

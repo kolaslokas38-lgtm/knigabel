@@ -165,10 +165,21 @@
                 <div class="user-info">
                     <h2 id="userName">Пользователь</h2>
                     <p class="user-registration" id="userRegistration">Зарегистрирован: ...</p>
+                    <div class="user-level">
+                        <div class="level-badge">
+                            <span class="level-number" id="userLevel">1</span>
+                            <span class="level-label">уровень</span>
+                        </div>
+                        <div class="experience-bar">
+                            <div class="exp-fill" id="expFill"></div>
+                            <span class="exp-text" id="expText">0/100 XP</span>
+                        </div>
+                    </div>
                     <div class="user-stats">
                         <span class="user-stat">📚 <span id="userTotalBooks">0</span> книг</span>
                         <span class="user-stat">⭐ <span id="userFavorites">0</span> избранных</span>
                         <span class="user-stat">💬 <span id="userReviewsCount">0</span> отзывов</span>
+                        <span class="user-stat">📖 <span id="totalPagesRead">0</span> стр.</span>
                     </div>
                 </div>
             </div>
@@ -235,6 +246,17 @@
                 </div>
                 <div class="favorites-list" id="favoritesList">
                     <!-- Favorites will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="profile-section-card">
+                <div class="section-title">
+                    <h3>🏆 Достижения</h3>
+                    <span class="section-badge" id="achievementsCount">0</span>
+                </div>
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Achievements will be loaded here -->
                 </div>
             </div>
 
@@ -344,6 +366,42 @@
                 </div>
                 <div class="modal-body" id="eventModalBody">
                     <!-- Event details will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reading Modal -->
+        <div class="modal hidden" id="readingModal">
+            <div class="modal-content reading-modal">
+                <div class="modal-header">
+                    <h3 id="readingTitle">Чтение книги</h3>
+                    <button onclick="closeReadingModal()" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="reading-container">
+                        <div class="reading-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="readingProgress"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="currentPage">1</span> / <span id="totalPages">100</span> стр.
+                            </div>
+                        </div>
+                        <div class="reading-content" id="readingContent">
+                            <!-- Текст книги будет загружен здесь -->
+                        </div>
+                        <div class="reading-controls">
+                            <button onclick="previousPage()" class="page-btn" id="prevBtn">← Предыдущая</button>
+                            <div class="page-input">
+                                <input type="number" id="pageInput" min="1" onchange="goToPage(this.value)">
+                            </div>
+                            <button onclick="nextPage()" class="page-btn" id="nextBtn">Следующая →</button>
+                        </div>
+                        <div class="reading-actions">
+                            <button onclick="markPageAsRead()" class="read-btn">Отметить страницу как прочитанную</button>
+                            <button onclick="finishBook()" class="finish-btn">Завершить книгу</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
