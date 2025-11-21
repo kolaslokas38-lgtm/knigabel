@@ -1571,8 +1571,8 @@ const GAME_DATA = {
 
 // Рассчитываем статистику библиотеки
 const MOCK_STATS = {
-    totalBooks: MOCK_BOOKS.length,
-    availableBooks: MOCK_BOOKS.filter(book => book.available).length,
+    totalBooks: 50,
+    availableBooks: 49,
     borrowedBooks: MOCK_BOOKS.filter(book => !book.available).length,
     totalGenres: MOCK_GENRES.length - 1,
     totalReviews: BOOK_REVIEWS.length

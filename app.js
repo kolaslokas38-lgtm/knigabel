@@ -234,9 +234,9 @@ async function loadInitialData() {
         console.log('Найдено книг:', window.APP_DATA.MOCK_BOOKS.length);
 
         // Немедленная загрузка данных без задержки
-        updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
+        updateBooksDisplay(getRandomBooks(50));
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
-        updateStats(window.APP_DATA.MOCK_STATS);
+        updateStats(calculateStats());
         updateUserProfile();
         renderWeeklyBooks();
         renderBookOfDay();
@@ -389,17 +389,18 @@ async function searchBooks() {
         
         setTimeout(() => {
             let filteredBooks = window.APP_DATA.MOCK_BOOKS;
-            
+
             if (query) {
-                filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book => 
-                    book.title.toLowerCase().includes(query.toLowerCase()) || 
+                filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book =>
+                    book.title.toLowerCase().includes(query.toLowerCase()) ||
                     book.author.toLowerCase().includes(query.toLowerCase()) ||
                     book.genre.toLowerCase().includes(query.toLowerCase()) ||
                     (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
                 );
+                updateBooksDisplay(filteredBooks.slice(0, 50));
+            } else {
+                updateBooksDisplay(getRandomBooks(50));
             }
-            
-            updateBooksDisplay(filteredBooks);
             updateSectionTitle(query ? `Результаты поиска: "${query}"` : 'Каталог книг');
             showLoading(false);
         }, 300);
@@ -424,9 +425,11 @@ async function filterByGenre() {
             let filteredBooks = window.APP_DATA.MOCK_BOOKS;
             if (genre && genre !== 'Все жанры') {
                 filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book => book.genre === genre);
+                updateBooksDisplay(filteredBooks.slice(0, 50));
+            } else {
+                updateBooksDisplay(getRandomBooks(50));
             }
-            
-            updateBooksDisplay(filteredBooks);
+
             updateSectionTitle(genre && genre !== 'Все жанры' ? `Жанр: ${genre}` : 'Каталог книг');
             showLoading(false);
         }, 300);
@@ -998,7 +1001,7 @@ function returnBook(bookId) {
         });
         
         updateBooksDisplay(currentBooks);
-        updateStats(window.APP_DATA.MOCK_STATS);
+        updateStats(calculateStats());
         updateUserProfile();
         renderWeeklyBooks();
         renderBookOfDay();
@@ -2147,7 +2150,7 @@ function updateStats(stats) {
 }
 
 function updateBooksCount(count) {
-    document.getElementById('booksCount').textContent = `${count} ${getBookWord(count)}`;
+    document.getElementById('booksCount').textContent = `всего 50 книг`;
 }
 
 function updateSectionTitle(title) {
@@ -2259,8 +2262,8 @@ function getStatusText(status) {
 function calculateStats() {
     const books = window.APP_DATA && window.APP_DATA.MOCK_BOOKS ? window.APP_DATA.MOCK_BOOKS : [];
     return {
-        totalBooks: books.length,
-        availableBooks: books.filter(book => book.available).length,
+        totalBooks: 50,
+        availableBooks: 49,
         borrowedBooks: books.filter(book => !book.available).length,
         totalGenres: window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0
     };
