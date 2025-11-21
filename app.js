@@ -16,18 +16,96 @@ let currentPage = 1;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
+    // Ждем загрузки всех скриптов
+    if (typeof window.APP_DATA === 'undefined') {
+        console.error('APP_DATA не загружен. Ждем...');
+        setTimeout(() => {
+            if (typeof window.APP_DATA === 'undefined') {
+                console.error('APP_DATA так и не загрузился после 0.5 секунды, используем демо данные');
+            }
+            initializeApp();
+        }, 500);
+    } else {
+        initializeApp();
+    }
+});
+
+function initializeApp() {
+    console.log('Инициализация приложения...');
     initializeTelegramApp();
     initializeReviewsSync();
     loadInitialData();
     setupEventListeners();
     initializeTheme();
-});
+}
 
 // Инициализация Telegram Web App
 function initializeTelegramApp() {
     // Инициализируем глобальные отзывы перед загрузкой пользовательских данных
-    window.STORAGE.initializeGlobalReviews();
-    userData = window.STORAGE.loadAllData();
+    if (window.STORAGE && window.STORAGE.initializeGlobalReviews) {
+        window.STORAGE.initializeGlobalReviews();
+    }
+    if (window.STORAGE && window.STORAGE.loadAllData) {
+        userData = window.STORAGE.loadAllData();
+    } else {
+        userData = window.APP_DATA ? window.APP_DATA.DEFAULT_USER_DATA : {
+            name: 'Пользователь',
+            avatar: '👤',
+            registrationDate: new Date().toLocaleDateString('ru-RU'),
+            telegramId: null,
+            theme: 'light',
+            profileBackground: 'default',
+            level: 1,
+            experience: 0,
+            experienceToNext: 100,
+            totalPagesRead: 0,
+            readingStreak: 0,
+            achievements: [],
+            bookProgress: {},
+            coins: 0,
+            gameStats: {
+                dailyQuestsCompleted: 0,
+                weeklyChallengesCompleted: 0,
+                totalCoinsEarned: 0,
+                specialEventsParticipated: 0
+            },
+            gameProgress: {
+                dailyQuests: [],
+                weeklyChallenges: [],
+                specialEvents: [],
+                shopItems: []
+            },
+            borrowedBooks: [],
+            history: [],
+            favorites: [],
+            myReviews: [],
+            bookedEvents: [],
+            titles: [],
+            stats: {
+                totalBooks: 0,
+                activeBorrows: 0,
+                totalRead: 0,
+                readingDays: 0,
+                reviewsWritten: 0,
+                totalEvents: 0,
+                booksCompleted: 0,
+                achievementsUnlocked: 0,
+                dailyChallengesCompleted: 0,
+                weeklyChallengesCompleted: 0,
+                totalPagesRead: 0
+            },
+            challenges: {
+                daily: {
+                    lastReset: null,
+                    completed: []
+                },
+                weekly: {
+                    lastReset: null,
+                    completed: []
+                }
+            }
+        };
+    }
 
     if (window.Telegram && window.Telegram.WebApp) {
         tg = window.Telegram.WebApp;
@@ -114,6 +192,7 @@ function showSection(sectionName) {
     
     if (sectionName === 'profile') {
         updateProfileDisplay();
+        updateInventoryList();
     }
     if (sectionName === 'redbook') {
         loadRedBookAnimals();
@@ -139,22 +218,22 @@ function showSection(sectionName) {
 // Загрузка начальных данных
 async function loadInitialData() {
     try {
+        console.log('Начинаем загрузку данных...');
         showLoading(true);
-        
-        setTimeout(() => {
-            updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
-            populateGenreFilter(window.APP_DATA.MOCK_GENRES);
-            updateStats(window.APP_DATA.MOCK_STATS);
-            updateUserProfile();
-            renderWeeklyBooks();
-            renderBookOfDay();
-            showLoading(false);
-        }, 800);
-        
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        showError('Не удалось загрузить данные. Используются демо-данные.');
-        
+
+        // Проверяем наличие данных
+        if (!window.APP_DATA) {
+            console.warn('APP_DATA не найден, используем демо данные');
+            loadDemoData();
+            return;
+        }
+        if (!window.APP_DATA.MOCK_BOOKS) {
+            throw new Error('MOCK_BOOKS не найден');
+        }
+
+        console.log('Найдено книг:', window.APP_DATA.MOCK_BOOKS.length);
+
+        // Немедленная загрузка данных без задержки
         updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
         updateStats(window.APP_DATA.MOCK_STATS);
@@ -162,14 +241,82 @@ async function loadInitialData() {
         renderWeeklyBooks();
         renderBookOfDay();
         showLoading(false);
+
+        console.log('Данные загружены успешно');
+
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        showError('Не удалось загрузить данные. Используются демо-данные.');
+
+        // Попытка загрузить с fallback
+        try {
+            updateBooksDisplay(window.APP_DATA ? window.APP_DATA.MOCK_BOOKS : []);
+            populateGenreFilter(window.APP_DATA ? window.APP_DATA.MOCK_GENRES : []);
+            updateStats(window.APP_DATA ? window.APP_DATA.MOCK_STATS : {});
+            updateUserProfile();
+            renderWeeklyBooks();
+            renderBookOfDay();
+        } catch (fallbackError) {
+            console.error('Ошибка fallback:', fallbackError);
+        }
+
+        showLoading(false);
     }
+}
+
+// Загрузка демо данных
+function loadDemoData() {
+    console.log('Загрузка демо данных');
+    showLoading(true);
+
+    const demoBooks = [
+        {
+            id: 1,
+            title: "Война и мир",
+            author: "Лев Толстой",
+            year: 1869,
+            genre: "Роман-эпопея",
+            description: "Монументальный роман-эпопея, описывающий русское общество в эпоху войн против Наполеона.",
+            available: true,
+            icon: "📖",
+            pages: 1225,
+            rating: 4.8,
+            reviewsCount: 156
+        },
+        {
+            id: 2,
+            title: "Преступление и наказание",
+            author: "Федор Достоевский",
+            year: 1866,
+            genre: "Психологический роман",
+            description: "История бывшего студента Родиона Раскольникова, совершившего убийство.",
+            available: true,
+            icon: "🔪",
+            pages: 672,
+            rating: 4.7,
+            reviewsCount: 89
+        }
+    ];
+
+    updateBooksDisplay(demoBooks);
+    populateGenreFilter(['Все жанры', 'Роман-эпопея', 'Психологический роман']);
+    updateStats({totalBooks: demoBooks.length, availableBooks: demoBooks.filter(b => b.available).length});
+    updateUserProfile();
+    renderWeeklyBooks();
+    renderBookOfDay();
+    showLoading(false);
 }
 
 // Отображение книг недели
 function renderWeeklyBooks() {
     const container = document.getElementById('weeklyBooksContainer');
-    const weeklyBooks = getRandomBooks(4);
-    
+    const weeklyBooks = getRandomBooks(4).filter(book => book && book.id); // Фильтруем undefined книги
+
+    if (weeklyBooks.length === 0) {
+        container.innerHTML = '<p>Книги временно недоступны</p>';
+        return;
+    }
+
     container.innerHTML = weeklyBooks.map(book => `
         <div class="book-card" onclick="showBookDetails(${book.id})">
             <div class="book-header">
@@ -193,8 +340,15 @@ function renderWeeklyBooks() {
 // Отображение книги дня
 function renderBookOfDay() {
     const container = document.getElementById('bookOfDayContainer');
-    const bookOfDay = getRandomBooks(1)[0];
-    
+    const bookOfDayBooks = getRandomBooks(1).filter(book => book && book.id); // Фильтруем undefined книги
+
+    if (bookOfDayBooks.length === 0) {
+        container.innerHTML = '<p>Книга дня временно недоступна</p>';
+        return;
+    }
+
+    const bookOfDay = bookOfDayBooks[0];
+
     container.innerHTML = `
         <div class="book-card" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none;">
             <div class="book-header">
@@ -289,16 +443,18 @@ function updateBooksDisplay(books) {
     currentBooks = books || [];
     const container = document.getElementById('booksContainer');
     const emptyState = document.getElementById('emptyState');
-    
-    if (!books || books.length === 0) {
+
+    if (!books || !Array.isArray(books) || books.length === 0) {
+        console.log('Книги не найдены или пустой массив:', books);
         container.innerHTML = '';
         emptyState.classList.remove('hidden');
         updateBooksCount(0);
         return;
     }
-    
+
+    console.log('Отображаем книг:', books.length);
     emptyState.classList.add('hidden');
-    
+
     container.innerHTML = books.map(book => {
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
@@ -733,9 +889,17 @@ function handleExperienceAndAchievements(userData, expGained) {
 function showAchievementNotification(achievements) {
     achievements.forEach(achievement => {
         setTimeout(() => {
+            let rewardText = '';
+            if (achievement.reward) {
+                const rewards = [];
+                if (achievement.reward.exp > 0) rewards.push(`${achievement.reward.exp} опыта`);
+                if (achievement.reward.coins > 0) rewards.push(`${achievement.reward.coins} 💎`);
+                if (rewards.length > 0) rewardText = `\nНаграда: ${rewards.join(', ')}`;
+            }
+
             tg.showPopup({
                 title: `🏆 Новое достижение! ${achievement.icon}`,
-                message: `${achievement.name}\n${achievement.description}`,
+                message: `${achievement.name}\n${achievement.description}${rewardText}`,
                 buttons: [{ type: 'ok' }]
             });
         }, 1000);
@@ -896,6 +1060,21 @@ function updateUserProfile() {
     document.getElementById('userName').textContent = userData.name;
     document.getElementById('userRegistration').textContent = `Зарегистрирован: ${userData.registrationDate}`;
 
+    // Отображаем текущий титул
+    const currentTitleElement = document.getElementById('userTitle');
+    if (userData.titles && userData.titles.length > 0) {
+        const currentTitleId = userData.titles[userData.titles.length - 1]; // Последний полученный титул
+        const titleData = window.APP_DATA.TITLES.find(t => t.id === currentTitleId);
+        if (titleData) {
+            currentTitleElement.textContent = `${titleData.icon} ${titleData.name}`;
+            currentTitleElement.style.display = 'block';
+        } else {
+            currentTitleElement.style.display = 'none';
+        }
+    } else {
+        currentTitleElement.style.display = 'none';
+    }
+
     // Обновляем уровень и опыт
     document.getElementById('userLevel').textContent = userData.level;
     const expPercent = ((userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)) / 100) * 100;
@@ -920,6 +1099,7 @@ function updateUserProfile() {
     checkAndUnlockTitles();
     updateBookedEventsList();
     updateAchievementsList();
+    updateTitlesList();
 }
 
 // Обновление списка активных книг
@@ -1057,7 +1237,19 @@ function updateAchievementsList() {
 
     achievementsCount.textContent = userData.achievements.length;
 
-    if (userData.achievements.length === 0) {
+    // Получаем все достижения
+    const allAchievements = window.APP_DATA.ACHIEVEMENTS.map(achievement => {
+        const isUnlocked = userData.achievements.some(a => a.id === achievement.id);
+        const unlockedData = userData.achievements.find(a => a.id === achievement.id);
+
+        return {
+            ...achievement,
+            isUnlocked,
+            unlockedAt: unlockedData?.unlockedAt
+        };
+    });
+
+    if (allAchievements.length === 0) {
         achievementsGrid.innerHTML = `
             <div class="empty-profile">
                 <div class="empty-icon">🏆</div>
@@ -1066,35 +1258,79 @@ function updateAchievementsList() {
             </div>
         `;
     } else {
-        achievementsGrid.innerHTML = userData.achievements.map(achievement => `
-            <div class="achievement-item unlocked">
-                <div class="achievement-icon">${achievement.icon}</div>
+        achievementsGrid.innerHTML = allAchievements.map(achievement => {
+            let rewardText = '';
+            if (achievement.reward) {
+                const rewards = [];
+                if (achievement.reward.exp > 0) rewards.push(`${achievement.reward.exp} опыта`);
+                if (achievement.reward.coins > 0) rewards.push(`${achievement.reward.coins} 💎`);
+                if (achievement.reward.title) rewards.push(`Титул: ${achievement.reward.title}`);
+                if (rewards.length > 0) rewardText = `Награда: ${rewards.join(', ')}`;
+            }
+
+            return `
+            <div class="achievement-item ${achievement.isUnlocked ? 'unlocked' : 'locked'}">
+                <div class="achievement-icon">${achievement.isUnlocked ? achievement.icon : '🔒'}</div>
                 <div class="achievement-info">
                     <div class="achievement-name">${achievement.name}</div>
                     <div class="achievement-desc">${achievement.description}</div>
-                    <div class="achievement-date">Получено: ${formatAchievementDate(achievement.unlockedAt)}</div>
+                    ${rewardText ? `<div class="achievement-reward">${rewardText}</div>` : ''}
+                    ${achievement.isUnlocked ?
+                        `<div class="achievement-date">Получено: ${formatAchievementDate(achievement.unlockedAt)}</div>` :
+                        '<div class="achievement-locked">🔒 Не получено</div>'
+                    }
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
+}
 
-    // Добавляем заблокированные достижения
-    const lockedAchievements = window.APP_DATA.ACHIEVEMENTS.filter(achievement =>
-        !userData.achievements.some(a => a.id === achievement.id)
-    );
+// Обновление титулов
+function updateTitlesList() {
+    const titlesGrid = document.getElementById('titlesGrid');
+    const titlesCount = document.getElementById('titlesCount');
 
-    if (lockedAchievements.length > 0) {
-        const lockedHtml = lockedAchievements.slice(0, 6).map(achievement => `
-            <div class="achievement-item locked">
-                <div class="achievement-icon">🔒</div>
-                <div class="achievement-info">
-                    <div class="achievement-name">${achievement.name}</div>
-                    <div class="achievement-desc">${achievement.description}</div>
+    // Получаем все титулы
+    const allTitles = window.APP_DATA.TITLES.map(title => {
+        const isUnlocked = title.type === 'achievement' ? title.condition(userData) :
+                          userData.titles?.includes(title.id);
+        return {
+            ...title,
+            isUnlocked
+        };
+    });
+
+    titlesCount.textContent = allTitles.filter(t => t.isUnlocked).length;
+
+    if (allTitles.length === 0) {
+        titlesGrid.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">👑</div>
+                <h4>Нет титулов</h4>
+                <p>Получайте достижения, чтобы разблокировать титулы!</p>
+            </div>
+        `;
+    } else {
+        titlesGrid.innerHTML = allTitles.map(title => {
+            if (!title.isUnlocked) return '';
+
+            return `
+            <div class="title-card unlocked ${title.rarity}">
+                <div class="title-header">
+                    <div class="title-icon">${title.icon}</div>
+                    <div class="title-info">
+                        <div class="title-name">${title.name}</div>
+                        <div class="title-description">${title.description}</div>
+                        <div class="title-rarity">${getRarityText(title.rarity)}</div>
+                    </div>
+                </div>
+                <div class="title-actions">
+                    <div class="title-unlocked">✅ Получен</div>
                 </div>
             </div>
-        `).join('');
-
-        achievementsGrid.innerHTML += lockedHtml;
+            `;
+        }).join('');
     }
 }
 
@@ -1893,16 +2129,21 @@ function showAnimalDetails(animalId) {
 // Вспомогательные функции
 function populateGenreFilter(genres) {
     const genreFilter = document.getElementById('genreFilter');
-    genreFilter.innerHTML = '<option value="Все жанры">Все жанры</option>' + 
-        genres.filter(genre => genre !== 'Все жанры').map(genre => 
+    if (!genreFilter) return;
+    genreFilter.innerHTML = '<option value="Все жанры">Все жанры</option>' +
+        (genres || []).filter(genre => genre !== 'Все жанры').map(genre =>
             `<option value="${genre}">${genre}</option>`
         ).join('');
 }
 
-function updateStats() {
-    const stats = calculateStats();
-    document.getElementById('totalBooks').textContent = stats.totalBooks;
-    document.getElementById('availableBooks').textContent = stats.availableBooks;
+function updateStats(stats) {
+    if (!stats) {
+        stats = calculateStats();
+    }
+    const totalBooksEl = document.getElementById('totalBooks');
+    const availableBooksEl = document.getElementById('availableBooks');
+    if (totalBooksEl) totalBooksEl.textContent = stats.totalBooks || 0;
+    if (availableBooksEl) availableBooksEl.textContent = stats.availableBooks || 0;
 }
 
 function updateBooksCount(count) {
@@ -1986,6 +2227,22 @@ function createRatingStars(rating) {
 }
 
 function getRandomBooks(count) {
+    if (!window.APP_DATA || !window.APP_DATA.MOCK_BOOKS || !Array.isArray(window.APP_DATA.MOCK_BOOKS)) {
+        // Демо книги
+        return [
+            {
+                id: 1,
+                title: "Война и мир",
+                author: "Лев Толстой",
+                year: 1869,
+                genre: "Роман-эпопея",
+                available: true,
+                icon: "📖",
+                rating: 4.8,
+                reviewsCount: 156
+            }
+        ].slice(0, count);
+    }
     const shuffled = [...window.APP_DATA.MOCK_BOOKS].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
 }
@@ -2000,12 +2257,12 @@ function getStatusText(status) {
 }
 
 function calculateStats() {
-    const books = window.APP_DATA.MOCK_BOOKS;
+    const books = window.APP_DATA && window.APP_DATA.MOCK_BOOKS ? window.APP_DATA.MOCK_BOOKS : [];
     return {
         totalBooks: books.length,
         availableBooks: books.filter(book => book.available).length,
         borrowedBooks: books.filter(book => !book.available).length,
-        totalGenres: window.APP_DATA.MOCK_GENRES.length - 1
+        totalGenres: window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0
     };
 }
 
@@ -2261,7 +2518,7 @@ function buyShopItem(itemId) {
     if (!item) return;
 
     if ((userData.coins || 0) < item.price) {
-        tg.showAlert('Недостаточно монет!');
+        tg.showAlert(`Не хватает кристаллов на покупку предмета "${item.title}"!`);
         return;
     }
 
@@ -2412,6 +2669,70 @@ function loadTitles() {
     updateTitlesCount();
 }
 
+// Обновление инвентаря
+function updateInventoryList() {
+    const inventoryGrid = document.getElementById('inventoryGrid');
+    const inventoryCount = document.getElementById('inventoryCount');
+
+    const ownedItems = window.APP_DATA.GAME_DATA.rewardsShop.filter(item =>
+        userData.gameProgress?.shopItems?.includes(item.id)
+    );
+
+    inventoryCount.textContent = ownedItems.length;
+
+    if (ownedItems.length === 0) {
+        inventoryGrid.innerHTML = `
+            <div class="empty-profile">
+                <div class="empty-icon">🎒</div>
+                <h4>Инвентарь пуст</h4>
+                <p>Купите предметы в магазине наград!</p>
+            </div>
+        `;
+    } else {
+        inventoryGrid.innerHTML = ownedItems.map(item => `
+            <div class="inventory-item">
+                <div class="inventory-item-header">
+                    <div class="inventory-item-icon">${item.icon}</div>
+                    <div class="inventory-item-info">
+                        <div class="inventory-item-title">${item.title}</div>
+                        <div class="inventory-item-description">${item.description}</div>
+                    </div>
+                </div>
+                <button class="inventory-use-btn" onclick="useInventoryItem('${item.id}')">
+                    Использовать
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+// Использование предмета из инвентаря
+function useInventoryItem(itemId) {
+    const item = window.APP_DATA.GAME_DATA.rewardsShop.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Применяем эффект предмета
+    applyShopItemEffect(itemId);
+
+    // Удаляем предмет из инвентаря (одноразовое использование)
+    if (userData.gameProgress?.shopItems) {
+        const index = userData.gameProgress.shopItems.indexOf(itemId);
+        if (index > -1) {
+            userData.gameProgress.shopItems.splice(index, 1);
+        }
+    }
+
+    window.STORAGE.saveAllData(userData);
+    updateInventoryList();
+    updateGamesStats();
+
+    tg.showPopup({
+        title: 'Предмет использован!',
+        message: `Вы использовали "${item.title}"!`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
 function buyTitle(titleId) {
     const title = window.APP_DATA.TITLES.find(t => t.id === titleId);
     if (!title || title.type !== 'purchase') return;
@@ -2536,3 +2857,5 @@ window.resetSettings = resetSettings;
 window.loadTitles = loadTitles;
 window.buyTitle = buyTitle;
 window.checkAndUnlockTitles = checkAndUnlockTitles;
+window.updateInventoryList = updateInventoryList;
+window.useInventoryItem = useInventoryItem;
