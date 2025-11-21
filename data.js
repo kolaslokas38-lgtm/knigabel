@@ -1741,7 +1741,19 @@ const ACHIEVEMENTS = [
 
     // Достижения за достижения
     { id: 'achievement_hunter', name: 'Охотник за достижениями', description: 'Получите 10 достижений', icon: '🎯', type: 'meta', condition: (user) => user.achievements.length >= 10 },
-    { id: 'achievement_master', name: 'Мастер достижений', description: 'Получите все достижения', icon: '👑', type: 'meta', condition: (user) => user.achievements.length >= ACHIEVEMENTS.length }
+    { id: 'achievement_master', name: 'Мастер достижений', description: 'Получите все достижения', icon: '👑', type: 'meta', condition: (user) => user.achievements.length >= ACHIEVEMENTS.length },
+
+    // Новые достижения
+    { id: 'genre_explorer', name: 'Исследователь жанров', description: 'Прочитайте книги из 5 разных жанров', icon: '🗺️', type: 'genres', condition: (user) => user.stats.booksCompleted >= 5 },
+    { id: 'night_owl', name: 'Ночная сова', description: 'Чтение после полуночи 10 раз', icon: '🦉', type: 'special', condition: (user) => user.stats.nightReading >= 10 },
+    { id: 'social_reader', name: 'Социальный читатель', description: 'Поделитесь 20 отзывами', icon: '📣', type: 'social', condition: (user) => user.stats.reviewsWritten >= 20 },
+    { id: 'book_collector', name: 'Коллекционер', description: 'Добавьте 100 книг в избранное', icon: '📚', type: 'collection', condition: (user) => user.favorites.length >= 100 },
+    { id: 'marathon_reader', name: 'Марафонец чтения', description: 'Прочитайте 1000 страниц за месяц', icon: '🏃‍♂️', type: 'performance', condition: (user) => user.stats.monthlyPages >= 1000 },
+    { id: 'review_quality', name: 'Критик качества', description: 'Получите 50 лайков на отзывы', icon: '👍', type: 'social', condition: (user) => user.stats.reviewLikes >= 50 },
+    { id: 'early_adopter', name: 'Ранний пользователь', description: 'Используйте приложение в первые 30 дней', icon: '🚀', type: 'special', condition: (user) => user.stats.readingDays >= 30 },
+    { id: 'perfect_week', name: 'Идеальная неделя', description: 'Чтение каждый день в течение недели', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 7 },
+    { id: 'author_fan', name: 'Фанат автора', description: 'Прочитайте все книги одного автора', icon: '👨‍🎨', type: 'genres', condition: (user) => user.stats.authorComplete >= 1 },
+    { id: 'reading_champion', name: 'Чемпион чтения', description: 'Прочитайте 500 книг', icon: '🏆', type: 'reading', condition: (user) => user.stats.booksCompleted >= 500 }
 ];
 
 // Функции для работы с достижениями

@@ -1282,12 +1282,20 @@ function completeChallenge(challengeId) {
 
     if (!challengeList.includes(challengeId)) {
         challengeList.push(challengeId);
-        handleExperienceAndAchievements(userData, challenge.reward);
+        handleExperienceAndAchievements(userData, challenge.reward.exp);
 
-        userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + challenge.reward;
+        // Начисляем алмазы (coins)
+        userData.coins = (userData.coins || 0) + challenge.reward.coins;
+        userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + challenge.reward.coins;
 
         window.STORAGE.saveAllData(userData);
         loadChallenges(); // Перезагружаем челленджи
+
+        tg.showPopup({
+            title: 'Задание выполнено! 🎉',
+            message: `Получено ${challenge.reward.exp} опыта и ${challenge.reward.coins} алмазов!`,
+            buttons: [{ type: 'ok' }]
+        });
     }
 }
 
