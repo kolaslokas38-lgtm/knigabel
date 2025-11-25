@@ -11,26 +11,143 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <h1>📚 КнігаБел</h1>
-                <p>Ваша цифровая библиотека</p>
-            </div>
-            <div class="stats" id="stats">
-                <div class="stat-item">
-                    <span class="stat-number" id="totalBooks">0</span>
-                    <span class="stat-label">Всего книг</span>
+            <div class="header-main">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <div class="logo-icon">📚</div>
+                        <div class="logo-text">
+                            <h1>КнігаБел</h1>
+                            <p>Ваша цифровая библиотека</p>
+                        </div>
+                    </div>
+                    <div class="header-features">
+                        <div class="feature-item">
+                            <div class="feature-icon">📖</div>
+                            <div class="feature-text">
+                                <span class="feature-number" id="totalBooks">0</span>
+                                <span class="feature-label">книг</span>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">⭐</div>
+                            <div class="feature-text">
+                                <span class="feature-number" id="availableBooks">0</span>
+                                <span class="feature-label">доступно</span>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">👥</div>
+                            <div class="feature-text">
+                                <span class="feature-number" id="totalUsers">0</span>
+                                <span class="feature-label">читателей</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="availableBooks">0</span>
-                    <span class="stat-label">Доступно</span>
+                <div class="header-actions">
+                    <div class="theme-toggle">
+                        <button onclick="toggleTheme()" class="theme-btn" id="themeToggle">
+                            <span id="themeIcon">🌙</span>
+                            <span class="theme-text">Тема</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="theme-toggle">
-                <button onclick="toggleTheme()" class="theme-btn" id="themeToggle">
-                    <span id="themeIcon">🌙</span>
-                </button>
+            <div class="header-stats" id="stats">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalBooksCard">0</div>
+                            <div class="stat-label">Всего книг</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="availableBooksCard">0</div>
+                            <div class="stat-label">Доступно</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📖</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="borrowedBooks">0</div>
+                            <div class="stat-label">Выдано</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏷️</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalGenres">0</div>
+                            <div class="stat-label">Жанров</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h2 class="hero-title">Откройте мир литературы</h2>
+                    <p class="hero-subtitle">Более 50 книг различных жанров ждут вас в нашей цифровой библиотеке</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" id="heroTotalBooks">50</div>
+                            <div class="hero-stat-label">Книг в каталоге</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" id="heroGenres">12</div>
+                            <div class="hero-stat-label">Жанров</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" id="heroAvailable">49</div>
+                            <div class="hero-stat-label">Доступно сейчас</div>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <button onclick="showSection('catalog')" class="hero-btn primary">
+                            <span class="btn-icon">📚</span>
+                            <span class="btn-text">Просмотреть каталог</span>
+                        </button>
+                        <button onclick="showSection('authors')" class="hero-btn secondary">
+                            <span class="btn-icon">👥</span>
+                            <span class="btn-text">Знаменитые авторы</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="genre-showcase">
+                        <div class="genre-item fantasy">
+                            <div class="genre-icon">🧙‍♂️</div>
+                            <div class="genre-name">Фэнтези</div>
+                        </div>
+                        <div class="genre-item sci-fi">
+                            <div class="genre-icon">🚀</div>
+                            <div class="genre-name">Фантастика</div>
+                        </div>
+                        <div class="genre-item romance">
+                            <div class="genre-icon">💕</div>
+                            <div class="genre-name">Романтика</div>
+                        </div>
+                        <div class="genre-item detective">
+                            <div class="genre-icon">🕵️‍♂️</div>
+                            <div class="genre-name">Детектив</div>
+                        </div>
+                        <div class="genre-item classic">
+                            <div class="genre-icon">📚</div>
+                            <div class="genre-name">Классика</div>
+                        </div>
+                        <div class="genre-item thriller">
+                            <div class="genre-icon">🔪</div>
+                            <div class="genre-name">Триллер</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Navigation Tabs -->
         <section class="navigation-section">
@@ -162,7 +279,7 @@
                     <div class="stat-icon">💎</div>
                     <div class="stat-content">
                         <div class="stat-number" id="playerCoins">0</div>
-                        <div class="stat-label">Монеты</div>
+                        <div class="stat-label">Кристаллы</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -267,16 +384,6 @@
                     <h2 id="userName">Пользователь</h2>
                     <p class="user-registration" id="userRegistration">Зарегистрирован: ...</p>
                     <p id="userTitle" class="user-title" style="display: none;"></p>
-                    <div class="user-level">
-                        <div class="level-badge">
-                            <span class="level-number" id="userLevel">1</span>
-                            <span class="level-label">уровень</span>
-                        </div>
-                        <div class="experience-bar">
-                            <div class="exp-fill" id="expFill"></div>
-                            <span class="exp-text" id="expText">0/100 XP</span>
-                        </div>
-                    </div>
                     <div class="user-stats">
                         <span class="user-stat">📚 <span id="userTotalBooks">0</span> книг</span>
                         <span class="user-stat">⭐ <span id="userFavorites">0</span> избранных</span>
@@ -287,15 +394,15 @@
             </div>
 
             <!-- Level and XP -->
-            <div class="level-section">
+            <div class="level-section" id="levelSection">
                 <div class="level-display">
                     <div class="level-info">
-                        <span class="level-label">Уровень</span>
+                        <span class="level-label">Уровень пользователя:</span>
                         <span class="level-number" id="userLevel">1</span>
                     </div>
                     <div class="xp-bar">
-                        <div class="xp-fill" id="expFill"></div>
-                        <div class="xp-text" id="expText">0/100 XP</div>
+                        <div class="xp-fill" id="expFillSection"></div>
+                        <div class="xp-text" id="expTextSection">0/100 XP</div>
                     </div>
                 </div>
             </div>

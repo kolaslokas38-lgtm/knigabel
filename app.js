@@ -97,11 +97,18 @@ function initializeTelegramApp() {
             challenges: {
                 daily: {
                     lastReset: null,
-                    completed: []
+                    completed: [],
+                    claimed: []
                 },
                 weekly: {
                     lastReset: null,
-                    completed: []
+                    completed: [],
+                    claimed: []
+                },
+                monthly: {
+                    lastReset: null,
+                    completed: [],
+                    claimed: []
                 }
             }
         };
@@ -318,14 +325,15 @@ function renderWeeklyBooks() {
     }
 
     container.innerHTML = weeklyBooks.map(book => `
-        <div class="book-card" onclick="showBookDetails(${book.id})">
+        <div class="book-card ${getGenreClass(book.genre)}" onclick="showBookDetails(${book.id})">
             <div class="book-header">
                 <div class="book-cover">
-                    <div class="book-icon">${book.icon || '📚'}</div>
+                    <div class="book-icon-large">${getGenreIcon(book.genre)}</div>
                 </div>
                 <div class="book-info">
                     <div class="book-title">${escapeHtml(book.title)}</div>
                     <div class="book-author">${escapeHtml(book.author)}</div>
+                    <div class="book-genre-tag">${book.genre}</div>
                     <div class="book-rating-small">
                         <span class="stars">${createRatingStars(book.rating)}</span>
                         <span class="rating-value">${book.rating}</span>
@@ -350,26 +358,23 @@ function renderBookOfDay() {
     const bookOfDay = bookOfDayBooks[0];
 
     container.innerHTML = `
-        <div class="book-card" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none;">
+        <div class="book-card book-of-day-card ${getGenreClass(bookOfDay.genre)}" onclick="showBookDetails(${bookOfDay.id})">
             <div class="book-header">
                 <div class="book-cover">
-                    <div class="book-icon">${bookOfDay.icon || '📚'}</div>
+                    <div class="book-icon-large">${getGenreIcon(bookOfDay.genre)}</div>
                 </div>
                 <div class="book-info">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex: 1;">
-                            <div class="book-title" style="color: white; font-size: 1.3em;">${escapeHtml(bookOfDay.title)}</div>
-                            <div class="book-author" style="color: rgba(255,255,255,0.9);">${escapeHtml(bookOfDay.author)}</div>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 12px; font-size: 0.8em; white-space: nowrap;">
-                            ⭐ Книга дня
-                        </div>
+                    <div class="book-of-day-header">
+                        <div class="book-of-day-badge">⭐ Книга дня</div>
                     </div>
+                    <div class="book-title">${escapeHtml(bookOfDay.title)}</div>
+                    <div class="book-author">${escapeHtml(bookOfDay.author)}</div>
+                    <div class="book-genre-tag">${bookOfDay.genre}</div>
                     <div class="book-rating-small">
                         <span class="stars">${createRatingStars(bookOfDay.rating)}</span>
-                        <span class="rating-value" style="color: white;">${bookOfDay.rating}/5</span>
+                        <span class="rating-value">${bookOfDay.rating}</span>
                     </div>
-                    <button class="borrow-btn" onclick="event.stopPropagation(); borrowBook(${bookOfDay.id})" style="background: rgba(255,255,255,0.9); color: var(--primary-color); margin-top: 10px;">
+                    <button class="borrow-btn book-of-day-btn" onclick="event.stopPropagation(); borrowBook(${bookOfDay.id})">
                         📖 Забронировать
                     </button>
                 </div>
@@ -461,19 +466,21 @@ function updateBooksDisplay(books) {
     container.innerHTML = books.map(book => {
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
-        
+
         return `
-        <div class="book-card" onclick="showBookDetails(${book.id})">
+        <div class="book-card ${getGenreClass(book.genre)}" onclick="showBookDetails(${book.id})">
             <div class="book-header">
                 <div class="book-cover">
-                    <div class="book-icon">${book.icon || '📚'}</div>
+                    <div class="book-icon-large">${getGenreIcon(book.genre)}</div>
                 </div>
                 <div class="book-info">
                     <div class="book-title">${escapeHtml(book.title)}</div>
-                    <div class="book-author">👤 ${escapeHtml(book.author)}</div>
-                    <div class="book-meta">📅 ${book.year} год</div>
-                    <div class="book-meta">🏷️ ${book.genre}</div>
-                    <div class="book-meta">📄 ${book.pages} стр.</div>
+                    <div class="book-author">${escapeHtml(book.author)}</div>
+                    <div class="book-meta">
+                        <span class="meta-item">📅 ${book.year}</span>
+                        <span class="meta-item">📄 ${book.pages} стр.</span>
+                    </div>
+                    <div class="book-genre-tag">${book.genre}</div>
                     <div class="book-rating-small">
                         <span class="stars">${createRatingStars(book.rating)}</span>
                         <span class="rating-value">${book.rating}</span>
@@ -485,18 +492,18 @@ function updateBooksDisplay(books) {
                 </div>
             </div>
             <div class="book-actions">
-                <button 
-                    class="borrow-btn" 
+                <button
+                    class="borrow-btn"
                     onclick="event.stopPropagation(); borrowBook(${book.id})"
                     ${!book.available || isBorrowed ? 'disabled' : ''}
                 >
                     ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
                 </button>
-                <button 
-                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}" 
+                <button
+                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}"
                     onclick="event.stopPropagation(); toggleFavorite(${book.id})"
                 >
-                    ${isFavorite ? '★' : '☆'}
+                    ${isFavorite ? '❤️' : '🤍'}
                 </button>
             </div>
         </div>
@@ -523,8 +530,8 @@ async function showBookDetails(bookId) {
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
             <div class="book-details">
-                <div class="book-cover-large">
-                    <div class="book-icon">${book.icon || '📚'}</div>
+                <div class="book-cover-large ${getGenreClass(book.genre)}">
+                    <div class="book-icon-large">${getGenreIcon(book.genre)}</div>
                 </div>
                 <div class="book-info-detailed">
                     <h4>${escapeHtml(book.title)}</h4>
@@ -1081,8 +1088,24 @@ function updateUserProfile() {
     // Обновляем уровень и опыт
     document.getElementById('userLevel').textContent = userData.level;
     const expPercent = ((userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)) / 100) * 100;
-    document.getElementById('expFill').style.width = `${Math.min(100, expPercent)}%`;
-    document.getElementById('expText').textContent = `${userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)}/${userData.experienceToNext} XP`;
+    // Обновляем оба места полоски уровня
+    const expFillHeader = document.getElementById('expFillHeader');
+    const expTextHeader = document.getElementById('expTextHeader');
+    const expFillSection = document.getElementById('expFillSection');
+    const expTextSection = document.getElementById('expTextSection');
+    if (expFillHeader) expFillHeader.style.width = `${Math.min(100, expPercent)}%`;
+    if (expTextHeader) expTextHeader.textContent = `${userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)}/${userData.experienceToNext} XP`;
+    if (expFillSection) expFillSection.style.width = `${Math.min(100, expPercent)}%`;
+    if (expTextSection) expTextSection.textContent = `${userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)}/${userData.experienceToNext} XP`;
+
+    // Обновляем фон секции уровня
+    const levelSection = document.getElementById('levelSection');
+    if (levelSection) {
+        // Удалить старые классы level-*
+        levelSection.className = levelSection.className.replace(/\blevel-\d+\b/g, '');
+        // Добавить новый класс
+        levelSection.classList.add(`level-${Math.min(userData.level, 10)}`); // Ограничить до 10 для стилей
+    }
 
     document.getElementById('userTotalBooks').textContent = userData.stats.totalBooks;
     document.getElementById('userFavorites').textContent = userData.favorites.length;
@@ -1377,7 +1400,7 @@ function loadRedBookAnimals() {
         <div class="book-card" onclick="showAnimalDetails(${animal.id})">
             <div class="book-header">
                 <div class="book-cover">
-                    <div class="book-icon">🐾</div>
+                    <div class="book-icon">${animal.image && animal.image.startsWith('http') ? createImageElement(animal.image, animal.name) : '🐾'}</div>
                 </div>
                 <div class="book-info">
                     <div class="book-title">${escapeHtml(animal.name)}</div>
@@ -1503,7 +1526,16 @@ function checkAndResetChallenges() {
     // Сбрасываем недельные челленджи
     if (userData.challenges.weekly.lastReset !== weekStart) {
         userData.challenges.weekly.completed = [];
+        userData.challenges.weekly.claimed = [];
         userData.challenges.weekly.lastReset = weekStart;
+    }
+
+    // Сбрасываем месячные челленджи
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toDateString();
+    if (userData.challenges.monthly.lastReset !== monthStart) {
+        userData.challenges.monthly.completed = [];
+        userData.challenges.monthly.claimed = [];
+        userData.challenges.monthly.lastReset = monthStart;
     }
 
     window.STORAGE.saveAllData(userData);
@@ -1523,16 +1555,20 @@ function completeChallenge(challengeId) {
         challengeList.push(challengeId);
         handleExperienceAndAchievements(userData, challenge.reward.exp);
 
-        // Начисляем алмазы (coins)
-        userData.coins = (userData.coins || 0) + challenge.reward.coins;
-        userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + challenge.reward.coins;
+        // Начисляем кристаллы (coins) с учётом множителя
+        let coinsEarned = challenge.reward.coins;
+        if (userData.coinMultiplier && userData.coinMultiplier > 1 && userData.multiplierEndTime > Date.now()) {
+            coinsEarned *= userData.coinMultiplier;
+        }
+        userData.coins = (userData.coins || 0) + coinsEarned;
+        userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + coinsEarned;
 
         window.STORAGE.saveAllData(userData);
         loadChallenges(); // Перезагружаем челленджи
 
         tg.showPopup({
             title: 'Задание выполнено! 🎉',
-            message: `Получено ${challenge.reward.exp} опыта и ${challenge.reward.coins} алмазов!`,
+            message: `Получено ${challenge.reward.exp} опыта и ${coinsEarned} 💎 кристаллов!${coinsEarned > challenge.reward.coins ? ` (x${userData.coinMultiplier} множитель)` : ''}`,
             buttons: [{ type: 'ok' }]
         });
     }
@@ -2096,28 +2132,28 @@ function showAnimalDetails(animalId) {
     modalBody.innerHTML = `
         <div class="book-details">
             <div class="book-cover-large">
-                <div class="book-icon">🐾</div>
+                <div class="book-icon">${animal.image && animal.image.startsWith('http') ? createImageElement(animal.image, animal.name, 'large') : '🐾'}</div>
             </div>
             <div class="book-info-detailed">
                 <h4>${escapeHtml(animal.name)}</h4>
                 <p><strong>Вид:</strong> <em>${escapeHtml(animal.species)}</em></p>
-                <p><strong>Статус:</strong> 
+                <p><strong>Статус:</strong>
                     <span class="book-status ${animal.status}">
                         ${getStatusText(animal.status)}
                     </span>
                 </p>
                 <p><strong>Популяция:</strong> ${animal.population}</p>
                 <p><strong>Место обитания:</strong> ${animal.habitat}</p>
-                
+
                 <div class="book-description">
                     <strong>Описание:</strong>
                     <p>${escapeHtml(animal.description)}</p>
                 </div>
-                
+
                 <div class="conservation-info">
                     <h5>🛡️ Меры охраны</h5>
-                    <p>Вид охраняется в соответствии с законодательством Республики Беларусь. 
-                       Запрещена охота, уничтожение мест обитания и любая деятельность, 
+                    <p>Вид охраняется в соответствии с законодательством Республики Беларусь.
+                       Запрещена охота, уничтожение мест обитания и любая деятельность,
                        приводящая к сокращению численности вида.</p>
                 </div>
             </div>
@@ -2145,8 +2181,27 @@ function updateStats(stats) {
     }
     const totalBooksEl = document.getElementById('totalBooks');
     const availableBooksEl = document.getElementById('availableBooks');
+    const totalBooksCardEl = document.getElementById('totalBooksCard');
+    const availableBooksCardEl = document.getElementById('availableBooksCard');
+    const borrowedBooksEl = document.getElementById('borrowedBooks');
+    const totalGenresEl = document.getElementById('totalGenres');
+
+    // Hero section stats
+    const heroTotalBooksEl = document.getElementById('heroTotalBooks');
+    const heroGenresEl = document.getElementById('heroGenres');
+    const heroAvailableEl = document.getElementById('heroAvailable');
+
     if (totalBooksEl) totalBooksEl.textContent = stats.totalBooks || 0;
     if (availableBooksEl) availableBooksEl.textContent = stats.availableBooks || 0;
+    if (totalBooksCardEl) totalBooksCardEl.textContent = stats.totalBooks || 0;
+    if (availableBooksCardEl) availableBooksCardEl.textContent = stats.availableBooks || 0;
+    if (borrowedBooksEl) borrowedBooksEl.textContent = stats.borrowedBooks || 0;
+    if (totalGenresEl) totalGenresEl.textContent = stats.totalGenres || 0;
+
+    // Hero section
+    if (heroTotalBooksEl) heroTotalBooksEl.textContent = stats.totalBooks || 0;
+    if (heroGenresEl) heroGenresEl.textContent = stats.totalGenres || 0;
+    if (heroAvailableEl) heroAvailableEl.textContent = stats.availableBooks || 0;
 }
 
 function updateBooksCount(count) {
@@ -2331,6 +2386,7 @@ function loadGamesSection() {
     updateGamesStats();
     loadDailyQuests();
     loadWeeklyChallenges();
+    loadMonthlyChallenges();
     loadSpecialEvents();
     loadRewardsShop();
 }
@@ -2349,9 +2405,10 @@ function loadDailyQuests() {
     container.innerHTML = quests.map(quest => {
         const progress = calculateQuestProgress(quest.id);
         const isCompleted = progress >= quest.target;
+        const isClaimed = userData.challenges?.daily?.claimed?.includes(quest.id);
 
         return `
-            <div class="quest-card ${isCompleted ? 'completed' : ''}">
+            <div class="quest-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}">
                 <div class="quest-header">
                     <div class="quest-icon">${quest.icon}</div>
                     <div class="quest-info">
@@ -2369,7 +2426,9 @@ function loadDailyQuests() {
                     <span class="reward-exp">⭐ ${quest.reward.exp} XP</span>
                     <span class="reward-coins">💎 ${quest.reward.coins}</span>
                 </div>
-                ${isCompleted ? '<div class="quest-completed">✅ Выполнено!</div>' : ''}
+                ${isClaimed ? '<div class="quest-completed">🎉 Награда получена!</div>' :
+                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'${quest.id}\', \'daily\')">🎁 Забрать награду</button>' :
+                  '<div class="quest-pending">⏳ В процессе...</div>'}
             </div>
         `;
     }).join('');
@@ -2382,9 +2441,10 @@ function loadWeeklyChallenges() {
     container.innerHTML = challenges.map(challenge => {
         const progress = calculateChallengeProgress(challenge.id);
         const isCompleted = progress >= challenge.target;
+        const isClaimed = userData.challenges?.weekly?.claimed?.includes(challenge.id);
 
         return `
-            <div class="challenge-card ${isCompleted ? 'completed' : ''}">
+            <div class="challenge-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}">
                 <div class="challenge-header">
                     <div class="challenge-icon">${challenge.icon}</div>
                     <div class="challenge-info">
@@ -2402,7 +2462,45 @@ function loadWeeklyChallenges() {
                     <span class="reward-exp">⭐ ${challenge.reward.exp} XP</span>
                     <span class="reward-coins">💎 ${challenge.reward.coins}</span>
                 </div>
-                ${isCompleted ? '<div class="challenge-completed">✅ Выполнено!</div>' : ''}
+                ${isClaimed ? '<div class="challenge-completed">🎉 Награда получена!</div>' :
+                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'${challenge.id}\', \'weekly\')">🎁 Забрать награду</button>' :
+                  '<div class="challenge-pending">⏳ В процессе...</div>'}
+            </div>
+        `;
+    }).join('');
+}
+
+function loadMonthlyChallenges() {
+    const container = document.getElementById('monthlyChallengesGrid');
+    const challenges = window.APP_DATA.GAME_DATA.monthlyChallenges;
+
+    container.innerHTML = challenges.map(challenge => {
+        const progress = calculateMonthlyChallengeProgress(challenge.id);
+        const isCompleted = progress >= challenge.target;
+        const isClaimed = userData.challenges?.monthly?.claimed?.includes(challenge.id);
+
+        return `
+            <div class="challenge-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}">
+                <div class="challenge-header">
+                    <div class="challenge-icon">${challenge.icon}</div>
+                    <div class="challenge-info">
+                        <div class="challenge-title">${challenge.title}</div>
+                        <div class="challenge-description">${challenge.description}</div>
+                    </div>
+                </div>
+                <div class="challenge-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(progress / challenge.target) * 100}%"></div>
+                    </div>
+                    <div class="progress-text">${progress}/${challenge.target}</div>
+                </div>
+                <div class="challenge-reward">
+                    <span class="reward-exp">⭐ ${challenge.reward.exp} XP</span>
+                    <span class="reward-coins">💎 ${challenge.reward.coins}</span>
+                </div>
+                ${isClaimed ? '<div class="challenge-completed">🎉 Награда получена!</div>' :
+                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'${challenge.id}\', \'monthly\')">🎁 Забрать награду</button>' :
+                  '<div class="challenge-pending">⏳ В процессе...</div>'}
             </div>
         `;
     }).join('');
@@ -2500,6 +2598,99 @@ function calculateChallengeProgress(challengeId) {
     }
 }
 
+function calculateMonthlyChallengeProgress(challengeId) {
+    switch (challengeId) {
+        case 'read_books_month':
+            return userData.history.filter(h => {
+                const monthAgo = new Date();
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                return new Date(h.returnDate) > monthAgo;
+            }).length;
+        case 'pages_month':
+            return userData.totalPagesRead || 0; // В реальности нужно считать за месяц
+        case 'reviews_month':
+            return userData.myReviews.filter(r => {
+                const monthAgo = new Date();
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                return new Date(r.date) > monthAgo;
+            }).length;
+        case 'streak_month':
+            return userData.readingStreak || 0;
+        case 'genres_month':
+            // Подсчитываем уникальные жанры прочитанных книг
+            const genres = new Set();
+            userData.history.forEach(h => {
+                const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === h.bookId);
+                if (book) genres.add(book.genre);
+            });
+            return genres.size;
+        default:
+            return 0;
+    }
+}
+
+function claimChallengeReward(challengeId, type) {
+    const challenges = type === 'daily' ? window.APP_DATA.GAME_DATA.dailyQuests :
+                      type === 'weekly' ? window.APP_DATA.GAME_DATA.weeklyChallenges :
+                      window.APP_DATA.GAME_DATA.monthlyChallenges;
+    const challenge = challenges.find(c => c.id === challengeId);
+
+    if (!challenge) return;
+
+    const progress = type === 'daily' ? calculateQuestProgress(challengeId) :
+                    type === 'weekly' ? calculateChallengeProgress(challengeId) :
+                    calculateMonthlyChallengeProgress(challengeId);
+    const isCompleted = progress >= challenge.target;
+
+    if (!isCompleted) {
+        tg.showAlert('Задание ещё не выполнено!');
+        return;
+    }
+
+    // Проверяем, не получена ли уже награда
+    if (!userData.challenges[type].claimed) {
+        userData.challenges[type].claimed = [];
+    }
+
+    if (userData.challenges[type].claimed.includes(challengeId)) {
+        tg.showAlert('Награда уже получена!');
+        return;
+    }
+
+    // Начисляем награду
+    let coinsEarned = challenge.reward.coins;
+    if (userData.coinMultiplier && userData.coinMultiplier > 1 && userData.multiplierEndTime > Date.now()) {
+        coinsEarned *= userData.coinMultiplier;
+    }
+
+    userData.coins = (userData.coins || 0) + coinsEarned;
+    userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + coinsEarned;
+
+    const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, challenge.reward.exp);
+
+    // Отмечаем как полученное
+    userData.challenges[type].claimed.push(challengeId);
+
+    window.STORAGE.saveAllData(userData);
+
+    // Перезагружаем челленджи
+    if (type === 'daily') {
+        loadDailyQuests();
+    } else if (type === 'weekly') {
+        loadWeeklyChallenges();
+    } else {
+        loadMonthlyChallenges();
+    }
+
+    updateGamesStats();
+
+    tg.showPopup({
+        title: 'Награда получена! 🎉',
+        message: `Получено ${challenge.reward.exp} опыта и ${coinsEarned} 💎 кристаллов!${coinsEarned > challenge.reward.coins ? ` (x${userData.coinMultiplier} множитель)` : ''}${levelUp.leveledUp ? `\n🎉 Новый уровень: ${levelUp.newLevel}!` : ''}`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
 function joinSpecialEvent(eventId) {
     if (!userData.gameProgress.specialEvents) {
         userData.gameProgress.specialEvents = [];
@@ -2561,9 +2752,52 @@ function applyShopItemEffect(itemId) {
             }
             break;
         case 'theme_unlock':
-            // Разблокировать тёмную тему
+            // Разблокировать тёмную тему - можно добавить флаг
+            userData.unlockedThemes = userData.unlockedThemes || [];
+            userData.unlockedThemes.push('dark');
+            tg.showAlert('Тёмная тема разблокирована! Переключитесь в настройках.');
             break;
-        // Другие эффекты...
+        case 'reading_streak_booster':
+            userData.readingStreak = (userData.readingStreak || 0) + 7;
+            tg.showAlert('Серия чтения увеличена на 7 дней!');
+            break;
+        case 'coin_multiplier':
+            userData.coinMultiplier = userData.coinMultiplier || 1;
+            userData.coinMultiplier *= 2;
+            userData.multiplierEndTime = Date.now() + (5 * 24 * 60 * 60 * 1000); // 5 дней
+            tg.showAlert('Множитель кристаллов активирован на 5 дней!');
+            break;
+        case 'exclusive_avatar':
+            userData.availableAvatars = userData.availableAvatars || [];
+            userData.availableAvatars.push('🎭');
+            tg.showAlert('Эксклюзивный аватар разблокирован!');
+            break;
+        case 'background_theme':
+            userData.availableBackgrounds = userData.availableBackgrounds || [];
+            userData.availableBackgrounds.push('gradient');
+            tg.showAlert('Новый фон профиля разблокирован!');
+            break;
+        case 'speed_reading':
+            userData.speedBoost = userData.speedBoost || 1;
+            userData.speedBoost *= 1.2;
+            userData.speedBoostEndTime = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 дней
+            tg.showAlert('Ускорение чтения активировано на неделю!');
+            break;
+        case 'achievement_unlocker':
+            // Разблокировать случайное достижение
+            const availableAchievements = window.APP_DATA.ACHIEVEMENTS.filter(a =>
+                !userData.achievements.some(ua => ua.id === a.id)
+            );
+            if (availableAchievements.length > 0) {
+                const randomAchievement = availableAchievements[Math.floor(Math.random() * availableAchievements.length)];
+                window.APP_DATA.AchievementSystem.unlockAchievements(userData, [randomAchievement]);
+                tg.showAlert(`Разблокировано достижение: ${randomAchievement.name}!`);
+            } else {
+                tg.showAlert('Все достижения уже разблокированы!');
+            }
+            break;
+        default:
+            tg.showAlert('Предмет активирован!');
     }
 }
 
@@ -2774,6 +3008,79 @@ function getRarityText(rarity) {
         legendary: 'Легендарный'
     };
     return rarityMap[rarity] || rarity;
+}
+
+// Функция для получения иконки по жанру
+function getGenreIcon(genre) {
+    const genreIcons = {
+        'Роман-эпопея': '📖',
+        'Психологический роман': '🧠',
+        'Фантастика': '🚀',
+        'Фэнтези': '🧙‍♂️',
+        'Детектив': '🕵️‍♂️',
+        'Триллер': '🔪',
+        'Ужасы': '👻',
+        'Романтика': '💕',
+        'Исторический роман': '🏰',
+        'Биография': '👤',
+        'Научная литература': '🔬',
+        'Поэзия': '📝',
+        'Драма': '🎭',
+        'Комедия': '😂',
+        'Приключения': '🗺️',
+        'Классика': '📚'
+    };
+    return genreIcons[genre] || '📖';
+}
+
+// Функция для получения CSS класса по жанру
+function getGenreClass(genre) {
+    const genreClasses = {
+        'Роман-эпопея': 'genre-epic',
+        'Психологический роман': 'genre-psychological',
+        'Фантастика': 'genre-sci-fi',
+        'Фэнтези': 'genre-fantasy',
+        'Детектив': 'genre-detective',
+        'Триллер': 'genre-thriller',
+        'Ужасы': 'genre-horror',
+        'Романтика': 'genre-romance',
+        'Исторический роман': 'genre-historical',
+        'Биография': 'genre-biography',
+        'Научная литература': 'genre-science',
+        'Поэзия': 'genre-poetry',
+        'Драма': 'genre-drama',
+        'Комедия': 'genre-comedy',
+        'Приключения': 'genre-adventure',
+        'Классика': 'genre-classic'
+    };
+    return genreClasses[genre] || 'genre-default';
+}
+
+// Функция для создания изображения с обработкой ошибок
+function createImageElement(src, alt, size = 'normal') {
+    const imgId = 'img_' + Math.random().toString(36).substr(2, 9);
+    const borderRadius = size === 'large' ? '8px' : '4px';
+
+    // Создаем изображение с обработчиками событий
+    setTimeout(() => {
+        const img = document.getElementById(imgId);
+        if (!img) return;
+
+        img.classList.add('loading');
+
+        img.onload = function() {
+            img.classList.remove('loading');
+            img.classList.add('loaded');
+        };
+
+        img.onerror = function() {
+            // Заменяем на fallback
+            const container = img.parentElement;
+            container.innerHTML = '<div class="fallback">📚</div>';
+        };
+    }, 0);
+
+    return `<img id="${imgId}" src="${src}" alt="${alt}" style="width:100%;height:100%;object-fit:cover;border-radius:${borderRadius};">`;
 }
 
 function checkAndUnlockTitles() {
