@@ -335,6 +335,9 @@ function showSection(sectionName) {
     if (sectionName === 'education') {
         loadEducationSection();
     }
+    if (sectionName === 'reviews') {
+        loadReviewsSection();
+    }
 }
 
 // Загрузка начальных данных
@@ -4150,6 +4153,177 @@ function showAuthorEducationDetails(authorId) {
     tg.BackButton.show();
 }
 
+// Функции для работы с отзывами
+
+// Глобальные переменные для отзывов
+let allReviews = [];
+let currentReviewsSort = 'newest';
+let currentReviewsBookFilter = '';
+
+// Загрузка секции отзывов
+async function loadReviewsSection() {
+    try {
+        showReviewsLoading(true);
+
+        // Загружаем все отзывы
+        allReviews = await fetchReviews();
+
+        // Заполняем фильтр книг
+        populateBookFilter();
+
+        // Отображаем отзывы
+        displayAllReviews();
+
+        showReviewsLoading(false);
+    } catch (error) {
+        console.error('Ошибка загрузки отзывов:', error);
+        showError('Не удалось загрузить отзывы');
+        showReviewsLoading(false);
+    }
+}
+
+// Заполнение фильтра книг
+function populateBookFilter() {
+    const bookFilter = document.getElementById('reviewsBookFilter');
+    if (!bookFilter) return;
+
+    // Получаем уникальные книги из отзывов
+    const booksWithReviews = [...new Set(allReviews.map(review => review.bookId))];
+
+    let optionsHtml = '<option value="">Все книги</option>';
+
+    booksWithReviews.forEach(bookId => {
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
+        if (book) {
+            optionsHtml += `<option value="${bookId}">${escapeHtml(book.title)}</option>`;
+        }
+    });
+
+    bookFilter.innerHTML = optionsHtml;
+}
+
+// Отображение всех отзывов
+function displayAllReviews() {
+    const container = document.getElementById('allReviewsContainer');
+    const emptyState = document.getElementById('reviewsEmptyState');
+    const countElement = document.getElementById('allReviewsCount');
+
+    if (!allReviews || allReviews.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        if (countElement) countElement.textContent = '0 отзывов';
+        return;
+    }
+
+    emptyState.classList.add('hidden');
+
+    // Фильтруем отзывы
+    let filteredReviews = allReviews.slice();
+
+    // Фильтр по книге
+    if (currentReviewsBookFilter) {
+        filteredReviews = filteredReviews.filter(review => review.bookId === parseInt(currentReviewsBookFilter));
+    }
+
+    // Сортировка
+    filteredReviews.sort((a, b) => {
+        switch (currentReviewsSort) {
+            case 'newest':
+                return new Date(b.date) - new Date(a.date);
+            case 'oldest':
+                return new Date(a.date) - new Date(b.date);
+            case 'rating-high':
+                return b.rating - a.rating;
+            case 'rating-low':
+                return a.rating - b.rating;
+            case 'most-liked':
+                return (b.likes || 0) - (a.likes || 0);
+            default:
+                return 0;
+        }
+    });
+
+    // Обновляем счетчик
+    const word = getReviewWord(filteredReviews.length);
+    if (countElement) countElement.textContent = `${filteredReviews.length} ${word}`;
+
+    // Отображаем отзывы
+    container.innerHTML = filteredReviews.map(review => {
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === review.bookId);
+        const bookTitle = book ? book.title : 'Неизвестная книга';
+        const bookAuthor = book ? book.author : 'Неизвестный автор';
+
+        return `
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-user-info">
+                        <div class="review-avatar">${review.userAvatar}</div>
+                        <div class="review-user-details">
+                            <div class="review-user-name">${escapeHtml(review.userName)}</div>
+                            <div class="review-book-info">
+                                <span class="review-book-title">${escapeHtml(bookTitle)}</span>
+                                <span class="review-book-author">${escapeHtml(bookAuthor)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        ${createRatingStars(review.rating)}
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p class="review-text">${escapeHtml(review.comment)}</p>
+                </div>
+                <div class="review-footer">
+                    <div class="review-date">${formatReviewDate(review.date)}</div>
+                    <div class="review-actions">
+                        <button class="like-review-btn" onclick="likeReview(${review.id})">
+                            ❤️ ${review.likes || 0}
+                        </button>
+                        <button class="view-book-btn" onclick="showBookDetails(${review.bookId})">
+                            📖 Посмотреть книгу
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Сортировка отзывов
+function sortReviews() {
+    const sortSelect = document.getElementById('reviewsSort');
+    currentReviewsSort = sortSelect.value;
+    displayAllReviews();
+}
+
+// Фильтрация отзывов по книге
+function filterReviewsByBook() {
+    const bookFilter = document.getElementById('reviewsBookFilter');
+    currentReviewsBookFilter = bookFilter.value;
+    displayAllReviews();
+}
+
+// Показать загрузку отзывов
+function showReviewsLoading(show) {
+    const loading = document.getElementById('reviewsLoading');
+    const container = document.getElementById('allReviewsContainer');
+
+    if (show) {
+        loading.classList.remove('hidden');
+        container.classList.add('hidden');
+    } else {
+        loading.classList.add('hidden');
+        container.classList.remove('hidden');
+    }
+}
+
+// Получить правильное слово для отзывов
+function getReviewWord(count) {
+    if (count % 10 === 1 && count % 100 !== 11) return 'отзыв';
+    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'отзыва';
+    return 'отзывов';
+}
+
 // Экспортируем глобальные функции
 window.searchBooks = searchBooks;
 window.filterByGenre = filterByGenre;
@@ -4213,4 +4387,8 @@ window.startLesson = startLesson;
 window.completeLesson = completeLesson;
 window.startQuiz = startQuiz;
 window.selectQuizAnswer = selectQuizAnswer;
+window.finishQuiz = finishQuiz;
 window.showAuthorEducationDetails = showAuthorEducationDetails;
+window.loadReviewsSection = loadReviewsSection;
+window.sortReviews = sortReviews;
+window.filterReviewsByBook = filterReviewsByBook;

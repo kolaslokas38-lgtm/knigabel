@@ -1694,7 +1694,17 @@ const DEFAULT_USER_DATA = {
     experienceToNext: 100,
     totalPagesRead: 0,
     readingStreak: 0,
-    achievements: [],
+    achievements: [
+        {
+            id: 'first_book',
+            name: 'Первый шаг',
+            description: 'Прочитайте первую книгу',
+            icon: '📖',
+            type: 'reading',
+            unlockedAt: new Date().toISOString(),
+            reward: { exp: 20, coins: 5 }
+        }
+    ],
     bookProgress: {}, // {bookId: {pagesRead: number, completed: boolean, achievements: []}}
     // Игровые данные
     coins: 0,
@@ -1750,7 +1760,7 @@ const DEFAULT_USER_DATA = {
         reviewsWritten: 0,
         totalEvents: 0, // Новое поле для статистики событий
         booksCompleted: 0,
-        achievementsUnlocked: 0,
+        achievementsUnlocked: 1,
         dailyChallengesCompleted: 0,
         weeklyChallengesCompleted: 0,
         totalPagesRead: 0
