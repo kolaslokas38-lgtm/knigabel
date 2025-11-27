@@ -13,13 +13,24 @@ let ticketCount = 1;
 let reviewsChannel = null; // Для синхронизации отзывов между вкладками
 let currentReadingBook = null;
 let currentPage = 1;
+let currentQuiz = null;
 
 // Функции для работы с API отзывов
 async function fetchReviews(bookId = null) {
     try {
         const url = bookId ? `/api/reviews/book/${bookId}` : '/api/reviews';
         const response = await fetch(url);
-        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const text = await response.text();
+        if (!text) {
+            return [];
+        }
+
+        const data = JSON.parse(text);
         return data.reviews || [];
     } catch (error) {
         console.error('Ошибка загрузки отзывов:', error);
@@ -36,7 +47,15 @@ async function submitReviewToServer(reviewData) {
             },
             body: JSON.stringify(reviewData)
         });
-        const data = await response.json();
+
+        const text = await response.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+            throw new Error('Неверный ответ сервера');
+        }
+
         if (!response.ok) {
             throw new Error(data.error || 'Ошибка отправки отзыва');
         }
@@ -56,7 +75,15 @@ async function deleteReviewFromServer(reviewId, userId) {
             },
             body: JSON.stringify({ userId })
         });
-        const data = await response.json();
+
+        const text = await response.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+            throw new Error('Неверный ответ сервера');
+        }
+
         if (!response.ok) {
             throw new Error(data.error || 'Ошибка удаления отзыва');
         }
@@ -75,11 +102,19 @@ async function likeReviewOnServer(reviewId) {
                 'Content-Type': 'application/json',
             }
         });
-        const data = await response.json();
+
+        const text = await response.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : { likes: 0 };
+        } catch (parseError) {
+            throw new Error('Неверный ответ сервера');
+        }
+
         if (!response.ok) {
             throw new Error(data.error || 'Ошибка лайка');
         }
-        return data.likes;
+        return data.likes || 0;
     } catch (error) {
         console.error('Ошибка лайка:', error);
         return 0;
@@ -265,15 +300,15 @@ function showSection(sectionName) {
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
-    
+
     document.getElementById('searchSection').classList.toggle('hidden', sectionName !== 'catalog');
     document.getElementById(sectionName + 'Section').classList.add('active');
-    
+
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
-    
+
     if (sectionName === 'profile') {
         updateProfileDisplay();
         updateInventoryList();
@@ -296,6 +331,9 @@ function showSection(sectionName) {
     }
     if (sectionName === 'authors') {
         loadAuthors();
+    }
+    if (sectionName === 'education') {
+        loadEducationSection();
     }
 }
 
@@ -645,13 +683,6 @@ async function showBookDetails(bookId) {
                                 Всего в приложении: ${window.APP_DATA.BOOK_REVIEWS.length} отзывов
                             </div>
                         </div>
-                        ${!userHasReviewed ? `
-                            <div style="text-align: center; margin-bottom: 15px;">
-                                <button class="add-review-btn" onclick="openReviewModal(${book.id})">
-                                    ✍️ Написать отзыв
-                                </button>
-                            </div>
-                        ` : ''}
                         <div class="reviews-list">
                             ${bookReviews.length > 0 ? bookReviews.map(review => {
                                 const isOwnReview = review.userId === userId;
@@ -677,12 +708,16 @@ async function showBookDetails(bookId) {
                             `}).join('') : `
                                 <div class="no-reviews">
                                     <p>Пока нет отзывов. Будьте первым!</p>
-                                    <button class="add-review-btn" onclick="openReviewModal(${book.id})">
-                                        ✍️ Написать отзыв
-                                    </button>
                                 </div>
                             `}
                         </div>
+                        ${!userHasReviewed ? `
+                            <div style="text-align: center; margin-top: 15px;">
+                                <button class="add-review-btn" onclick="openReviewModal(${book.id})">
+                                    ✍️ Написать отзыв
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                     
                     <div class="read-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
@@ -736,16 +771,21 @@ async function openReviewModal(bookId) {
     currentReviewBookId = bookId;
     selectedRating = 0;
 
-    // Проверяем, не писал ли уже пользователь отзыв
-    const userId = userData.telegramId || 'anonymous';
-    const bookReviews = await fetchReviews(bookId);
-    const existingReview = bookReviews.find(review =>
-        review.bookId === bookId && review.userId === userId
-    );
+    try {
+        // Проверяем, не писал ли уже пользователь отзыв
+        const userId = userData.telegramId || 'anonymous';
+        const bookReviews = await fetchReviews(bookId);
+        const existingReview = bookReviews.find(review =>
+            review.bookId === bookId && review.userId === userId
+        );
 
-    if (existingReview) {
-        tg.showAlert('Вы уже писали отзыв на эту книгу!');
-        return;
+        if (existingReview) {
+            tg.showAlert('Вы уже писали отзыв на эту книгу!');
+            return;
+        }
+    } catch (error) {
+        console.error('Ошибка при проверке отзывов:', error);
+        // Продолжаем открытие модала, если не удалось проверить отзывы
     }
 
     document.getElementById('reviewComment').value = '';
@@ -2846,7 +2886,10 @@ function claimChallengeReward(challengeId, type) {
 
 function claimAchievementReward(achievementId) {
     const achievement = window.APP_DATA.ACHIEVEMENTS.find(a => a.id === achievementId);
-    if (!achievement) return;
+    if (!achievement) {
+        tg.showAlert('Достижение не найдено!');
+        return;
+    }
 
     // Проверяем, разблокировано ли достижение
     const isUnlocked = userData.achievements.some(a => a.id === achievementId);
@@ -2866,7 +2909,9 @@ function claimAchievementReward(achievementId) {
     }
 
     // Начисляем награду
-    let coinsEarned = achievement.reward.coins || 0;
+    let coinsEarned = achievement.reward ? (achievement.reward.coins || 0) : 0;
+    let expEarned = achievement.reward ? (achievement.reward.exp || 0) : 0;
+
     if (userData.coinMultiplier && userData.coinMultiplier > 1 && userData.multiplierEndTime > Date.now()) {
         coinsEarned *= userData.coinMultiplier;
     }
@@ -2874,10 +2919,10 @@ function claimAchievementReward(achievementId) {
     userData.coins = (userData.coins || 0) + coinsEarned;
     userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + coinsEarned;
 
-    const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, achievement.reward.exp || 0);
+    const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, expEarned);
 
     // Выдаем титул из награды достижения
-    if (achievement.reward.title) {
+    if (achievement.reward && achievement.reward.title) {
         if (!userData.titles) userData.titles = [];
         if (!userData.titles.includes(achievement.reward.title)) {
             userData.titles.push(achievement.reward.title);
@@ -2892,9 +2937,16 @@ function claimAchievementReward(achievementId) {
     updateGamesStats();
     updateUserProfile();
 
+    let message = '';
+    if (expEarned > 0) message += `Получено ${expEarned} опыта! `;
+    if (coinsEarned > 0) message += `Получено ${coinsEarned} 💎 кристаллов! `;
+    if (achievement.reward && achievement.reward.title) message += `🏆 Титул: ${achievement.reward.title}! `;
+    if (levelUp.leveledUp) message += `🎉 Новый уровень: ${levelUp.newLevel}! `;
+    if (coinsEarned > (achievement.reward ? (achievement.reward.coins || 0) : 0)) message += `(x${userData.coinMultiplier} множитель)`;
+
     tg.showPopup({
         title: 'Награда получена! 🎉',
-        message: `Получено ${achievement.reward.exp || 0} опыта и ${coinsEarned} 💎 кристаллов!${achievement.reward.title ? `\n🏆 Титул: ${achievement.reward.title}` : ''}${coinsEarned > (achievement.reward.coins || 0) ? ` (x${userData.coinMultiplier} множитель)` : ''}${levelUp.leveledUp ? `\n🎉 Новый уровень: ${levelUp.newLevel}!` : ''}`,
+        message: message.trim(),
         buttons: [{ type: 'ok' }]
     });
 }
@@ -3321,6 +3373,783 @@ function checkAndUnlockTitles() {
     }
 }
 
+// Функции для образовательного раздела
+function loadEducationSection() {
+    loadEducationLessons();
+    loadEducationAuthors();
+    loadEducationQuizzes();
+    updateEducationProgress();
+    showEducationCategory('lessons');
+}
+
+function showEducationCategory(category) {
+    document.querySelectorAll('.education-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    document.getElementById(category + 'Content').classList.add('active');
+    document.querySelector(`[onclick="showEducationCategory('${category}')"]`).classList.add('active');
+}
+
+function loadEducationLessons() {
+    const lessons = [
+        {
+            id: 1,
+            title: "Введение в русскую литературу",
+            description: "Основные этапы развития русской литературы от древности до наших дней",
+            icon: "📚",
+            difficulty: "Начинающий",
+            duration: "15 мин",
+            completed: userData.educationProgress?.lessons?.includes(1) || false
+        },
+        {
+            id: 2,
+            title: "Александр Сергеевич Пушкин",
+            description: "Жизнь и творчество великого русского поэта",
+            icon: "✍️",
+            difficulty: "Средний",
+            duration: "20 мин",
+            completed: userData.educationProgress?.lessons?.includes(2) || false
+        },
+        {
+            id: 3,
+            title: "Лев Толстой и 'Война и мир'",
+            description: "Анализ великого романа-эпопеи",
+            icon: "📖",
+            difficulty: "Продвинутый",
+            duration: "30 мин",
+            completed: userData.educationProgress?.lessons?.includes(3) || false
+        },
+        {
+            id: 4,
+            title: "Федор Достоевский",
+            description: "Психологизм в произведениях Достоевского",
+            icon: "🧠",
+            difficulty: "Продвинутый",
+            duration: "25 мин",
+            completed: userData.educationProgress?.lessons?.includes(4) || false
+        },
+        {
+            id: 5,
+            title: "Антон Чехов",
+            description: "Малые формы в русской литературе",
+            icon: "🎭",
+            difficulty: "Средний",
+            duration: "20 мин",
+            completed: userData.educationProgress?.lessons?.includes(5) || false
+        },
+        {
+            id: 6,
+            title: "Серебряный век русской поэзии",
+            description: "Символизм, акмеизм и футуризм",
+            icon: "🌟",
+            difficulty: "Продвинутый",
+            duration: "35 мин",
+            completed: userData.educationProgress?.lessons?.includes(6) || false
+        }
+    ];
+
+    const lessonsGrid = document.getElementById('lessonsGrid');
+    lessonsGrid.innerHTML = lessons.map(lesson => `
+        <div class="lesson-card ${lesson.completed ? 'completed' : ''}" onclick="startLesson(${lesson.id})">
+            <div class="lesson-header">
+                <div class="lesson-icon">${lesson.icon}</div>
+                <div class="lesson-info">
+                    <div class="lesson-title">${lesson.title}</div>
+                    <div class="lesson-description">${lesson.description}</div>
+                    <div class="lesson-meta">
+                        <span class="lesson-difficulty ${lesson.difficulty.toLowerCase()}">${lesson.difficulty}</span>
+                        <span class="lesson-duration">⏱️ ${lesson.duration}</span>
+                    </div>
+                </div>
+                ${lesson.completed ? '<div class="lesson-completed">✓ Пройден</div>' : '<div class="lesson-start">▶ Начать</div>'}
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('lessonsCount').textContent = `${lessons.length} уроков`;
+}
+
+function loadEducationAuthors() {
+    const authors = [
+        {
+            id: 1,
+            name: "Александр Пушкин",
+            years: "1799-1837",
+            description: "Великий русский поэт, основоположник современного русского литературного языка",
+            works: ["Евгений Онегин", "Капитанская дочка", "Медный всадник"],
+            icon: "👑",
+            funFact: "Пушкин написал более 800 произведений"
+        },
+        {
+            id: 2,
+            name: "Лев Толстой",
+            years: "1828-1910",
+            description: "Граф, великий писатель, мыслитель, один из самых известных русских писателей",
+            works: ["Война и мир", "Анна Каренина", "Воскресение"],
+            icon: "📚",
+            funFact: "Толстой переписывал 'Войну и мир' 8 раз"
+        },
+        {
+            id: 3,
+            name: "Федор Достоевский",
+            years: "1821-1881",
+            description: "Русский писатель, философ, мыслитель, один из лучших психологов в мировой литературе",
+            works: ["Преступление и наказание", "Идиот", "Братья Карамазовы"],
+            icon: "🧠",
+            funFact: "Достоевский был приговорен к смертной казни, но помилован"
+        },
+        {
+            id: 4,
+            name: "Антон Чехов",
+            years: "1860-1904",
+            description: "Русский писатель, драматург, один из лучших мастеров короткого рассказа",
+            works: ["Чайка", "Вишневый сад", "Дама с собачкой"],
+            icon: "🎭",
+            funFact: "Чехов был врачом и лечил больных холерой"
+        },
+        {
+            id: 5,
+            name: "Максим Горький",
+            years: "1868-1936",
+            description: "Русский писатель, основоположник литературы социалистического реализма",
+            works: ["Мать", "На дне", "Детство"],
+            icon: "⚒️",
+            funFact: "Настоящее имя - Алексей Пешков"
+        },
+        {
+            id: 6,
+            name: "Борис Пастернак",
+            years: "1890-1960",
+            description: "Русский поэт, писатель, лауреат Нобелевской премии по литературе",
+            works: ["Доктор Живаго", "Сестра моя жизнь", "Лирика"],
+            icon: "🎗️",
+            funFact: "Автор знаменитого романа 'Доктор Живаго'"
+        }
+    ];
+
+    const authorsGrid = document.getElementById('authorsEducationGrid');
+    authorsGrid.innerHTML = authors.map(author => `
+        <div class="author-education-card" onclick="showAuthorEducationDetails(${author.id})">
+            <div class="author-education-header">
+                <div class="author-education-avatar">${author.icon}</div>
+                <div class="author-education-info">
+                    <div class="author-education-name">${author.name}</div>
+                    <div class="author-education-years">${author.years}</div>
+                    <div class="author-education-description">${author.description}</div>
+                </div>
+            </div>
+            <div class="author-education-works">
+                <strong>Известные произведения:</strong>
+                <div class="works-list">
+                    ${author.works.map(work => `<span class="work-tag">${work}</span>`).join('')}
+                </div>
+            </div>
+            <div class="author-education-fact">
+                <strong>Интересный факт:</strong> ${author.funFact}
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadEducationQuizzes() {
+    const quizzes = [
+        {
+            id: 1,
+            title: "Пушкин: основы",
+            description: "Проверь знания о жизни и творчестве А.С. Пушкина",
+            questions: 10,
+            difficulty: "Легко",
+            icon: "❓",
+            completed: userData.educationProgress?.quizzes?.includes(1) || false,
+            bestScore: userData.educationProgress?.quizScores?.[1] || 0
+        },
+        {
+            id: 2,
+            title: "Русская классика",
+            description: "Викторина по произведениям русских классиков",
+            questions: 15,
+            difficulty: "Средне",
+            icon: "📚",
+            completed: userData.educationProgress?.quizzes?.includes(2) || false,
+            bestScore: userData.educationProgress?.quizScores?.[2] || 0
+        },
+        {
+            id: 3,
+            title: "Литературные термины",
+            description: "Основные понятия и термины русской литературы",
+            questions: 12,
+            difficulty: "Средне",
+            icon: "📝",
+            completed: userData.educationProgress?.quizzes?.includes(3) || false,
+            bestScore: userData.educationProgress?.quizScores?.[3] || 0
+        },
+        {
+            id: 4,
+            title: "Поэзия Серебряного века",
+            description: "Творчество поэтов начала XX века",
+            questions: 14,
+            difficulty: "Сложно",
+            icon: "🌟",
+            completed: userData.educationProgress?.quizzes?.includes(4) || false,
+            bestScore: userData.educationProgress?.quizScores?.[4] || 0
+        }
+    ];
+
+    const quizGrid = document.getElementById('quizGrid');
+    quizGrid.innerHTML = quizzes.map(quiz => `
+        <div class="quiz-card" onclick="startQuiz(${quiz.id})">
+            <div class="quiz-header">
+                <div class="quiz-icon">${quiz.icon}</div>
+                <div class="quiz-info">
+                    <div class="quiz-title">${quiz.title}</div>
+                    <div class="quiz-description">${quiz.description}</div>
+                    <div class="quiz-meta">
+                        <span class="quiz-questions">❓ ${quiz.questions} вопросов</span>
+                        <span class="quiz-difficulty ${quiz.difficulty.toLowerCase()}">${quiz.difficulty}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="quiz-progress">
+                ${quiz.completed ? `
+                    <div class="quiz-completed">
+                        <span class="quiz-score">Лучший результат: ${quiz.bestScore}%</span>
+                        <span class="quiz-status">✓ Пройдена</span>
+                    </div>
+                ` : `
+                    <div class="quiz-not-completed">
+                        <span class="quiz-start">▶ Пройти викторину</span>
+                    </div>
+                `}
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateEducationProgress() {
+    if (!userData.educationProgress) {
+        userData.educationProgress = {
+            lessons: [],
+            quizzes: [],
+            quizScores: {},
+            authorsViewed: [],
+            achievements: []
+        };
+    }
+
+    const progress = userData.educationProgress;
+    document.getElementById('completedLessons').textContent = progress.lessons?.length || 0;
+    document.getElementById('completedQuizzes').textContent = progress.quizzes?.length || 0;
+
+    // Рассчитываем средний балл
+    const scores = Object.values(progress.quizScores || {});
+    const averageScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+    document.getElementById('averageScore').textContent = averageScore + '%';
+
+    document.getElementById('achievementsEarned').textContent = progress.achievements?.length || 0;
+
+    // Обновляем прогресс деталей
+    updateProgressDetails();
+}
+
+function updateProgressDetails() {
+    const progressDetails = document.getElementById('progressDetails');
+    const progress = userData.educationProgress;
+
+    let detailsHtml = '<h4>📊 Детальная статистика</h4>';
+
+    if (progress.lessons && progress.lessons.length > 0) {
+        detailsHtml += `
+            <div class="progress-category">
+                <h5>📖 Пройденные уроки:</h5>
+                <ul>
+                    ${progress.lessons.map(lessonId => {
+                        const lessonTitles = {
+                            1: "Введение в русскую литературу",
+                            2: "Александр Сергеевич Пушкин",
+                            3: "Лев Толстой и 'Война и мир'",
+                            4: "Федор Достоевский",
+                            5: "Антон Чехов",
+                            6: "Серебряный век русской поэзии"
+                        };
+                        return `<li>${lessonTitles[lessonId] || `Урок ${lessonId}`}</li>`;
+                    }).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    if (progress.quizzes && progress.quizzes.length > 0) {
+        detailsHtml += `
+            <div class="progress-category">
+                <h5>❓ Пройденные викторины:</h5>
+                <ul>
+                    ${progress.quizzes.map(quizId => {
+                        const quizTitles = {
+                            1: "Пушкин: основы",
+                            2: "Русская классика",
+                            3: "Литературные термины",
+                            4: "Поэзия Серебряного века"
+                        };
+                        const score = progress.quizScores?.[quizId] || 0;
+                        return `<li>${quizTitles[quizId] || `Викторина ${quizId}`} - ${score}%</li>`;
+                    }).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    progressDetails.innerHTML = detailsHtml;
+}
+
+function startLesson(lessonId) {
+    // Показываем модальное окно с уроком
+    const lessons = {
+        1: {
+            title: "Введение в русскую литературу",
+            content: `
+                <h3>Исторические этапы русской литературы</h3>
+                <p>Русская литература имеет богатую историю, насчитывающую более тысячи лет. Она развивалась параллельно с развитием русского языка и культуры.</p>
+
+                <h4>Основные периоды:</h4>
+                <ul>
+                    <li><strong>Древнерусская литература (XI-XVII вв.)</strong> - летописи, жития святых, "Слово о полку Игореве"</li>
+                    <li><strong>Литература Нового времени (XVIII в.)</strong> - классицизм, сентиментализм</li>
+                    <li><strong>Золотой век (первая половина XIX в.)</strong> - Пушкин, Лермонтов, Гоголь</li>
+                    <li><strong>Критический реализм (вторая половина XIX в.)</strong> - Толстой, Достоевский, Чехов</li>
+                    <li><strong>Серебряный век (начало XX в.)</strong> - символизм, акмеизм, футуризм</li>
+                    <li><strong>Советская литература (1917-1991)</strong> - социалистический реализм</li>
+                    <li><strong>Современная литература (с 1991 г.)</strong> - разнообразие стилей и направлений</li>
+                </ul>
+
+                <h4>Особенности русской литературы:</h4>
+                <ul>
+                    <li>Глубокий психологизм</li>
+                    <li>Социальная направленность</li>
+                    <li>Философские проблемы</li>
+                    <li>Внимание к внутреннему миру человека</li>
+                </ul>
+            `
+        },
+        2: {
+            title: "Александр Сергеевич Пушкин",
+            content: `
+                <h3>Великий русский поэт</h3>
+                <p>Александр Сергеевич Пушкин (1799-1837) - основоположник современного русского литературного языка, величайший русский поэт и писатель.</p>
+
+                <h4>Жизнь и творчество:</h4>
+                <ul>
+                    <li>Родился в Москве в дворянской семье</li>
+                    <li>Учился в Царскосельском лицее</li>
+                    <li>Написал более 800 произведений</li>
+                    <li>Погиб на дуэли в возрасте 37 лет</li>
+                </ul>
+
+                <h4>Основные произведения:</h4>
+                <ul>
+                    <li><strong>Поэзия:</strong> "Я помню чудное мгновенье", "Полтава", "Медный всадник"</li>
+                    <li><strong>Поэмы:</strong> "Руслан и Людмила", "Цыганы", "Полтава"</li>
+                    <li><strong>Романы:</strong> "Евгений Онегин", "Капитанская дочка"</li>
+                    <li><strong>Драма:</strong> "Борис Годунов"</li>
+                </ul>
+
+                <h4>Значение для русской литературы:</h4>
+                <p>Пушкин создал современный русский литературный язык, заложил основы всех жанров русской литературы, оказал огромное влияние на последующих писателей.</p>
+            `
+        },
+        3: {
+            title: "Лев Толстой и 'Война и мир'",
+            content: `
+                <h3>Граф Лев Николаевич Толстой</h3>
+                <p>Лев Николаевич Толстой (1828-1910) - один из величайших писателей мира, граф, мыслитель, педагог.</p>
+
+                <h4>'Война и мир' - величайший роман:</h4>
+                <ul>
+                    <li>Написан в 1863-1869 годах</li>
+                    <li>Состоит из 4 томов и эпилога</li>
+                    <li>Более 500 персонажей</li>
+                    <li>Объем около 1300 страниц</li>
+                </ul>
+
+                <h4>Темы романа:</h4>
+                <ul>
+                    <li>Исторические события Отечественной войны 1812 года</li>
+                    <li>Судьбы дворянских семей (Ростовы, Болконские, Курагины)</li>
+                    <li>Любовь и семейная жизнь</li>
+                    <li>Поиски смысла жизни</li>
+                    <li>Философия истории</li>
+                </ul>
+
+                <h4>Особенности стиля:</h4>
+                <ul>
+                    <li>Эпический размах</li>
+                    <li>Детальное описание быта и нравов</li>
+                    <li>Психологическая глубина</li>
+                    <li>Философские отступления</li>
+                </ul>
+            `
+        },
+        4: {
+            title: "Федор Достоевский",
+            content: `
+                <h3>Федор Михайлович Достоевский</h3>
+                <p>Федор Михайлович Достоевский (1821-1881) - великий русский писатель, философ, один из лучших психологов в мировой литературе.</p>
+
+                <h4>Жизнь:</h4>
+                <ul>
+                    <li>Родился в Москве в семье врача</li>
+                    <li>Учился в Главном инженерном училище</li>
+                    <li>Участник кружка петрашевцев</li>
+                    <li>Приговорен к смертной казни, замененной каторгой</li>
+                    <li>Отбывал ссылку в Омске и Семипалатинске</li>
+                </ul>
+
+                <h4>Основные произведения:</h4>
+                <ul>
+                    <li>"Преступление и наказание" (1866)</li>
+                    <li>"Идиот" (1868-1869)</li>
+                    <li>"Бесы" (1871-1872)</li>
+                    <li>"Подросток" (1875)</li>
+                    <li>"Братья Карамазовы" (1879-1880)</li>
+                </ul>
+
+                <h4>Особенности творчества:</h4>
+                <ul>
+                    <li>Глубокий психологизм</li>
+                    <li>Исследование человеческой души</li>
+                    <li>Религиозно-философские темы</li>
+                    <li>Идея о двойственности человеческой природы</li>
+                </ul>
+            `
+        },
+        5: {
+            title: "Антон Чехов",
+            content: `
+                <h3>Антон Павлович Чехов</h3>
+                <p>Антон Павлович Чехов (1860-1904) - выдающийся русский писатель, драматург, мастер короткого рассказа.</p>
+
+                <h4>Жизнь и творчество:</h4>
+                <ul>
+                    <li>Родился в Таганроге</li>
+                    <li>Окончил медицинский факультет Московского университета</li>
+                    <li>Работал врачом</li>
+                    <li>Написал около 300 рассказов и 17 пьес</li>
+                </ul>
+
+                <h4>Известные рассказы:</h4>
+                <ul>
+                    <li>"Толстый и тонкий"</li>
+                    <li>"Хамелеон"</li>
+                    <li>"Человек в футляре"</li>
+                    <li>"Дама с собачкой"</li>
+                    <li>"Палата №6"</li>
+                    <li>"Студент"</li>
+                </ul>
+
+                <h4>Пьесы:</h4>
+                <ul>
+                    <li>"Чайка" (1896)</li>
+                    <li>"Дядя Ваня" (1897)</li>
+                    <li>"Три сестры" (1901)</li>
+                    <li>"Вишневый сад" (1904)</li>
+                </ul>
+
+                <h4>Особенности стиля:</h4>
+                <ul>
+                    <li>Мастер лаконичного рассказа</li>
+                    <li>Подтекст и недосказанность</li>
+                    <li>Юмор и ирония</li>
+                    <li>Критика социальных пороков</li>
+                </ul>
+            `
+        },
+        6: {
+            title: "Серебряный век русской поэзии",
+            content: `
+                <h3>Серебряный век русской литературы</h3>
+                <p>Серебряный век - период расцвета русской поэзии и культуры в конце XIX - начале XX века.</p>
+
+                <h4>Основные направления:</h4>
+                <ul>
+                    <li><strong>Символизм:</strong> Александр Блок, Андрей Белый, Валерий Брюсов</li>
+                    <li><strong>Акмеизм:</strong> Анна Ахматова, Осип Мандельштам, Николай Гумилев</li>
+                    <li><strong>Футуризм:</strong> Владимир Маяковский, Велимир Хлебников, Алексей Крученых</li>
+                </ul>
+
+                <h4>Ключевые фигуры:</h4>
+                <ul>
+                    <li><strong>Александр Блок</strong> - "Двенадцать", лирика</li>
+                    <li><strong>Анна Ахматова</strong> - "Реквием", "Поэма без героя"</li>
+                    <li><strong>Борис Пастернак</strong> - "Доктор Живаго", лирика</li>
+                    <li><strong>Марина Цветаева</strong> - эмоциональная лирика</li>
+                    <li><strong>Владимир Маяковский</strong> - "Облако в штанах", "Флейта позвоночника"</li>
+                </ul>
+
+                <h4>Особенности:</h4>
+                <ul>
+                    <li>Эксперименты с формой и языком</li>
+                    <li>Философская глубина</li>
+                    <li>Влияние европейских течений</li>
+                    <li>Тематическое разнообразие</li>
+                </ul>
+            `
+        }
+    };
+
+    const lesson = lessons[lessonId];
+    if (!lesson) return;
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+        <div class="lesson-modal">
+            <div class="lesson-content">
+                ${lesson.content}
+            </div>
+            <div class="lesson-actions">
+                <button class="lesson-complete-btn" onclick="completeLesson(${lessonId})">
+                    ✓ Отметить как пройденный
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalTitle').textContent = lesson.title;
+    document.getElementById('bookModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+function completeLesson(lessonId) {
+    if (!userData.educationProgress.lessons) {
+        userData.educationProgress.lessons = [];
+    }
+
+    if (!userData.educationProgress.lessons.includes(lessonId)) {
+        userData.educationProgress.lessons.push(lessonId);
+
+        // Начисляем опыт за урок
+        handleExperienceAndAchievements(userData, 20); // 20 опыта за урок
+
+        tg.showPopup({
+            title: 'Урок пройден! 📚',
+            message: 'Поздравляем! Вы успешно изучили новый материал.',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+
+    window.STORAGE.saveAllData(userData);
+    loadEducationLessons();
+    updateEducationProgress();
+    closeModal();
+}
+
+function startQuiz(quizId) {
+    const quizzes = {
+        1: {
+            title: "Пушкин: основы",
+            questions: [
+                {
+                    question: "В каком году родился А.С. Пушкин?",
+                    options: ["1799", "1800", "1798", "1801"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение Пушкина считается вершиной русской поэзии?",
+                    options: ["Руслан и Людмила", "Евгений Онегин", "Полтава", "Медный всадник"],
+                    correct: 1
+                },
+                {
+                    question: "Где учился Пушкин?",
+                    options: ["Московский университет", "Царскосельский лицей", "Петербургский университет", "Казанский университет"],
+                    correct: 1
+                },
+                {
+                    question: "Какое произведение Пушкин написал последним?",
+                    options: ["Капитанская дочка", "Медный всадник", "Пир во время чумы", "Сказка о рыбаке и рыбке"],
+                    correct: 1
+                }
+            ]
+        },
+        2: {
+            title: "Русская классика",
+            questions: [
+                {
+                    question: "Кто написал 'Войну и мир'?",
+                    options: ["Ф.М. Достоевский", "Л.Н. Толстой", "И.С. Тургенев", "А.П. Чехов"],
+                    correct: 1
+                },
+                {
+                    question: "Главный герой романа 'Преступление и наказание'?",
+                    options: ["Раскольников", "Алеша Карамазов", "Левин", "Обломов"],
+                    correct: 0
+                },
+                {
+                    question: "Автор пьесы 'Вишневый сад'?",
+                    options: ["М. Горький", "А. Островский", "А.П. Чехов", "А.Н. Островский"],
+                    correct: 2
+                }
+            ]
+        }
+    };
+
+    const quiz = quizzes[quizId];
+    if (!quiz) return;
+
+    currentQuiz = {
+        id: quizId,
+        questions: quiz.questions,
+        currentQuestion: 0,
+        answers: [],
+        startTime: Date.now()
+    };
+
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const question = currentQuiz.questions[currentQuiz.currentQuestion];
+    const modalBody = document.getElementById('modalBody');
+
+    modalBody.innerHTML = `
+        <div class="quiz-modal">
+            <div class="quiz-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${(currentQuiz.currentQuestion / currentQuiz.questions.length) * 100}%"></div>
+                </div>
+                <div class="progress-text">
+                    ${currentQuiz.currentQuestion + 1} / ${currentQuiz.questions.length}
+                </div>
+            </div>
+            <div class="quiz-question">
+                <h3>${question.question}</h3>
+                <div class="quiz-options">
+                    ${question.options.map((option, index) => `
+                        <button class="quiz-option" onclick="selectQuizAnswer(${index})">
+                            ${option}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalTitle').textContent = `Викторина: ${currentQuiz.questions.length} вопросов`;
+    document.getElementById('bookModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
+function selectQuizAnswer(answerIndex) {
+    currentQuiz.answers.push(answerIndex);
+
+    if (currentQuiz.currentQuestion < currentQuiz.questions.length - 1) {
+        currentQuiz.currentQuestion++;
+        showQuizQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    const correctAnswers = currentQuiz.answers.reduce((count, answer, index) => {
+        return count + (answer === currentQuiz.questions[index].correct ? 1 : 0);
+    }, 0);
+
+    const score = Math.round((correctAnswers / currentQuiz.questions.length) * 100);
+
+    // Сохраняем результат
+    if (!userData.educationProgress.quizzes) {
+        userData.educationProgress.quizzes = [];
+    }
+    if (!userData.educationProgress.quizScores) {
+        userData.educationProgress.quizScores = {};
+    }
+
+    if (!userData.educationProgress.quizzes.includes(currentQuiz.id)) {
+        userData.educationProgress.quizzes.push(currentQuiz.id);
+    }
+
+    const bestScore = userData.educationProgress.quizScores[currentQuiz.id] || 0;
+    if (score > bestScore) {
+        userData.educationProgress.quizScores[currentQuiz.id] = score;
+    }
+
+    // Начисляем опыт за викторину
+    handleExperienceAndAchievements(userData, score >= 80 ? 30 : 15); // 30 опыта за отличный результат, 15 за прохождение
+
+    window.STORAGE.saveAllData(userData);
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+        <div class="quiz-result">
+            <div class="quiz-score">
+                <div class="score-circle ${score >= 80 ? 'excellent' : score >= 60 ? 'good' : 'poor'}">
+                    ${score}%
+                </div>
+                <h3>${score >= 80 ? 'Отлично!' : score >= 60 ? 'Хорошо!' : 'Попробуйте еще раз'}</h3>
+            </div>
+            <div class="quiz-stats">
+                <p>Правильных ответов: ${correctAnswers} из ${currentQuiz.questions.length}</p>
+                <p>Время: ${Math.round((Date.now() - currentQuiz.startTime) / 1000)} сек</p>
+            </div>
+            <div class="quiz-actions">
+                <button class="quiz-retry-btn" onclick="startQuiz(${currentQuiz.id})">
+                    🔄 Пройти еще раз
+                </button>
+                <button class="quiz-close-btn" onclick="closeModal()">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    `;
+
+    loadEducationQuizzes();
+    updateEducationProgress();
+}
+
+function showAuthorEducationDetails(authorId) {
+    const authors = {
+        1: {
+            name: "Александр Пушкин",
+            bio: "Александр Сергеевич Пушкин (1799-1837) - великий русский поэт, драматург и прозаик, основоположник современного русского литературного языка.",
+            works: ["Евгений Онегин", "Капитанская дочка", "Медный всадник", "Руслан и Людмила"],
+            quotes: [
+                "Я помню чудное мгновенье...",
+                "Умом Россию не понять...",
+                "Чем меньше женщину мы любим, тем легче нравимся мы ей."
+            ]
+        }
+    };
+
+    const author = authors[authorId];
+    if (!author) return;
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+        <div class="author-education-details">
+            <div class="author-bio">
+                <h3>${author.name}</h3>
+                <p>${author.bio}</p>
+            </div>
+            <div class="author-works">
+                <h4>Известные произведения:</h4>
+                <ul>
+                    ${author.works.map(work => `<li>${work}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="author-quotes">
+                <h4>Цитаты:</h4>
+                ${author.quotes.map(quote => `<blockquote>"${quote}"</blockquote>`).join('')}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalTitle').textContent = author.name;
+    document.getElementById('bookModal').classList.remove('hidden');
+    tg.BackButton.show();
+}
+
 // Экспортируем глобальные функции
 window.searchBooks = searchBooks;
 window.filterByGenre = filterByGenre;
@@ -3378,3 +4207,10 @@ window.checkAndUnlockTitles = checkAndUnlockTitles;
 window.updateInventoryList = updateInventoryList;
 window.useInventoryItem = useInventoryItem;
 window.claimAchievementReward = claimAchievementReward;
+window.loadEducationSection = loadEducationSection;
+window.showEducationCategory = showEducationCategory;
+window.startLesson = startLesson;
+window.completeLesson = completeLesson;
+window.startQuiz = startQuiz;
+window.selectQuizAnswer = selectQuizAnswer;
+window.showAuthorEducationDetails = showAuthorEducationDetails;
