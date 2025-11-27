@@ -14,6 +14,78 @@ let reviewsChannel = null; // Для синхронизации отзывов �
 let currentReadingBook = null;
 let currentPage = 1;
 
+// Функции для работы с API отзывов
+async function fetchReviews(bookId = null) {
+    try {
+        const url = bookId ? `/api/reviews/book/${bookId}` : '/api/reviews';
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.reviews || [];
+    } catch (error) {
+        console.error('Ошибка загрузки отзывов:', error);
+        return [];
+    }
+}
+
+async function submitReviewToServer(reviewData) {
+    try {
+        const response = await fetch('/api/reviews', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(reviewData)
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка отправки отзыва');
+        }
+        return data;
+    } catch (error) {
+        console.error('Ошибка отправки отзыва:', error);
+        throw error;
+    }
+}
+
+async function deleteReviewFromServer(reviewId, userId) {
+    try {
+        const response = await fetch(`/api/reviews/${reviewId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка удаления отзыва');
+        }
+        return data;
+    } catch (error) {
+        console.error('Ошибка удаления отзыва:', error);
+        throw error;
+    }
+}
+
+async function likeReviewOnServer(reviewId) {
+    try {
+        const response = await fetch(`/api/reviews/${reviewId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка лайка');
+        }
+        return data.likes;
+    } catch (error) {
+        console.error('Ошибка лайка:', error);
+        return 0;
+    }
+}
+
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
     // Ждем загрузки всех скриптов
@@ -30,9 +102,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function initializeApp() {
+async function initializeApp() {
     console.log('Инициализация приложения...');
-    initializeTelegramApp();
+    await initializeTelegramApp();
     initializeReviewsSync();
     loadInitialData();
     setupEventListeners();
@@ -40,10 +112,14 @@ function initializeApp() {
 }
 
 // Инициализация Telegram Web App
-function initializeTelegramApp() {
-    // Инициализируем глобальные отзывы перед загрузкой пользовательских данных
-    if (window.STORAGE && window.STORAGE.initializeGlobalReviews) {
-        window.STORAGE.initializeGlobalReviews();
+async function initializeTelegramApp() {
+    // Загружаем отзывы с сервера
+    try {
+        const allReviews = await fetchReviews();
+        window.APP_DATA.BOOK_REVIEWS = allReviews;
+    } catch (error) {
+        console.error('Ошибка загрузки отзывов:', error);
+        window.APP_DATA.BOOK_REVIEWS = [];
     }
     if (window.STORAGE && window.STORAGE.loadAllData) {
         userData = window.STORAGE.loadAllData();
@@ -94,6 +170,7 @@ function initializeTelegramApp() {
                 weeklyChallengesCompleted: 0,
                 totalPagesRead: 0
             },
+            achievementRewardsClaimed: [],
             challenges: {
                 daily: {
                     lastReset: null,
@@ -517,13 +594,13 @@ function updateBooksDisplay(books) {
 async function showBookDetails(bookId) {
     try {
         showLoading(true);
-        
+
         const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
         if (!book) throw new Error('Книга не найдена');
-        
+
         const isFavorite = userData.favorites.includes(book.id);
         const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
-        const bookReviews = window.STORAGE.getBookReviews(bookId);
+        const bookReviews = await fetchReviews(bookId);
         const userId = userData.telegramId || 'anonymous';
         const userHasReviewed = bookReviews.some(review => review.userId === userId);
         
@@ -576,7 +653,9 @@ async function showBookDetails(bookId) {
                             </div>
                         ` : ''}
                         <div class="reviews-list">
-                            ${bookReviews.length > 0 ? bookReviews.map(review => `
+                            ${bookReviews.length > 0 ? bookReviews.map(review => {
+                                const isOwnReview = review.userId === userId;
+                                return `
                                 <div class="review-item">
                                     <div class="review-header">
                                         <div class="review-user">${review.userAvatar} ${review.userName}</div>
@@ -588,9 +667,14 @@ async function showBookDetails(bookId) {
                                         <button class="like-review-btn" onclick="event.stopPropagation(); likeReview(${review.id})">
                                             ❤️ ${review.likes}
                                         </button>
+                                        ${isOwnReview ? `
+                                            <button class="delete-review-btn" onclick="event.stopPropagation(); deleteReview(${review.id}, ${book.id})">
+                                                🗑️ Удалить
+                                            </button>
+                                        ` : ''}
                                     </div>
                                 </div>
-                            `).join('') : `
+                            `}).join('') : `
                                 <div class="no-reviews">
                                     <p>Пока нет отзывов. Будьте первым!</p>
                                     <button class="add-review-btn" onclick="openReviewModal(${book.id})">
@@ -648,13 +732,14 @@ async function showBookDetails(bookId) {
 }
 
 // Система отзывов и рейтингов
-function openReviewModal(bookId) {
+async function openReviewModal(bookId) {
     currentReviewBookId = bookId;
     selectedRating = 0;
 
     // Проверяем, не писал ли уже пользователь отзыв
     const userId = userData.telegramId || 'anonymous';
-    const existingReview = window.APP_DATA.BOOK_REVIEWS.find(review =>
+    const bookReviews = await fetchReviews(bookId);
+    const existingReview = bookReviews.find(review =>
         review.bookId === bookId && review.userId === userId
     );
 
@@ -717,7 +802,7 @@ function updateSubmitButton() {
     submitBtn.disabled = !(hasRating && hasComment);
 }
 
-function submitReview() {
+async function submitReview() {
     if (!currentReviewBookId || !selectedRating) return;
 
     const comment = document.getElementById('reviewComment').value.trim();
@@ -728,62 +813,101 @@ function submitReview() {
     const userId = userData.telegramId || 'anonymous_' + Date.now();
     const userName = userData.name || 'Анонимный пользователь';
 
-    const newReview = {
-        id: Date.now(),
+    const reviewData = {
         userId: userId,
         userName: userName,
-        bookTitle: book.title,
         bookId: currentReviewBookId,
         rating: selectedRating,
         comment: comment,
-        date: new Date().toISOString().split('T')[0],
-        likes: 0,
         userAvatar: userData.avatar || '👤'
     };
 
-    // Сохраняем глобально
-    window.STORAGE.addGlobalReview(newReview);
+    try {
+        // Отправляем отзыв на сервер
+        const result = await submitReviewToServer(reviewData);
 
-    // Добавляем в личные отзывы пользователя
-    userData.myReviews.unshift({
-        ...newReview,
-        id: Date.now() + 1
-    });
-    userData.stats.reviewsWritten = userData.myReviews.length;
+        // Добавляем в личные отзывы пользователя
+        userData.myReviews.unshift({
+            ...result.review,
+            bookTitle: book.title
+        });
+        userData.stats.reviewsWritten = userData.myReviews.length;
 
-    // Начисляем опыт за написание отзыва
-    handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
+        // Начисляем опыт за написание отзыва
+        handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
 
-    window.STORAGE.saveAllData(userData);
+        // Обновляем прогресс заданий
+        updateQuestProgress('write_review');
 
-    // Уведомляем другие вкладки об обновлении отзывов
-    notifyReviewsUpdate();
+        window.STORAGE.saveAllData(userData);
 
-    tg.showPopup({
-        title: 'Отзыв добавлен! ★',
-        message: 'Ваш отзыв успешно опубликован и виден всем пользователям в этом браузере',
-        buttons: [{ type: 'ok' }]
-    });
+        tg.showPopup({
+            title: 'Отзыв добавлен! ★',
+            message: 'Ваш отзыв успешно опубликован и виден всем пользователям Telegram Mini App',
+            buttons: [{ type: 'ok' }]
+        });
 
-    closeReviewModal();
-    updateMyReviewsList();
+        closeReviewModal();
+        updateMyReviewsList();
 
-    // Обновляем отображение книги, если модал открыт
-    if (!document.getElementById('bookModal').classList.contains('hidden')) {
-        showBookDetails(currentReviewBookId);
+        // Обновляем отображение книги, если модал открыт
+        if (!document.getElementById('bookModal').classList.contains('hidden')) {
+            showBookDetails(currentReviewBookId);
+        }
+
+    } catch (error) {
+        tg.showAlert('Ошибка при отправке отзыва: ' + error.message);
     }
-
 }
 
-function likeReview(reviewId) {
-    const newLikes = window.STORAGE.likeReview(reviewId);
-    if (newLikes > 0) {
-        const modalTitle = document.getElementById('modalTitle').textContent;
-        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
-        if (book) {
-            showBookDetails(book.id);
+async function likeReview(reviewId) {
+    try {
+        const newLikes = await likeReviewOnServer(reviewId);
+        if (newLikes > 0) {
+            const modalTitle = document.getElementById('modalTitle').textContent;
+            const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
+            if (book) {
+                showBookDetails(book.id);
+            }
+            tg.showAlert('Спасибо за ваш лайк! ❤️');
         }
-        tg.showAlert('Спасибо за ваш лайк! ❤️');
+    } catch (error) {
+        tg.showAlert('Ошибка при постановке лайка');
+    }
+}
+
+async function deleteReview(reviewId, bookId) {
+    if (!confirm('Вы уверены, что хотите удалить этот отзыв? Это действие нельзя отменить.')) {
+        return;
+    }
+
+    const userId = userData.telegramId || 'anonymous';
+
+    try {
+        // Отправляем запрос на удаление на сервер
+        await deleteReviewFromServer(reviewId, userId);
+
+        // Удаляем из личных отзывов пользователя
+        const reviewIndex = userData.myReviews.findIndex(review => review.id === reviewId);
+        if (reviewIndex !== -1) {
+            userData.myReviews.splice(reviewIndex, 1);
+            userData.stats.reviewsWritten = userData.myReviews.length;
+        }
+
+        // Сохраняем данные
+        window.STORAGE.saveAllData(userData);
+
+        // Обновляем отображение
+        updateMyReviewsList();
+        showBookDetails(bookId);
+
+        tg.showPopup({
+            title: 'Отзыв удален',
+            message: 'Ваш отзыв успешно удален и больше не виден другим пользователям.',
+            buttons: [{ type: 'ok' }]
+        });
+    } catch (error) {
+        tg.showAlert('Не удалось удалить отзыв: ' + error.message);
     }
 }
 
@@ -946,16 +1070,19 @@ async function borrowBook(bookId) {
         
             // Начисляем опыт за бронирование книги
             handleExperienceAndAchievements(userData, 10); // 10 опыта за бронирование книги
-            
+        
+            // Обновляем прогресс заданий
+            updateQuestProgress('borrow_book');
+        
             window.APP_DATA.MOCK_STATS.availableBooks--;
             window.APP_DATA.MOCK_STATS.borrowedBooks++;
-            
+        
             tg.showPopup({
                 title: 'Успех! 🎉',
                 message: `Книга "${book.title}" успешно забронирована!\nВерните до ${formatDate(borrowRecord.returnDate)}`,
                 buttons: [{ type: 'ok' }]
             });
-            
+        
             updateBooksDisplay(currentBooks);
             updateStats(window.APP_DATA.MOCK_STATS);
             updateUserProfile();
@@ -1034,9 +1161,12 @@ function toggleFavorite(bookId) {
             buttons: [{ type: 'ok' }]
         });
     }
-    
+
+    // Обновляем прогресс заданий
+    updateQuestProgress('favorite_book');
+
     window.STORAGE.saveAllData(userData);
-    
+
     updateBooksDisplay(currentBooks);
     updateUserProfile();
 
@@ -1267,11 +1397,13 @@ function updateAchievementsList() {
     const allAchievements = window.APP_DATA.ACHIEVEMENTS.map(achievement => {
         const isUnlocked = userData.achievements.some(a => a.id === achievement.id);
         const unlockedData = userData.achievements.find(a => a.id === achievement.id);
+        const rewardClaimed = userData.achievementRewardsClaimed?.includes(achievement.id) || false;
 
         return {
             ...achievement,
             isUnlocked,
-            unlockedAt: unlockedData?.unlockedAt
+            unlockedAt: unlockedData?.unlockedAt,
+            rewardClaimed
         };
     });
 
@@ -1294,6 +1426,13 @@ function updateAchievementsList() {
                 if (rewards.length > 0) rewardText = `Награда: ${rewards.join(', ')}`;
             }
 
+            let actionButton = '';
+            if (achievement.isUnlocked && !achievement.rewardClaimed && achievement.reward) {
+                actionButton = `<button class="claim-reward-btn" onclick="event.stopPropagation(); claimAchievementReward('${achievement.id}')">🎁 Забрать награду</button>`;
+            } else if (achievement.rewardClaimed) {
+                actionButton = '<div class="achievement-completed">🎉 Награда получена!</div>';
+            }
+
             return `
             <div class="achievement-item ${achievement.isUnlocked ? 'unlocked' : 'locked'}">
                 <div class="achievement-icon">${achievement.isUnlocked ? achievement.icon : '🔒'}</div>
@@ -1305,6 +1444,7 @@ function updateAchievementsList() {
                         `<div class="achievement-date">Получено: ${formatAchievementDate(achievement.unlockedAt)}</div>` :
                         '<div class="achievement-locked">🔒 Не получено</div>'
                     }
+                    ${actionButton}
                 </div>
             </div>
             `;
@@ -2051,6 +2191,9 @@ function markPageAsRead() {
 
         userData.totalPagesRead += pagesAdded;
 
+        // Обновляем прогресс заданий
+        updateQuestProgress('read_pages');
+
         // Проверяем достижения
         const newAchievements = window.APP_DATA.AchievementSystem.checkAchievements(userData);
         if (newAchievements.length > 0) {
@@ -2427,7 +2570,7 @@ function loadDailyQuests() {
                     <span class="reward-coins">💎 ${quest.reward.coins}</span>
                 </div>
                 ${isClaimed ? '<div class="quest-completed">🎉 Награда получена!</div>' :
-                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'${quest.id}\', \'daily\')">🎁 Забрать награду</button>' :
+                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'' + quest.id + '\', \'daily\')">🎁 Забрать награду</button>' :
                   '<div class="quest-pending">⏳ В процессе...</div>'}
             </div>
         `;
@@ -2463,7 +2606,7 @@ function loadWeeklyChallenges() {
                     <span class="reward-coins">💎 ${challenge.reward.coins}</span>
                 </div>
                 ${isClaimed ? '<div class="challenge-completed">🎉 Награда получена!</div>' :
-                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'${challenge.id}\', \'weekly\')">🎁 Забрать награду</button>' :
+                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'' + challenge.id + '\', \'weekly\')">🎁 Забрать награду</button>' :
                   '<div class="challenge-pending">⏳ В процессе...</div>'}
             </div>
         `;
@@ -2499,7 +2642,7 @@ function loadMonthlyChallenges() {
                     <span class="reward-coins">💎 ${challenge.reward.coins}</span>
                 </div>
                 ${isClaimed ? '<div class="challenge-completed">🎉 Награда получена!</div>' :
-                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'${challenge.id}\', \'monthly\')">🎁 Забрать награду</button>' :
+                  isCompleted ? '<button class="claim-reward-btn" onclick="event.stopPropagation(); claimChallengeReward(\'' + challenge.id + '\', \'monthly\')">🎁 Забрать награду</button>' :
                   '<div class="challenge-pending">⏳ В процессе...</div>'}
             </div>
         `;
@@ -2629,6 +2772,16 @@ function calculateMonthlyChallengeProgress(challengeId) {
     }
 }
 
+// Функция для обновления прогресса заданий
+function updateQuestProgress(questId) {
+    // Обновляем отображение заданий, если вкладка игр активна
+    if (document.getElementById('gamesSection').classList.contains('active')) {
+        loadDailyQuests();
+        loadWeeklyChallenges();
+        loadMonthlyChallenges();
+    }
+}
+
 function claimChallengeReward(challengeId, type) {
     const challenges = type === 'daily' ? window.APP_DATA.GAME_DATA.dailyQuests :
                       type === 'weekly' ? window.APP_DATA.GAME_DATA.weeklyChallenges :
@@ -2687,6 +2840,61 @@ function claimChallengeReward(challengeId, type) {
     tg.showPopup({
         title: 'Награда получена! 🎉',
         message: `Получено ${challenge.reward.exp} опыта и ${coinsEarned} 💎 кристаллов!${coinsEarned > challenge.reward.coins ? ` (x${userData.coinMultiplier} множитель)` : ''}${levelUp.leveledUp ? `\n🎉 Новый уровень: ${levelUp.newLevel}!` : ''}`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+function claimAchievementReward(achievementId) {
+    const achievement = window.APP_DATA.ACHIEVEMENTS.find(a => a.id === achievementId);
+    if (!achievement) return;
+
+    // Проверяем, разблокировано ли достижение
+    const isUnlocked = userData.achievements.some(a => a.id === achievementId);
+    if (!isUnlocked) {
+        tg.showAlert('Достижение ещё не разблокировано!');
+        return;
+    }
+
+    // Проверяем, не получена ли уже награда
+    if (!userData.achievementRewardsClaimed) {
+        userData.achievementRewardsClaimed = [];
+    }
+
+    if (userData.achievementRewardsClaimed.includes(achievementId)) {
+        tg.showAlert('Награда уже получена!');
+        return;
+    }
+
+    // Начисляем награду
+    let coinsEarned = achievement.reward.coins || 0;
+    if (userData.coinMultiplier && userData.coinMultiplier > 1 && userData.multiplierEndTime > Date.now()) {
+        coinsEarned *= userData.coinMultiplier;
+    }
+
+    userData.coins = (userData.coins || 0) + coinsEarned;
+    userData.stats.totalRewardsEarned = (userData.stats.totalRewardsEarned || 0) + coinsEarned;
+
+    const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, achievement.reward.exp || 0);
+
+    // Выдаем титул из награды достижения
+    if (achievement.reward.title) {
+        if (!userData.titles) userData.titles = [];
+        if (!userData.titles.includes(achievement.reward.title)) {
+            userData.titles.push(achievement.reward.title);
+        }
+    }
+
+    // Отмечаем как полученное
+    userData.achievementRewardsClaimed.push(achievementId);
+
+    window.STORAGE.saveAllData(userData);
+    updateAchievementsList();
+    updateGamesStats();
+    updateUserProfile();
+
+    tg.showPopup({
+        title: 'Награда получена! 🎉',
+        message: `Получено ${achievement.reward.exp || 0} опыта и ${coinsEarned} 💎 кристаллов!${achievement.reward.title ? `\n🏆 Титул: ${achievement.reward.title}` : ''}${coinsEarned > (achievement.reward.coins || 0) ? ` (x${userData.coinMultiplier} множитель)` : ''}${levelUp.leveledUp ? `\n🎉 Новый уровень: ${levelUp.newLevel}!` : ''}`,
         buttons: [{ type: 'ok' }]
     });
 }
@@ -3169,3 +3377,4 @@ window.buyTitle = buyTitle;
 window.checkAndUnlockTitles = checkAndUnlockTitles;
 window.updateInventoryList = updateInventoryList;
 window.useInventoryItem = useInventoryItem;
+window.claimAchievementReward = claimAchievementReward;

@@ -1755,14 +1755,22 @@ const DEFAULT_USER_DATA = {
         weeklyChallengesCompleted: 0,
         totalPagesRead: 0
     },
+    achievementRewardsClaimed: [],
     challenges: {
         daily: {
             lastReset: null,
-            completed: []
+            completed: [],
+            claimed: []
         },
         weekly: {
             lastReset: null,
-            completed: []
+            completed: [],
+            claimed: []
+        },
+        monthly: {
+            lastReset: null,
+            completed: [],
+            claimed: []
         }
     }
 };
@@ -1888,29 +1896,9 @@ const AchievementSystem = {
             // Добавляем достижение
             user.achievements.push(achievement);
 
-            // Выдаем награды
-            if (achievement.reward) {
-                // Выдаем опыт
-                if (achievement.reward.exp > 0) {
-                    const levelUp = LevelSystem.addExperience(user, achievement.reward.exp);
-                    console.log(`Получено ${achievement.reward.exp} опыта за достижение "${achievement.name}"`);
-                }
-
-                // Выдаем кристаллы
-                if (achievement.reward.coins > 0) {
-                    user.coins = (user.coins || 0) + achievement.reward.coins;
-                    user.stats.totalRewardsEarned = (user.stats.totalRewardsEarned || 0) + achievement.reward.coins;
-                    console.log(`Получено ${achievement.reward.coins} кристаллов за достижение "${achievement.name}"`);
-                }
-
-                // Выдаем титул из награды достижения
-                if (achievement.reward.title) {
-                    if (!user.titles) user.titles = [];
-                    if (!user.titles.includes(achievement.reward.title)) {
-                        user.titles.push(achievement.reward.title);
-                        console.log(`Получен титул "${achievement.reward.title}" за достижение "${achievement.name}"`);
-                    }
-                }
+            // Инициализируем массив полученных наград, если его нет
+            if (!user.achievementRewardsClaimed) {
+                user.achievementRewardsClaimed = [];
             }
 
             // Проверяем связанные титулы

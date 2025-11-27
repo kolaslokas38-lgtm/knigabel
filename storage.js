@@ -180,6 +180,26 @@ function likeReview(reviewId) {
     return 0;
 }
 
+function deleteReview(reviewId) {
+    const reviewIndex = window.APP_DATA.BOOK_REVIEWS.findIndex(r => r.id === reviewId);
+    if (reviewIndex !== -1) {
+        const review = window.APP_DATA.BOOK_REVIEWS[reviewIndex];
+
+        // Удаляем отзыв из массива
+        window.APP_DATA.BOOK_REVIEWS.splice(reviewIndex, 1);
+
+        // Обновляем рейтинг книги (пересчитываем без этого отзыва)
+        window.APP_DATA.RatingUtils.recalculateBookRating(review.bookId);
+
+        // Сохраняем изменения
+        saveAllReviews();
+        saveBooksData();
+
+        return true;
+    }
+    return false;
+}
+
 // Функция для полного сохранения всех данных
 function saveAllData(userData) {
     saveUserData(userData);
