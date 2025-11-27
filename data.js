@@ -1703,6 +1703,24 @@ const DEFAULT_USER_DATA = {
             type: 'reading',
             unlockedAt: new Date().toISOString(),
             reward: { exp: 20, coins: 5 }
+        },
+        {
+            id: 'first_review',
+            name: 'Критик',
+            description: 'Напишите первый отзыв',
+            icon: '✍️',
+            type: 'reviews',
+            unlockedAt: new Date().toISOString(),
+            reward: { exp: 15, coins: 3 }
+        },
+        {
+            id: 'level_up',
+            name: 'Рост уровня',
+            description: 'Достигните 5 уровня',
+            icon: '⬆️',
+            type: 'level',
+            unlockedAt: new Date().toISOString(),
+            reward: { exp: 50, coins: 10 }
         }
     ],
     bookProgress: {}, // {bookId: {pagesRead: number, completed: boolean, achievements: []}}
@@ -1749,7 +1767,17 @@ const DEFAULT_USER_DATA = {
         }
     ],
     favorites: [1, 2],
-    myReviews: [], // Новое поле для отзывов пользователя
+    myReviews: [
+        {
+            id: 1,
+            bookId: 1,
+            bookTitle: "Война и мир",
+            rating: 5,
+            comment: "Великолепное произведение Льва Толстого! Эпопея, которая захватывает с первой страницы.",
+            date: new Date().toISOString(),
+            likes: 3
+        }
+    ], // Новое поле для отзывов пользователя
     bookedEvents: [], // Новое поле для забронированных событий
     titles: [], // Новое поле для титулов
     stats: {
@@ -1757,10 +1785,10 @@ const DEFAULT_USER_DATA = {
         activeBorrows: 1,
         totalRead: 2,
         readingDays: 45,
-        reviewsWritten: 0,
+        reviewsWritten: 1,
         totalEvents: 0, // Новое поле для статистики событий
         booksCompleted: 0,
-        achievementsUnlocked: 1,
+        achievementsUnlocked: 3,
         dailyChallengesCompleted: 0,
         weeklyChallengesCompleted: 0,
         totalPagesRead: 0
