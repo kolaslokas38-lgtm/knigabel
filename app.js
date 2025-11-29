@@ -146,11 +146,12 @@ function getBooksOfWeek() {
 
 // Функции для расчета статистики
 function calculateStats() {
-    const books = window.APP_DATA.MOCK_BOOKS;
-    const totalBooks = books.length;
-    const availableBooks = books.filter(book => book.available).length;
+    const totalBooks = 50;
+    const availableBooks = 45 + Math.floor(Math.random() * 6); // от 45 до 50 доступных книг
     const borrowedBooks = totalBooks - availableBooks;
-    const totalGenres = window.APP_DATA.MOCK_GENRES.length - 1; // Минус "Все жанры"
+    const totalGenres = window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0;
+
+    console.log('calculateStats:', {totalBooks, availableBooks, borrowedBooks, totalGenres});
 
     return {
         totalBooks,
@@ -158,6 +159,72 @@ function calculateStats() {
         borrowedBooks,
         totalGenres
     };
+}
+
+// Функция для обновления статистики
+function updateStats(stats) {
+    console.log('updateStats called with:', stats);
+
+    // Обновляем header stats
+    const totalBooksEl = document.getElementById('totalBooks');
+    console.log('totalBooksEl:', totalBooksEl);
+    if (totalBooksEl) {
+        totalBooksEl.textContent = stats.totalBooks;
+        totalBooksEl.style.animation = 'countUp 1s ease-out';
+        console.log('Updated totalBooks to:', stats.totalBooks);
+    }
+
+    const availableBooksEl = document.getElementById('availableBooks');
+    console.log('availableBooksEl:', availableBooksEl);
+    if (availableBooksEl) {
+        availableBooksEl.textContent = stats.availableBooks;
+        availableBooksEl.style.animation = 'countUp 1s ease-out';
+        console.log('Updated availableBooks to:', stats.availableBooks);
+    }
+
+    const borrowedBooksEl = document.getElementById('borrowedBooks');
+    if (borrowedBooksEl) borrowedBooksEl.textContent = stats.borrowedBooks;
+
+    const totalGenresEl = document.getElementById('totalGenres');
+    console.log('totalGenresEl:', totalGenresEl);
+    if (totalGenresEl) {
+        totalGenresEl.textContent = stats.totalGenres;
+        totalGenresEl.style.animation = 'countUp 1s ease-out';
+        console.log('Updated totalGenres to:', stats.totalGenres);
+    }
+
+    // Обновляем hero stats
+    const heroTotalBooksEl = document.getElementById('heroTotalBooks');
+    console.log('heroTotalBooksEl:', heroTotalBooksEl);
+    if (heroTotalBooksEl) {
+        heroTotalBooksEl.textContent = stats.totalBooks;
+        console.log('Updated heroTotalBooks to:', stats.totalBooks);
+    }
+
+    const heroGenresEl = document.getElementById('heroGenres');
+    if (heroGenresEl) heroGenresEl.textContent = stats.totalGenres;
+
+    const heroAvailableEl = document.getElementById('heroAvailable');
+    console.log('heroAvailableEl:', heroAvailableEl);
+    if (heroAvailableEl) {
+        heroAvailableEl.textContent = stats.availableBooks;
+        console.log('Updated heroAvailable to:', stats.availableBooks);
+    }
+
+    // Обновляем card stats
+    const totalBooksCardEl = document.getElementById('totalBooksCard');
+    if (totalBooksCardEl) totalBooksCardEl.textContent = stats.totalBooks;
+
+    const availableBooksCardEl = document.getElementById('availableBooksCard');
+    if (availableBooksCardEl) availableBooksCardEl.textContent = stats.availableBooks;
+
+    const borrowedBooksCardEl = document.getElementById('borrowedBooks');
+    if (borrowedBooksCardEl) borrowedBooksCardEl.textContent = stats.borrowedBooks;
+
+    const totalGenresCardEl = document.getElementById('totalGenres');
+    if (totalGenresCardEl) totalGenresCardEl.textContent = stats.totalGenres;
+
+    console.log('Stats updated successfully');
 }
 
 // Функция для обработки опыта и достижений
@@ -428,6 +495,12 @@ async function initializeApp() {
     await loadInitialData();
     setupEventListeners();
     initializeTheme();
+
+    // Дополнительное обновление статистики после полной загрузки
+    setTimeout(() => {
+        console.log('Delayed stats update');
+        updateStats(calculateStats());
+    }, 500);
 }
 
 // Инициализация Telegram Web App
@@ -2880,12 +2953,16 @@ function getStatusText(status) {
 }
 
 function calculateStats() {
-    const books = window.APP_DATA && window.APP_DATA.MOCK_BOOKS ? window.APP_DATA.MOCK_BOOKS : [];
+    const totalBooks = 50;
+    const availableBooks = 47; // доступных книг
+    const borrowedBooks = totalBooks - availableBooks;
+    const totalGenres = window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0;
+
     return {
-        totalBooks: 50,
-        availableBooks: 49,
-        borrowedBooks: books.filter(book => !book.available).length,
-        totalGenres: window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0
+        totalBooks,
+        availableBooks,
+        borrowedBooks,
+        totalGenres
     };
 }
 

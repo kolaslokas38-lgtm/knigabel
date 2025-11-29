@@ -1674,8 +1674,8 @@ const GAME_DATA = {
 
 // Рассчитываем статистику библиотеки
 const MOCK_STATS = {
-    totalBooks: 50,
-    availableBooks: 49,
+    totalBooks: MOCK_BOOKS.length,
+    availableBooks: MOCK_BOOKS.filter(book => book.available).length,
     borrowedBooks: MOCK_BOOKS.filter(book => !book.available).length,
     totalGenres: MOCK_GENRES.length - 1,
     totalReviews: BOOK_REVIEWS.length
@@ -1782,7 +1782,7 @@ const DEFAULT_USER_DATA = {
     bookedEvents: [], // Новое поле для забронированных событий
     titles: [], // Новое поле для титулов
     stats: {
-        totalBooks: 25,
+        totalBooks: 50,
         activeBorrows: 1,
         totalRead: 2,
         readingDays: 45,
@@ -2119,4 +2119,5 @@ window.APP_DATA = {
     BOOK_QUOTES,
     GAME_DATA
 };
+console.log('MOCK_BOOKS length:', MOCK_BOOKS.length);
 console.log('data.js loaded successfully');
