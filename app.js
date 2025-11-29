@@ -2954,7 +2954,7 @@ function getStatusText(status) {
 
 function calculateStats() {
     const totalBooks = 50;
-    const availableBooks = 47; // доступных книг
+    const availableBooks = 45 + Math.floor(Math.random() * 6); // от 45 до 50 доступных книг
     const borrowedBooks = totalBooks - availableBooks;
     const totalGenres = window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0;
 

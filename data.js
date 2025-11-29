@@ -1329,12 +1329,12 @@ const THEMES = {
 
 // Ключи для localStorage
 const STORAGE_KEYS = {
-    USER_DATA: 'knigabel_user_data',
-    BOOKS_DATA: 'knigabel_books_data',
-    LIBRARY_STATS: 'knigabel_library_stats',
-    USER_REVIEWS: 'knigabel_user_reviews',
-    THEME: 'knigabel_theme',
-    BOOK_REVIEWS: 'knigabel_global_reviews_v2' // Изменен ключ для сброса старых отзывов
+    USER_DATA: 'knigabel_user_data_v2',
+    BOOKS_DATA: 'knigabel_books_data_v2',
+    LIBRARY_STATS: 'knigabel_library_stats_v2',
+    USER_REVIEWS: 'knigabel_user_reviews_v2',
+    THEME: 'knigabel_theme_v2',
+    BOOK_REVIEWS: 'knigabel_global_reviews_v3' // Изменен ключ для сброса старых отзывов
 };
 
 // Игровые данные
