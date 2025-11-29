@@ -160,6 +160,29 @@ function calculateStats() {
     };
 }
 
+// Функция для обработки опыта и достижений
+function handleExperienceAndAchievements(userData, expGained) {
+    if (!userData || !expGained) return;
+
+    // Начисляем опыт
+    const result = window.APP_DATA.LevelSystem.addExperience(userData, expGained);
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем профиль немедленно
+    updateUserProfile();
+
+    // Показываем уведомление о новом уровне
+    if (result.leveledUp) {
+        tg.showPopup({
+            title: '🎉 Новый уровень!',
+            message: `Поздравляем! Вы достигли уровня ${result.newLevel}!`,
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
 // Функция для обновления профиля пользователя
 function updateUserProfile() {
     if (!userData) return;
@@ -391,11 +414,7 @@ async function likeReviewOnServer(reviewId) {
     }
 }
 
-// Инициализация приложения
-document.addEventListener('DOMContentLoaded', function() {
-    // Запускаем приложение сразу
-    initializeApp();
-});
+// Инициализация приложения (перенесено в index.html для правильной загрузки данных)
 
 async function initializeApp() {
     console.log('Инициализация приложения...');
@@ -653,20 +672,14 @@ async function loadInitialData() {
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
         console.error('Stack:', error.stack);
-        showError('Не удалось загрузить данные. Используются демо-данные.');
-
-        // Попытка загрузить с fallback
-        try {
-            updateBooksDisplay(window.APP_DATA ? window.APP_DATA.MOCK_BOOKS : []);
-            populateGenreFilter(window.APP_DATA ? window.APP_DATA.MOCK_GENRES : []);
-            updateStats(window.APP_DATA ? window.APP_DATA.MOCK_STATS : {});
-            updateUserProfile();
-            renderWeeklyBooks();
-            renderBookOfDay();
-            showSection('catalog');
-        } catch (fallbackError) {
-            console.error('Ошибка fallback:', fallbackError);
-        }
+        // Продолжаем без показа ошибки пользователю
+        updateBooksDisplay(window.APP_DATA ? window.APP_DATA.MOCK_BOOKS : []);
+        populateGenreFilter(window.APP_DATA ? window.APP_DATA.MOCK_GENRES : []);
+        updateStats(window.APP_DATA ? window.APP_DATA.MOCK_STATS : {});
+        updateUserProfile();
+        renderWeeklyBooks();
+        renderBookOfDay();
+        showSection('catalog');
     }
 }
 

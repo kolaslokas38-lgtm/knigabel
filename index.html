@@ -977,5 +977,19 @@
     <script src="storage.js"></script>
     <script src="book-texts.js"></script>
     <script src="app.js"></script>
+
+    <script>
+        // Ждем загрузки всех данных перед инициализацией
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkAppData = () => {
+                if (window.APP_DATA && window.APP_DATA.MOCK_BOOKS && window.STORAGE) {
+                    initializeApp();
+                } else {
+                    setTimeout(checkAppData, 50);
+                }
+            };
+            checkAppData();
+        });
+    </script>
 </body>
 </html>
