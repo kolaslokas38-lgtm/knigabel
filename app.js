@@ -15,11 +15,262 @@ let currentReadingBook = null;
 let currentPage = 1;
 let currentQuiz = null;
 
+// Функция для получения случайных книг
+function getRandomBooks(count) {
+    if (!window.APP_DATA || !window.APP_DATA.MOCK_BOOKS) {
+        console.warn('MOCK_BOOKS не доступны, возвращаем пустой массив');
+        return [];
+    }
+
+    const books = window.APP_DATA.MOCK_BOOKS.slice(); // Копируем массив
+    const result = [];
+
+    // Перемешиваем массив
+    for (let i = books.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [books[i], books[j]] = [books[j], books[i]];
+    }
+
+    // Возвращаем первые count книг
+    for (let i = 0; i < Math.min(count, books.length); i++) {
+        result.push(books[i]);
+    }
+
+    return result;
+}
+
+// Функция для получения книги дня (постоянной на день)
+function getBookOfDay() {
+    let books = [];
+    if (window.APP_DATA && window.APP_DATA.MOCK_BOOKS && window.APP_DATA.MOCK_BOOKS.length > 0) {
+        books = window.APP_DATA.MOCK_BOOKS;
+    } else {
+        // Демо книги для книги дня
+        books = [
+            {
+                id: 1,
+                title: "Война и мир",
+                author: "Лев Толстой",
+                year: 1869,
+                genre: "Роман-эпопея",
+                description: "Монументальный роман-эпопея, описывающий русское общество в эпоху войн против Наполеона.",
+                available: true,
+                icon: "📖",
+                pages: 1225,
+                rating: 4.8,
+                reviewsCount: 156
+            }
+        ];
+    }
+
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    const bookIndex = dayOfYear % books.length;
+    const book = books[bookIndex];
+
+    // Если книга не доступна, возвращаем первую доступную книгу
+    if (!book || !book.id) {
+        console.warn('Книга дня не доступна, возвращаем первую книгу');
+        return books.find(b => b && b.id) || null;
+    }
+
+    return book;
+}
+
+// Функция для получения книг недели (постоянных на неделю)
+function getBooksOfWeek() {
+    let books = [];
+    if (window.APP_DATA && window.APP_DATA.MOCK_BOOKS && window.APP_DATA.MOCK_BOOKS.length > 0) {
+        books = window.APP_DATA.MOCK_BOOKS;
+    } else {
+        // Демо книги для книг недели
+        books = [
+            {
+                id: 1,
+                title: "Война и мир",
+                author: "Лев Толстой",
+                year: 1869,
+                genre: "Роман-эпопея",
+                description: "Монументальный роман-эпопея, описывающий русское общество в эпоху войн против Наполеона.",
+                available: true,
+                icon: "📖",
+                pages: 1225,
+                rating: 4.8,
+                reviewsCount: 156
+            },
+            {
+                id: 2,
+                title: "Преступление и наказание",
+                author: "Федор Достоевский",
+                year: 1866,
+                genre: "Психологический роман",
+                description: "История бывшего студента Родиона Раскольникова, совершившего убийство.",
+                available: true,
+                icon: "🔪",
+                pages: 672,
+                rating: 4.7,
+                reviewsCount: 89
+            }
+        ];
+    }
+
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    const weekOfYear = Math.floor(dayOfYear / 7);
+    const startIndex = weekOfYear % books.length;
+    const weeklyBooks = [];
+
+    console.log('getBooksOfWeek: books length:', books.length, 'startIndex:', startIndex);
+
+    for (let i = 0; i < 4; i++) {
+        const bookIndex = (startIndex + i) % books.length;
+        const book = books[bookIndex];
+        console.log('Book at index', bookIndex, ':', book ? book.title : 'undefined');
+        if (book && book.id) {
+            weeklyBooks.push(book);
+        }
+    }
+
+    // Если не набралось 4 книги, добавляем дополнительные
+    if (weeklyBooks.length < 4) {
+        for (let i = 0; weeklyBooks.length < 4 && i < books.length; i++) {
+            const book = books[i];
+            if (book && book.id && !weeklyBooks.some(b => b.id === book.id)) {
+                weeklyBooks.push(book);
+            }
+        }
+    }
+
+    return weeklyBooks;
+}
+
+// Функции для расчета статистики
+function calculateStats() {
+    const books = window.APP_DATA.MOCK_BOOKS;
+    const totalBooks = books.length;
+    const availableBooks = books.filter(book => book.available).length;
+    const borrowedBooks = totalBooks - availableBooks;
+    const totalGenres = window.APP_DATA.MOCK_GENRES.length - 1; // Минус "Все жанры"
+
+    return {
+        totalBooks,
+        availableBooks,
+        borrowedBooks,
+        totalGenres
+    };
+}
+
+// Функция для обновления профиля пользователя
+function updateUserProfile() {
+    if (!userData) return;
+
+    // Обновляем имя пользователя
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) {
+        userNameElement.textContent = userData.name || 'Пользователь';
+    }
+
+    // Обновляем аватар
+    const userAvatarElement = document.getElementById('userAvatar');
+    if (userAvatarElement) {
+        const avatarPlaceholder = userAvatarElement.querySelector('.avatar-placeholder');
+        if (avatarPlaceholder) {
+            avatarPlaceholder.textContent = userData.avatar || '👤';
+        }
+    }
+
+    // Обновляем дату регистрации
+    const userRegistrationElement = document.getElementById('userRegistration');
+    if (userRegistrationElement) {
+        userRegistrationElement.textContent = `Зарегистрирован: ${userData.registrationDate || 'Неизвестно'}`;
+    }
+
+    // Обновляем уровень и опыт
+    const userLevelElement = document.getElementById('userLevel');
+    if (userLevelElement) {
+        userLevelElement.textContent = userData.level || 1;
+        userLevelElement.className = 'level-number level-' + Math.min(userData.level, 20);
+    }
+
+    // Обновляем класс секции уровня для градиента фона
+    const levelSection = document.getElementById('levelSection');
+    if (levelSection) {
+        levelSection.className = 'level-section level-' + Math.min(userData.level, 20);
+    }
+
+    const expFillElement = document.getElementById('expFillSection');
+    if (expFillElement && userData.experience !== undefined && userData.experienceToNext !== undefined) {
+        const percentage = ((userData.experience % userData.experienceToNext) / userData.experienceToNext) * 100; // Процент до следующего уровня
+        expFillElement.style.width = `${percentage}%`;
+    }
+
+    const expTextElement = document.getElementById('expTextSection');
+    if (expTextElement && userData.experience !== undefined && userData.experienceToNext !== undefined) {
+        expTextElement.textContent = `${userData.experience % userData.experienceToNext}/${userData.experienceToNext} XP`;
+    }
+
+    // Обновляем статистику
+    updateProfileStats();
+}
+
+// Функция для обновления статистики профиля
+function updateProfileStats() {
+    if (!userData || !userData.stats) return;
+
+    // Обновляем активные книги
+    const activeBorrowsElement = document.getElementById('activeBorrows');
+    if (activeBorrowsElement) {
+        activeBorrowsElement.textContent = userData.stats.activeBorrows || 0;
+    }
+
+    // Обновляем прочитанные книги
+    const totalReadElement = document.getElementById('totalRead');
+    if (totalReadElement) {
+        totalReadElement.textContent = userData.stats.totalRead || 0;
+    }
+
+    // Обновляем дни с нами
+    const readingTimeElement = document.getElementById('readingTime');
+    if (readingTimeElement) {
+        readingTimeElement.textContent = userData.stats.readingDays || 0;
+    }
+
+    // Обновляем отзывы
+    const userReviewsWrittenElement = document.getElementById('userReviewsWritten');
+    if (userReviewsWrittenElement) {
+        userReviewsWrittenElement.textContent = userData.stats.reviewsWritten || 0;
+    }
+
+    // Обновляем избранные книги
+    const userFavoritesElement = document.getElementById('userFavorites');
+    if (userFavoritesElement) {
+        userFavoritesElement.textContent = userData.favorites ? userData.favorites.length : 0;
+    }
+
+    // Обновляем прочитанные страницы
+    const totalPagesReadElement = document.getElementById('totalPagesRead');
+    if (totalPagesReadElement) {
+        totalPagesReadElement.textContent = userData.totalPagesRead || 0;
+    }
+
+    // Обновляем общее количество книг
+    const userTotalBooksElement = document.getElementById('userTotalBooks');
+    if (userTotalBooksElement) {
+        userTotalBooksElement.textContent = userData.stats.totalBooks || 0;
+    }
+}
+
 // Функции для работы с API отзывов
 async function fetchReviews(bookId = null) {
     try {
         const url = bookId ? `/api/reviews/book/${bookId}` : '/api/reviews';
-        const response = await fetch(url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        const response = await fetch(url, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -33,20 +284,29 @@ async function fetchReviews(bookId = null) {
         const data = JSON.parse(text);
         return data.reviews || [];
     } catch (error) {
-        console.error('Ошибка загрузки отзывов:', error);
+        if (error.name === 'AbortError') {
+            console.log('Fetch aborted due to timeout');
+        } else {
+            console.error('Ошибка загрузки отзывов:', error);
+        }
         return [];
     }
 }
 
 async function submitReviewToServer(reviewData) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch('/api/reviews', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(reviewData)
+            body: JSON.stringify(reviewData),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         const text = await response.text();
         let data;
@@ -68,13 +328,18 @@ async function submitReviewToServer(reviewData) {
 
 async function deleteReviewFromServer(reviewId, userId) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(`/api/reviews/${reviewId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userId })
+            body: JSON.stringify({ userId }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         const text = await response.text();
         let data;
@@ -96,12 +361,17 @@ async function deleteReviewFromServer(reviewId, userId) {
 
 async function likeReviewOnServer(reviewId) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(`/api/reviews/${reviewId}/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         const text = await response.text();
         let data;
@@ -123,41 +393,34 @@ async function likeReviewOnServer(reviewId) {
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
-    // Ждем загрузки всех скриптов
-    if (typeof window.APP_DATA === 'undefined') {
-        console.error('APP_DATA не загружен. Ждем...');
-        setTimeout(() => {
-            if (typeof window.APP_DATA === 'undefined') {
-                console.error('APP_DATA так и не загрузился после 0.5 секунды, используем демо данные');
-            }
-            initializeApp();
-        }, 500);
-    } else {
-        initializeApp();
-    }
+    // Запускаем приложение сразу
+    initializeApp();
 });
 
 async function initializeApp() {
     console.log('Инициализация приложения...');
     await initializeTelegramApp();
     initializeReviewsSync();
-    loadInitialData();
+
+    // Показываем демо книги сразу
+    renderWeeklyBooks();
+    renderBookOfDay();
+
+    await loadInitialData();
     setupEventListeners();
     initializeTheme();
 }
 
 // Инициализация Telegram Web App
 async function initializeTelegramApp() {
-    // Загружаем отзывы с сервера
-    try {
-        const allReviews = await fetchReviews();
-        window.APP_DATA.BOOK_REVIEWS = allReviews;
-    } catch (error) {
-        console.error('Ошибка загрузки отзывов:', error);
-        window.APP_DATA.BOOK_REVIEWS = [];
-    }
+    // Отзывы загружаются по требованию
+    window.APP_DATA.BOOK_REVIEWS = [];
     if (window.STORAGE && window.STORAGE.loadAllData) {
         userData = window.STORAGE.loadAllData();
+        // Исправляем experienceToNext если необходимо
+        if (userData.experienceToNext === undefined || userData.experienceToNext <= 0) {
+            userData.experienceToNext = window.APP_DATA.LevelSystem.getExperienceToNextLevel(userData.experience);
+        }
     } else {
         userData = window.APP_DATA ? window.APP_DATA.DEFAULT_USER_DATA : {
             name: 'Пользователь',
@@ -338,13 +601,20 @@ function showSection(sectionName) {
     if (sectionName === 'reviews') {
         loadReviewsSection();
     }
+    if (sectionName === 'achievements') {
+        loadAchievementsSection();
+    }
+    if (sectionName === 'catalog') {
+        // renderWeeklyBooks() and renderBookOfDay() are called in loadInitialData
+    }
 }
 
 // Загрузка начальных данных
 async function loadInitialData() {
     try {
         console.log('Начинаем загрузку данных...');
-        showLoading(true);
+        console.log('APP_DATA exists:', typeof window.APP_DATA !== 'undefined');
+        console.log('MOCK_BOOKS length:', window.APP_DATA ? window.APP_DATA.MOCK_BOOKS.length : 'undefined');
 
         // Проверяем наличие данных
         if (!window.APP_DATA) {
@@ -359,18 +629,30 @@ async function loadInitialData() {
         console.log('Найдено книг:', window.APP_DATA.MOCK_BOOKS.length);
 
         // Немедленная загрузка данных без задержки
-        updateBooksDisplay(getRandomBooks(50));
+        try {
+            updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
+        } catch (error) {
+            console.error('Ошибка при отображении каталога:', error);
+        }
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
         updateStats(calculateStats());
         updateUserProfile();
+
+        // Отображаем книги недели и дня
+        console.log('Calling renderWeeklyBooks from loadInitialData');
         renderWeeklyBooks();
+        console.log('Calling renderBookOfDay from loadInitialData');
         renderBookOfDay();
-        showLoading(false);
+
+        // Переключаемся на каталог по умолчанию
+        showSection('catalog');
 
         console.log('Данные загружены успешно');
+        console.log('Книг отображено:', currentBooks.length);
 
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
+        console.error('Stack:', error.stack);
         showError('Не удалось загрузить данные. Используются демо-данные.');
 
         // Попытка загрузить с fallback
@@ -381,18 +663,16 @@ async function loadInitialData() {
             updateUserProfile();
             renderWeeklyBooks();
             renderBookOfDay();
+            showSection('catalog');
         } catch (fallbackError) {
             console.error('Ошибка fallback:', fallbackError);
         }
-
-        showLoading(false);
     }
 }
 
 // Загрузка демо данных
 function loadDemoData() {
     console.log('Загрузка демо данных');
-    showLoading(true);
 
     const demoBooks = [
         {
@@ -423,82 +703,120 @@ function loadDemoData() {
         }
     ];
 
+    // Устанавливаем демо данные в APP_DATA
+    if (!window.APP_DATA) {
+        window.APP_DATA = {};
+    }
+    window.APP_DATA.MOCK_BOOKS = demoBooks;
+    window.APP_DATA.MOCK_GENRES = ['Все жанры', 'Роман-эпопея', 'Психологический роман'];
+    window.APP_DATA.MOCK_STATS = {totalBooks: demoBooks.length, availableBooks: demoBooks.filter(b => b.available).length, borrowedBooks: 0, totalGenres: 2};
+
     updateBooksDisplay(demoBooks);
-    populateGenreFilter(['Все жанры', 'Роман-эпопея', 'Психологический роман']);
-    updateStats({totalBooks: demoBooks.length, availableBooks: demoBooks.filter(b => b.available).length});
+    populateGenreFilter(window.APP_DATA.MOCK_GENRES);
+    updateStats(window.APP_DATA.MOCK_STATS);
     updateUserProfile();
+
+    // Отображаем книги недели и дня
     renderWeeklyBooks();
     renderBookOfDay();
-    showLoading(false);
+    showSection('catalog');
 }
 
 // Отображение книг недели
 function renderWeeklyBooks() {
-    const container = document.getElementById('weeklyBooksContainer');
-    const weeklyBooks = getRandomBooks(4).filter(book => book && book.id); // Фильтруем undefined книги
+    try {
+        console.log('Rendering weekly books');
+        const container = document.getElementById('weeklyBooksContainer');
+        if (!container) {
+            console.error('weeklyBooksContainer not found');
+            return;
+        }
 
-    if (weeklyBooks.length === 0) {
-        container.innerHTML = '<p>Книги временно недоступны</p>';
-        return;
-    }
+        const weeklyBooks = getBooksOfWeek(); // Фильтруем undefined книги
+        console.log('Weekly books:', weeklyBooks.length, weeklyBooks);
 
-    container.innerHTML = weeklyBooks.map(book => `
-        <div class="book-card ${getGenreClass(book.genre)}" onclick="showBookDetails(${book.id})">
-            <div class="book-header">
-                <div class="book-cover">
-                    <div class="book-icon-large">${getGenreIcon(book.genre)}</div>
-                </div>
-                <div class="book-info">
-                    <div class="book-title">${escapeHtml(book.title)}</div>
-                    <div class="book-author">${escapeHtml(book.author)}</div>
-                    <div class="book-genre-tag">${book.genre}</div>
-                    <div class="book-rating-small">
-                        <span class="stars">${createRatingStars(book.rating)}</span>
-                        <span class="rating-value">${book.rating}</span>
+        if (weeklyBooks.length === 0) {
+            container.innerHTML = '<p>Книги временно недоступны</p>';
+            return;
+        }
+
+        container.innerHTML = weeklyBooks.map(book => `
+            <div class="book-card ${getGenreClass(book.genre) || ''}" onclick="showBookDetails(${book.id})">
+                <div class="book-header">
+                    <div class="book-cover">
+                        <div class="book-icon-large">${getGenreIcon(book.genre) || '📚'}</div>
                     </div>
-                    <div class="book-status status-available">⭐ Рекомендуем</div>
+                    <div class="book-info">
+                        <div class="book-title">${escapeHtml(book.title)}</div>
+                        <div class="book-author">${escapeHtml(book.author)}</div>
+                        <div class="book-genre-tag">${book.genre}</div>
+                        <div class="book-rating-small">
+                            <span class="stars">${createRatingStars(book.rating) || '⭐⭐⭐⭐⭐'}</span>
+                            <span class="rating-value">${book.rating || 5}</span>
+                        </div>
+                        <div class="book-status status-available">⭐ Рекомендуем</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        console.error('Ошибка при отображении книг недели:', error);
+        const container = document.getElementById('weeklyBooksContainer');
+        if (container) {
+            container.innerHTML = '<p>Ошибка загрузки книг недели</p>';
+        }
+    }
 }
 
 // Отображение книги дня
 function renderBookOfDay() {
-    const container = document.getElementById('bookOfDayContainer');
-    const bookOfDayBooks = getRandomBooks(1).filter(book => book && book.id); // Фильтруем undefined книги
+    try {
+        console.log('Rendering book of day');
+        const container = document.getElementById('bookOfDayContainer');
+        if (!container) {
+            console.error('bookOfDayContainer not found');
+            return;
+        }
 
-    if (bookOfDayBooks.length === 0) {
-        container.innerHTML = '<p>Книга дня временно недоступна</p>';
-        return;
-    }
+        const bookOfDay = getBookOfDay();
+        if (!bookOfDay) {
+            container.innerHTML = '<p>Книга дня временно недоступна</p>';
+            return;
+        }
 
-    const bookOfDay = bookOfDayBooks[0];
+        console.log('Book of day:', bookOfDay.title);
 
-    container.innerHTML = `
-        <div class="book-card book-of-day-card ${getGenreClass(bookOfDay.genre)}" onclick="showBookDetails(${bookOfDay.id})">
-            <div class="book-header">
-                <div class="book-cover">
-                    <div class="book-icon-large">${getGenreIcon(bookOfDay.genre)}</div>
-                </div>
-                <div class="book-info">
-                    <div class="book-of-day-header">
-                        <div class="book-of-day-badge">⭐ Книга дня</div>
+        container.innerHTML = `
+            <div class="book-card book-of-day-card ${getGenreClass(bookOfDay.genre)}" onclick="showBookDetails(${bookOfDay.id})">
+                <div class="book-header">
+                    <div class="book-cover">
+                        <div class="book-icon-large">${getGenreIcon(bookOfDay.genre)}</div>
                     </div>
-                    <div class="book-title">${escapeHtml(bookOfDay.title)}</div>
-                    <div class="book-author">${escapeHtml(bookOfDay.author)}</div>
-                    <div class="book-genre-tag">${bookOfDay.genre}</div>
-                    <div class="book-rating-small">
-                        <span class="stars">${createRatingStars(bookOfDay.rating)}</span>
-                        <span class="rating-value">${bookOfDay.rating}</span>
+                    <div class="book-info">
+                        <div class="book-of-day-header">
+                            <div class="book-of-day-badge">⭐ Книга дня</div>
+                        </div>
+                        <div class="book-title">${escapeHtml(bookOfDay.title)}</div>
+                        <div class="book-author">${escapeHtml(bookOfDay.author)}</div>
+                        <div class="book-genre-tag">${bookOfDay.genre}</div>
+                        <div class="book-rating-small">
+                            <span class="stars">${createRatingStars(bookOfDay.rating)}</span>
+                            <span class="rating-value">${bookOfDay.rating}</span>
+                        </div>
+                        <button class="borrow-btn book-of-day-btn" onclick="event.stopPropagation(); borrowBook(${bookOfDay.id})">
+                            📖 Забронировать
+                        </button>
                     </div>
-                    <button class="borrow-btn book-of-day-btn" onclick="event.stopPropagation(); borrowBook(${bookOfDay.id})">
-                        📖 Забронировать
-                    </button>
                 </div>
             </div>
-        </div>
-    `;
+        `;
+    } catch (error) {
+        console.error('Ошибка при отображении книги дня:', error);
+        const container = document.getElementById('bookOfDayContainer');
+        if (container) {
+            container.innerHTML = '<p>Ошибка загрузки книги дня</p>';
+        }
+    }
 }
 
 // Поиск книг
@@ -509,25 +827,23 @@ async function searchBooks() {
     
     try {
         showLoading(true);
-        
-        setTimeout(() => {
-            let filteredBooks = window.APP_DATA.MOCK_BOOKS;
 
-            if (query) {
-                filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book =>
-                    book.title.toLowerCase().includes(query.toLowerCase()) ||
-                    book.author.toLowerCase().includes(query.toLowerCase()) ||
-                    book.genre.toLowerCase().includes(query.toLowerCase()) ||
-                    (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
-                );
-                updateBooksDisplay(filteredBooks.slice(0, 50));
-            } else {
-                updateBooksDisplay(getRandomBooks(50));
-            }
-            updateSectionTitle(query ? `Результаты поиска: "${query}"` : 'Каталог книг');
-            showLoading(false);
-        }, 300);
-        
+        let filteredBooks = window.APP_DATA.MOCK_BOOKS;
+
+        if (query) {
+            filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book =>
+                book.title.toLowerCase().includes(query.toLowerCase()) ||
+                book.author.toLowerCase().includes(query.toLowerCase()) ||
+                book.genre.toLowerCase().includes(query.toLowerCase()) ||
+                (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
+            );
+            updateBooksDisplay(filteredBooks);
+        } else {
+            updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
+        }
+        updateSectionTitle(query ? `Результаты поиска: "${query}"` : 'Каталог книг');
+        showLoading(false);
+
     } catch (error) {
         console.error('Ошибка поиска:', error);
         showError('Ошибка при выполнении поиска');
@@ -543,20 +859,18 @@ async function filterByGenre() {
     
     try {
         showLoading(true);
-        
-        setTimeout(() => {
-            let filteredBooks = window.APP_DATA.MOCK_BOOKS;
-            if (genre && genre !== 'Все жанры') {
-                filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book => book.genre === genre);
-                updateBooksDisplay(filteredBooks.slice(0, 50));
-            } else {
-                updateBooksDisplay(getRandomBooks(50));
-            }
 
-            updateSectionTitle(genre && genre !== 'Все жанры' ? `Жанр: ${genre}` : 'Каталог книг');
-            showLoading(false);
-        }, 300);
-        
+        let filteredBooks = window.APP_DATA.MOCK_BOOKS;
+        if (genre && genre !== 'Все жанры') {
+            filteredBooks = window.APP_DATA.MOCK_BOOKS.filter(book => book.genre === genre);
+            updateBooksDisplay(filteredBooks);
+        } else {
+            updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
+        }
+
+        updateSectionTitle(genre && genre !== 'Все жанры' ? `Жанр: ${genre}` : 'Каталог книг');
+        showLoading(false);
+
     } catch (error) {
         console.error('Ошибка фильтрации:', error);
         showError('Ошибка при фильтрации');
@@ -566,6 +880,7 @@ async function filterByGenre() {
 
 // Отображение книг
 function updateBooksDisplay(books) {
+    console.log('updateBooksDisplay called with:', books ? books.length : 'null');
     currentBooks = books || [];
     const container = document.getElementById('booksContainer');
     const emptyState = document.getElementById('emptyState');
@@ -581,54 +896,61 @@ function updateBooksDisplay(books) {
     console.log('Отображаем книг:', books.length);
     emptyState.classList.add('hidden');
 
-    container.innerHTML = books.map(book => {
-        const isFavorite = userData.favorites.includes(book.id);
-        const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
+    try {
+        container.innerHTML = books.map(book => {
+            const isFavorite = userData.favorites.includes(book.id);
+            const isBorrowed = userData.borrowedBooks.some(b => b.bookId === book.id && b.status === 'active');
 
-        return `
-        <div class="book-card ${getGenreClass(book.genre)}" onclick="showBookDetails(${book.id})">
-            <div class="book-header">
-                <div class="book-cover">
-                    <div class="book-icon-large">${getGenreIcon(book.genre)}</div>
+            return `
+            <div class="book-card ${getGenreClass(book.genre)}" onclick="showBookDetails(${book.id})">
+                <div class="book-header">
+                    <div class="book-cover">
+                        <div class="book-icon-large">${getGenreIcon(book.genre)}</div>
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${escapeHtml(book.title)}</div>
+                        <div class="book-author">${escapeHtml(book.author)}</div>
+                        <div class="book-meta">
+                            <span class="meta-item">📅 ${book.year}</span>
+                            <span class="meta-item">📄 ${book.pages} стр.</span>
+                        </div>
+                        <div class="book-genre-tag">${book.genre}</div>
+                        <div class="book-rating-small">
+                            <span class="stars">${createRatingStars(book.rating)}</span>
+                            <span class="rating-value">${book.rating}</span>
+                            <span class="reviews-count">(${book.reviewsCount})</span>
+                        </div>
+                        <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
+                            ${book.available ? '✅ Доступна' : '❌ Выдана'}
+                        </div>
+                    </div>
                 </div>
-                <div class="book-info">
-                    <div class="book-title">${escapeHtml(book.title)}</div>
-                    <div class="book-author">${escapeHtml(book.author)}</div>
-                    <div class="book-meta">
-                        <span class="meta-item">📅 ${book.year}</span>
-                        <span class="meta-item">📄 ${book.pages} стр.</span>
-                    </div>
-                    <div class="book-genre-tag">${book.genre}</div>
-                    <div class="book-rating-small">
-                        <span class="stars">${createRatingStars(book.rating)}</span>
-                        <span class="rating-value">${book.rating}</span>
-                        <span class="reviews-count">(${book.reviewsCount})</span>
-                    </div>
-                    <div class="book-status ${book.available ? 'status-available' : 'status-unavailable'}">
-                        ${book.available ? '✅ Доступна' : '❌ Выдана'}
-                    </div>
+                <div class="book-actions">
+                    <button
+                        class="borrow-btn"
+                        onclick="event.stopPropagation(); borrowBook(${book.id})"
+                        ${!book.available || isBorrowed ? 'disabled' : ''}
+                    >
+                        ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
+                    </button>
+                    <button
+                        class="favorite-btn ${isFavorite ? 'favorite-active' : ''}"
+                        onclick="event.stopPropagation(); toggleFavorite(${book.id})"
+                    >
+                        ${isFavorite ? '❤️' : '🤍'}
+                    </button>
                 </div>
             </div>
-            <div class="book-actions">
-                <button
-                    class="borrow-btn"
-                    onclick="event.stopPropagation(); borrowBook(${book.id})"
-                    ${!book.available || isBorrowed ? 'disabled' : ''}
-                >
-                    ${isBorrowed ? '📖 Уже у вас' : (book.available ? '📚 Забронировать' : 'Недоступна')}
-                </button>
-                <button
-                    class="favorite-btn ${isFavorite ? 'favorite-active' : ''}"
-                    onclick="event.stopPropagation(); toggleFavorite(${book.id})"
-                >
-                    ${isFavorite ? '❤️' : '🤍'}
-                </button>
-            </div>
-        </div>
-        `;
-    }).join('');
-    
-    updateBooksCount(books.length);
+            `;
+        }).join('');
+        
+        updateBooksCount(books.length);
+    } catch (error) {
+        console.error('Ошибка при отображении книг:', error);
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        updateBooksCount(0);
+    }
 }
 
 // Показать детали книги
@@ -883,6 +1205,7 @@ async function submitReview() {
         updateQuestProgress('write_review');
 
         window.STORAGE.saveAllData(userData);
+        updateUserProfile();
 
         tg.showPopup({
             title: 'Отзыв добавлен! ★',
@@ -1085,77 +1408,38 @@ function showAchievementNotification(achievements) {
 
 // Функция для забора награды достижения
 function claimAchievementReward(achievementId) {
-    const achievement = window.APP_DATA.ACHIEVEMENTS.find(a => a.id === achievementId);
-    if (!achievement) {
-        tg.showAlert('Достижение не найдено');
-        return;
-    }
+    try {
+        // Используем системную функцию claimReward
+        const result = window.APP_DATA.AchievementSystem.claimReward(userData, achievementId);
 
-    // Проверяем, забрана ли уже награда
-    if (userData.achievementRewardsClaimed && userData.achievementRewardsClaimed.includes(achievementId)) {
-        tg.showAlert('Награда за это достижение уже забрана');
-        return;
-    }
-
-    // Выдаем награду
-    let rewardMessage = 'Награда получена:\n';
-    const rewards = [];
-
-    if (achievement.reward) {
-        if (achievement.reward.exp > 0) {
-            userData.experience += achievement.reward.exp;
-            rewards.push(`${achievement.reward.exp} опыта`);
-            // Проверяем повышение уровня
-            const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, 0); // 0 опыта, но проверка уровня
-            if (levelUp.leveledUp) {
-                tg.showPopup({
-                    title: '🎉 Новый уровень!',
-                    message: `Поздравляем! Вы достигли ${levelUp.newLevel} уровня!`,
-                    buttons: [{ type: 'ok' }]
-                });
-            }
+        if (!result.success) {
+            tg.showAlert(result.error || 'Не удалось получить награду');
+            return;
         }
 
-        if (achievement.reward.coins > 0) {
-            userData.coins = (userData.coins || 0) + achievement.reward.coins;
-            rewards.push(`${achievement.reward.coins} 💎`);
+        // Сохраняем данные
+        window.STORAGE.saveAllData(userData);
+
+        // Обновляем UI
+        updateProfileDisplay();
+        updateAchievementsList();
+        // Обновляем раздел достижений, если он открыт
+        if (document.getElementById('achievementsSection').classList.contains('active')) {
+            displayAchievements();
+            updateAchievementStats();
         }
 
-        if (achievement.reward.title) {
-            if (!userData.titles) userData.titles = [];
-            if (!userData.titles.includes(achievement.reward.title)) {
-                userData.titles.push(achievement.reward.title);
-                rewards.push(`титул "${achievement.reward.title}"`);
-            }
-        }
+        // Показываем уведомление
+        tg.showPopup({
+            title: '🎁 Награда получена!',
+            message: result.rewardText,
+            buttons: [{ type: 'ok' }]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при получении награды:', error);
+        tg.showAlert('Произошла ошибка при получении награды');
     }
-
-    if (rewards.length === 0) {
-        tg.showAlert('У этого достижения нет награды');
-        return;
-    }
-
-    rewardMessage += rewards.join(', ');
-
-    // Добавляем в забранные награды
-    if (!userData.achievementRewardsClaimed) {
-        userData.achievementRewardsClaimed = [];
-    }
-    userData.achievementRewardsClaimed.push(achievementId);
-
-    // Сохраняем данные
-    window.STORAGE.saveAllData(userData);
-
-    // Обновляем UI
-    updateProfileDisplay();
-    updateAchievementsGrid();
-
-    // Показываем уведомление
-    tg.showPopup({
-        title: '🎁 Награда получена!',
-        message: rewardMessage,
-        buttons: [{ type: 'ok' }]
-    });
 }
 
 // Функция для уведомления других вкладок об обновлении отзывов
@@ -1200,12 +1484,10 @@ async function borrowBook(bookId) {
                 message: `Книга "${book.title}" успешно забронирована!\nВерните до ${formatDate(borrowRecord.returnDate)}`,
                 buttons: [{ type: 'ok' }]
             });
-        
+
             updateBooksDisplay(currentBooks);
             updateStats(window.APP_DATA.MOCK_STATS);
             updateUserProfile();
-            renderWeeklyBooks();
-            renderBookOfDay();
             closeModal();
             
         } else {
@@ -1251,12 +1533,10 @@ function returnBook(bookId) {
             message: `"${book.title}" успешно возвращена в библиотеку`,
             buttons: [{ type: 'ok' }]
         });
-        
+
         updateBooksDisplay(currentBooks);
         updateStats(calculateStats());
         updateUserProfile();
-        renderWeeklyBooks();
-        renderBookOfDay();
     }
 }
 
@@ -1335,16 +1615,19 @@ function updateUserProfile() {
 
     // Обновляем уровень и опыт
     document.getElementById('userLevel').textContent = userData.level;
-    const expPercent = ((userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)) / 100) * 100;
+    const expInLevel = userData.experience % 100;
+    const expToNext = 100;
+    const expPercent = (expInLevel / expToNext) * 100;
+
     // Обновляем оба места полоски уровня
     const expFillHeader = document.getElementById('expFillHeader');
     const expTextHeader = document.getElementById('expTextHeader');
     const expFillSection = document.getElementById('expFillSection');
     const expTextSection = document.getElementById('expTextSection');
     if (expFillHeader) expFillHeader.style.width = `${Math.min(100, expPercent)}%`;
-    if (expTextHeader) expTextHeader.textContent = `${userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)}/${userData.experienceToNext} XP`;
+    if (expTextHeader) expTextHeader.textContent = `${expInLevel}/${expToNext} XP`;
     if (expFillSection) expFillSection.style.width = `${Math.min(100, expPercent)}%`;
-    if (expTextSection) expTextSection.textContent = `${userData.experience - window.APP_DATA.LevelSystem.getExperienceForLevel(userData.level)}/${userData.experienceToNext} XP`;
+    if (expTextSection) expTextSection.textContent = `${expInLevel}/${expToNext} XP`;
 
     // Обновляем фон секции уровня
     const levelSection = document.getElementById('levelSection');
@@ -1508,6 +1791,14 @@ function updateFavoritesList() {
 function updateAchievementsList() {
     const achievementsGrid = document.getElementById('achievementsGrid');
     const achievementsCount = document.getElementById('achievementsCount');
+
+    // Проверяем новые достижения при открытии раздела
+    const newAchievements = window.APP_DATA.AchievementSystem.checkAchievements(userData);
+    if (newAchievements.length > 0) {
+        window.APP_DATA.AchievementSystem.unlockAchievements(userData, newAchievements);
+        showAchievementNotification(newAchievements);
+        window.STORAGE.saveAllData(userData);
+    }
 
     achievementsCount.textContent = userData.achievements.length;
 
@@ -3329,6 +3620,7 @@ function buyTitle(titleId) {
     window.STORAGE.saveAllData(userData);
     loadTitles();
     updateUserProfile();
+    updateGamesStats();
 
     tg.showPopup({
         title: 'Титул куплен!',
@@ -3649,7 +3941,7 @@ function loadEducationQuizzes() {
             id: 2,
             title: "Русская классика",
             description: "Викторина по произведениям русских классиков",
-            questions: 15,
+            questions: 10,
             difficulty: "Средне",
             icon: "📚",
             completed: userData.educationProgress?.quizzes?.includes(2) || false,
@@ -3659,7 +3951,7 @@ function loadEducationQuizzes() {
             id: 3,
             title: "Литературные термины",
             description: "Основные понятия и термины русской литературы",
-            questions: 12,
+            questions: 10,
             difficulty: "Средне",
             icon: "📝",
             completed: userData.educationProgress?.quizzes?.includes(3) || false,
@@ -3669,11 +3961,21 @@ function loadEducationQuizzes() {
             id: 4,
             title: "Поэзия Серебряного века",
             description: "Творчество поэтов начала XX века",
-            questions: 14,
+            questions: 10,
             difficulty: "Сложно",
             icon: "🌟",
             completed: userData.educationProgress?.quizzes?.includes(4) || false,
             bestScore: userData.educationProgress?.quizScores?.[4] || 0
+        },
+        {
+            id: 5,
+            title: "Советская литература",
+            description: "Классика советского периода",
+            questions: 10,
+            difficulty: "Средне",
+            icon: "⚒️",
+            completed: userData.educationProgress?.quizzes?.includes(5) || false,
+            bestScore: userData.educationProgress?.quizScores?.[5] || 0
         }
     ];
 
@@ -4047,6 +4349,36 @@ function startQuiz(quizId) {
                     question: "Какое произведение Пушкин написал последним?",
                     options: ["Капитанская дочка", "Медный всадник", "Пир во время чумы", "Сказка о рыбаке и рыбке"],
                     correct: 1
+                },
+                {
+                    question: "Какой титул носил Пушкин?",
+                    options: ["Граф", "Князь", "Барон", "Дворянин"],
+                    correct: 3
+                },
+                {
+                    question: "Кто был секундантом Пушкина на дуэли?",
+                    options: ["Данзас", "Геккерн", "Дантес", "Николай I"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение Пушкин написал в ссылке?",
+                    options: ["Борис Годунов", "Полтава", "Цыганы", "Медный всадник"],
+                    correct: 2
+                },
+                {
+                    question: "Сколько глав в 'Евгении Онегине'?",
+                    options: ["6", "8", "10", "12"],
+                    correct: 1
+                },
+                {
+                    question: "Какой жанр у произведения 'Медный всадник'?",
+                    options: ["Поэма", "Роман", "Повесть", "Сказка"],
+                    correct: 0
+                },
+                {
+                    question: "В каком возрасте умер Пушкин?",
+                    options: ["35", "37", "39", "41"],
+                    correct: 1
                 }
             ]
         },
@@ -4067,6 +4399,206 @@ function startQuiz(quizId) {
                     question: "Автор пьесы 'Вишневый сад'?",
                     options: ["М. Горький", "А. Островский", "А.П. Чехов", "А.Н. Островский"],
                     correct: 2
+                },
+                {
+                    question: "Кто написал 'Обломова'?",
+                    options: ["И.А. Гончаров", "Н.А. Некрасов", "Ф.И. Тютчев", "А.А. Фет"],
+                    correct: 0
+                },
+                {
+                    question: "Главный герой 'Анны Карениной'?",
+                    options: ["Анна Каренина", "Левин", "Вронский", "Облонский"],
+                    correct: 0
+                },
+                {
+                    question: "Автор 'Ревизора'?",
+                    options: ["А.С. Грибоедов", "Н.В. Гоголь", "А.С. Пушкин", "М.Ю. Лермонтов"],
+                    correct: 1
+                },
+                {
+                    question: "Кто написал 'Героя нашего времени'?",
+                    options: ["А.С. Пушкин", "М.Ю. Лермонтов", "Н.В. Гоголь", "И.С. Тургенев"],
+                    correct: 1
+                },
+                {
+                    question: "Автор 'Отцов и детей'?",
+                    options: ["Л.Н. Толстой", "Ф.М. Достоевский", "И.С. Тургенев", "Н.Г. Чернышевский"],
+                    correct: 2
+                },
+                {
+                    question: "Главный герой 'Идиота' Достоевского?",
+                    options: ["Раскольников", "Мышкин", "Алеша Карамазов", "Иван Карамазов"],
+                    correct: 1
+                },
+                {
+                    question: "Автор 'Чайки'?",
+                    options: ["М. Горький", "А. Островский", "А.П. Чехов", "Л.Н. Толстой"],
+                    correct: 2
+                }
+            ]
+        },
+        3: {
+            title: "Литературные термины",
+            questions: [
+                {
+                    question: "Что такое 'метафора'?",
+                    options: ["Сравнение без слов 'как' или 'словно'", "Повтор согласных звуков", "Повтор гласных звуков", "Сравнение с помощью 'как'"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'эпитет'?",
+                    options: ["Художественное определение", "Повтор слов", "Обращение к слушателю", "Вопросительная форма"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'гипербола'?",
+                    options: ["Преувеличение", "Преуменьшение", "Сравнение", "Олицетворение"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'метонимия'?",
+                    options: ["Замена названия на другое, связанное с ним", "Скрытое сравнение", "Повтор одинаковых звуков", "Ритмическая организация речи"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'сюжет'?",
+                    options: ["Последовательность событий в произведении", "Описание внешности героя", "Место действия", "Время действия"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'композиция'?",
+                    options: ["Строение произведения", "Язык произведения", "Стиль автора", "Тема произведения"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'конфликт'?",
+                    options: ["Столкновение противоположных сил", "Описание природы", "Внутренний монолог", "Диалог героев"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'психологизм'?",
+                    options: ["Изображение внутреннего мира героя", "Описание внешних событий", "Юмористический стиль", "Лирическое отступление"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'аллегория'?",
+                    options: ["Иносказание, символическое изображение", "Прямое описание", "Шутка", "Ирония"],
+                    correct: 0
+                },
+                {
+                    question: "Что такое 'интрига'?",
+                    options: ["Завязка событий, запутанность сюжета", "Развязка событий", "Кульминация", "Экспозиция"],
+                    correct: 0
+                }
+            ]
+        },
+        4: {
+            title: "Поэзия Серебряного века",
+            questions: [
+                {
+                    question: "Кто является основателем акмеизма?",
+                    options: ["Александр Блок", "Николай Гумилев", "Владимир Маяковский", "Борис Пастернак"],
+                    correct: 1
+                },
+                {
+                    question: "Какое направление представлял Александр Блок?",
+                    options: ["Акмеизм", "Символизм", "Футуризм", "Имажинизм"],
+                    correct: 1
+                },
+                {
+                    question: "Кто написал поэму 'Облако в штанах'?",
+                    options: ["Владимир Маяковский", "Борис Пастернак", "Анна Ахматова", "Марина Цветаева"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение написал Борис Пастернак?",
+                    options: ["Реквием", "Доктор Живаго", "Поэма без героя", "Сестра моя жизнь"],
+                    correct: 1
+                },
+                {
+                    question: "Кто написал 'Реквием'?",
+                    options: ["Анна Ахматова", "Марина Цветаева", "Белла Ахмадулина", "Зинаида Гиппиус"],
+                    correct: 0
+                },
+                {
+                    question: "Какое направление представлял Велимир Хлебников?",
+                    options: ["Символизм", "Акмеизм", "Футуризм", "Классицизм"],
+                    correct: 2
+                },
+                {
+                    question: "Кто написал 'Я памятник себе воздвиг...'?",
+                    options: ["А.С. Пушкин", "М.Ю. Лермонтов", "Ф.И. Тютчев", "А.А. Фет"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение написал Сергей Есенин?",
+                    options: ["Черный человек", "Исповедь хулигана", "Пугачев", "Анна Снегина"],
+                    correct: 0
+                },
+                {
+                    question: "Кто написал 'Поэму без героя'?",
+                    options: ["Анна Ахматова", "Марина Цветаева", "Белла Ахмадулина", "Зинаида Гиппиус"],
+                    correct: 0
+                },
+                {
+                    question: "Какое направление представляла Марина Цветаева?",
+                    options: ["Символизм", "Акмеизм", "Футуризм", "Неоромантизм"],
+                    correct: 3
+                }
+            ]
+        },
+        5: {
+            title: "Советская литература",
+            questions: [
+                {
+                    question: "Кто написал роман 'Тихий Дон'?",
+                    options: ["Максим Горький", "Михаил Шолохов", "Александр Фадеев", "Константин Симонов"],
+                    correct: 1
+                },
+                {
+                    question: "Главный герой романа 'Мать' Горького?",
+                    options: ["Павел Власов", "Ниловна", "Рыбин", "Тихон"],
+                    correct: 1
+                },
+                {
+                    question: "Кто написал 'Архипелаг ГУЛАГ'?",
+                    options: ["Александр Солженицын", "Борис Пастернак", "Иосиф Бродский", "Андрей Сахаров"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение написал Михаил Булгаков?",
+                    options: ["Мастер и Маргарита", "Доктор Живаго", "Один день Ивана Денисовича", "Реквием"],
+                    correct: 0
+                },
+                {
+                    question: "Кто написал поэму 'Хорошо!'?",
+                    options: ["Владимир Маяковский", "Сергей Есенин", "Борис Пастернак", "Анна Ахматова"],
+                    correct: 0
+                },
+                {
+                    question: "Главный герой повести 'Судьба человека' Шолохова?",
+                    options: ["Андрей Соколов", "Григорий Мелехов", "Давыдов", "Разметнов"],
+                    correct: 0
+                },
+                {
+                    question: "Кто написал 'Как закалялась сталь'?",
+                    options: ["Николай Островский", "Александр Фадеев", "Валентин Катаев", "Аркадий Гайдар"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение написал Константин Паустовский?",
+                    options: ["Повести о лесах", "Золотая роза", "Донские рассказы", "Казаки"],
+                    correct: 1
+                },
+                {
+                    question: "Кто написал 'Маленького принца'?",
+                    options: ["Антуан де Сент-Экзюпери", "Эрнест Хемингуэй", "Фрэнсис Скотт Фицджеральд", "Джон Стейнбек"],
+                    correct: 0
+                },
+                {
+                    question: "Какое произведение написал Александр Твардовский?",
+                    options: ["Василий Теркин", "Октябрьская поэма", "За далью даль", "Стихи о войне"],
+                    correct: 0
                 }
             ]
         }
@@ -4399,6 +4931,184 @@ function getReviewWord(count) {
     return 'отзывов';
 }
 
+// Функции для работы с достижениями
+
+let currentAchievementCategory = 'all';
+
+// Загрузка раздела достижений
+function loadAchievementsSection() {
+    showAchievementsLoading(true);
+
+    // Проверяем новые достижения
+    const newAchievements = window.APP_DATA.AchievementSystem.checkAchievements(userData);
+    if (newAchievements.length > 0) {
+        window.APP_DATA.AchievementSystem.unlockAchievements(userData, newAchievements);
+        showAchievementNotification(newAchievements);
+        window.STORAGE.saveAllData(userData);
+    }
+
+    // Обновляем статистику
+    updateAchievementStats();
+
+    // Отображаем достижения
+    displayAchievements();
+
+    showAchievementsLoading(false);
+}
+
+// Показать категорию достижений
+function showAchievementCategory(category) {
+    currentAchievementCategory = category;
+
+    // Обновляем активную вкладку
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[onclick="showAchievementCategory('${category}')"]`).classList.add('active');
+
+    displayAchievements();
+}
+
+// Отображение достижений
+function displayAchievements() {
+    const container = document.getElementById('achievementsShowcase');
+    const emptyState = document.getElementById('achievementsEmptyState');
+
+    if (!window.APP_DATA.ACHIEVEMENTS) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+
+    let filteredAchievements = window.APP_DATA.ACHIEVEMENTS.slice();
+
+    // Фильтруем по категории
+    if (currentAchievementCategory !== 'all') {
+        filteredAchievements = filteredAchievements.filter(achievement => achievement.type === currentAchievementCategory);
+    }
+
+    // Сортируем: разблокированные сначала
+    filteredAchievements.sort((a, b) => {
+        const aUnlocked = userData.achievements.some(ua => ua.id === a.id);
+        const bUnlocked = userData.achievements.some(ua => ua.id === b.id);
+
+        if (aUnlocked && !bUnlocked) return -1;
+        if (!aUnlocked && bUnlocked) return 1;
+        return 0;
+    });
+
+    if (filteredAchievements.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+
+    emptyState.classList.add('hidden');
+
+    container.innerHTML = filteredAchievements.map(achievement => {
+        const isUnlocked = userData.achievements.some(a => a.id === achievement.id);
+        const unlockedData = userData.achievements.find(a => a.id === achievement.id);
+
+        let rewardText = '';
+        if (achievement.reward) {
+            const rewards = [];
+            if (achievement.reward.exp > 0) rewards.push(`${achievement.reward.exp} опыта`);
+            if (achievement.reward.coins > 0) rewards.push(`${achievement.reward.coins} 💎`);
+            if (achievement.reward.title) rewards.push(`Титул: ${achievement.reward.title}`);
+            if (rewards.length > 0) rewardText = rewards.join(', ');
+        }
+
+        const categoryColors = {
+            reading: '#4CAF50',
+            education: '#2196F3',
+            social: '#FF9800',
+            special: '#9C27B0',
+            meta: '#607D8B',
+            pages: '#795548',
+            level: '#3F51B5',
+            events: '#E91E63',
+            reviews: '#00BCD4',
+            genres: '#8BC34A',
+            collection: '#FF5722',
+            performance: '#673AB7'
+        };
+
+        const bgColor = categoryColors[achievement.type] || '#9E9E9E';
+
+        return `
+            <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}" style="--category-color: ${bgColor}">
+                <div class="achievement-header">
+                    <div class="achievement-icon" style="background: ${bgColor}">
+                        ${isUnlocked ? achievement.icon : '🔒'}
+                    </div>
+                    <div class="achievement-info">
+                        <h4 class="achievement-name">${achievement.name}</h4>
+                        <p class="achievement-description">${achievement.description}</p>
+                        ${rewardText ? `<div class="achievement-reward">Награда: ${rewardText}</div>` : ''}
+                    </div>
+                </div>
+                <div class="achievement-footer">
+                    ${isUnlocked ?
+                        `<div class="achievement-unlocked">
+                            <span class="unlock-date">Получено: ${formatAchievementDate(unlockedData.unlockedAt)}</span>
+                            <div class="achievement-badge">🏆</div>
+                        </div>` :
+                        `<div class="achievement-locked">
+                            <span>🔒 Не получено</span>
+                        </div>`
+                    }
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Обновляем счетчик
+    const totalCount = `${userData.achievements.length}/${window.APP_DATA.ACHIEVEMENTS.length}`;
+    document.getElementById('totalAchievementsCount').textContent = totalCount;
+}
+
+// Обновление статистики достижений
+function updateAchievementStats() {
+    const unlockedCount = userData.achievements.length;
+    const totalCoins = userData.achievements.reduce((sum, achievement) => {
+        return sum + (achievement.reward?.coins || 0);
+    }, 0);
+    const totalExp = userData.achievements.reduce((sum, achievement) => {
+        return sum + (achievement.reward?.exp || 0);
+    }, 0);
+    const titlesCount = userData.titles ? userData.titles.length : 0;
+
+    document.getElementById('unlockedAchievements').textContent = unlockedCount;
+    document.getElementById('totalCoinsEarned').textContent = totalCoins;
+    document.getElementById('totalExpEarned').textContent = totalExp;
+    document.getElementById('titlesEarned').textContent = titlesCount;
+}
+
+// Показать загрузку достижений
+function showAchievementsLoading(show) {
+    const loading = document.getElementById('achievementsLoading');
+    const container = document.getElementById('achievementsShowcase');
+
+    if (show) {
+        loading.classList.remove('hidden');
+        container.classList.add('hidden');
+    } else {
+        loading.classList.add('hidden');
+        container.classList.remove('hidden');
+    }
+}
+
+// Форматирование даты достижения
+function formatAchievementDate(dateString) {
+    if (!dateString) return 'Неизвестно';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
 // Экспортируем глобальные функции
 window.searchBooks = searchBooks;
 window.filterByGenre = filterByGenre;
@@ -4467,3 +5177,5 @@ window.showAuthorEducationDetails = showAuthorEducationDetails;
 window.loadReviewsSection = loadReviewsSection;
 window.sortReviews = sortReviews;
 window.filterReviewsByBook = filterReviewsByBook;
+window.loadAchievementsSection = loadAchievementsSection;
+window.showAchievementCategory = showAchievementCategory;

@@ -1,4 +1,5 @@
 // Конфигурация
+console.log('data.js loading start');
 const CONFIG = {
     USE_MOCK_DATA: true
 };
@@ -1897,6 +1898,21 @@ const ACHIEVEMENTS = [
     { id: 'speed_reader', name: 'Быстрый читатель', description: 'Прочитайте книгу за 1 день', icon: '⚡', type: 'performance', condition: (user) => user.stats.fastestRead <= 1, reward: { exp: 55, coins: 11 } },
     { id: 'consistent_reader', name: 'Последовательный читатель', description: 'Чтение 30 дней подряд', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 30, reward: { exp: 120, coins: 25 } },
 
+    // Достижения за викторины
+    { id: 'quiz_starter', name: 'Начинающий знаток', description: 'Пройдите первую викторину', icon: '🧠', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 1, reward: { exp: 25, coins: 5 } },
+    { id: 'quiz_expert', name: 'Эксперт викторин', description: 'Пройдите 5 викторин', icon: '🎓', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 5, reward: { exp: 75, coins: 15 } },
+    { id: 'quiz_master', name: 'Мастер викторин', description: 'Пройдите все викторины', icon: '👑', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 4, reward: { exp: 150, coins: 30, title: 'Мастер викторин' } },
+    { id: 'perfect_score', name: 'Идеальный балл', description: 'Получите 100% в любой викторине', icon: '💯', type: 'education', condition: (user) => user.educationProgress?.quizScores && Object.values(user.educationProgress.quizScores).some(score => score === 100), reward: { exp: 50, coins: 10 } },
+    { id: 'high_scorer', name: 'Высокий балл', description: 'Получите средний балл выше 80%', icon: '⭐', type: 'education', condition: (user) => {
+        const scores = user.educationProgress?.quizScores ? Object.values(user.educationProgress.quizScores) : [];
+        return scores.length > 0 && (scores.reduce((a, b) => a + b, 0) / scores.length) >= 80;
+    }, reward: { exp: 40, coins: 8 } },
+
+    // Достижения за уроки
+    { id: 'lesson_learner', name: 'Учащийся', description: 'Пройдите первый урок', icon: '📖', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 1, reward: { exp: 20, coins: 4 } },
+    { id: 'knowledge_seeker', name: 'Искатель знаний', description: 'Пройдите 3 урока', icon: '🔍', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 3, reward: { exp: 60, coins: 12 } },
+    { id: 'scholar', name: 'Ученый', description: 'Пройдите все уроки', icon: '🎓', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 6, reward: { exp: 120, coins: 25, title: 'Ученый' } },
+
     // Достижения за достижения
     { id: 'achievement_hunter', name: 'Охотник за достижениями', description: 'Получите 10 достижений', icon: '🎯', type: 'meta', condition: (user) => user.achievements.length >= 10, reward: { exp: 70, coins: 15 } },
     { id: 'achievement_master', name: 'Мастер достижений', description: 'Получите все достижения', icon: '👑', type: 'meta', condition: (user) => user.achievements.length >= ACHIEVEMENTS.length, reward: { exp: 300, coins: 100, title: 'Мастер достижений' } },
@@ -1934,12 +1950,38 @@ const AchievementSystem = {
             // Добавляем достижение
             user.achievements.push(achievement);
 
-            // Инициализируем массив полученных наград, если его нет
-            if (!user.achievementRewardsClaimed) {
-                user.achievementRewardsClaimed = [];
+            // Автоматически начисляем награду
+            if (achievement.reward) {
+                let rewardText = '';
+
+                if (achievement.reward.exp > 0) {
+                    const levelUp = window.APP_DATA.LevelSystem.addExperience(user, achievement.reward.exp);
+                    rewardText += `${achievement.reward.exp} опыта`;
+                    if (levelUp.leveledUp) {
+                        rewardText += ` (новый уровень ${levelUp.newLevel}!)`;
+                    }
+                }
+
+                if (achievement.reward.coins > 0) {
+                    user.coins = (user.coins || 0) + achievement.reward.coins;
+                    rewardText += (rewardText ? ', ' : '') + `${achievement.reward.coins} 💎`;
+                }
+
+                if (achievement.reward.title) {
+                    if (!user.titles) user.titles = [];
+                    if (!user.titles.includes(achievement.reward.title)) {
+                        user.titles.push(achievement.reward.title);
+                        rewardText += (rewardText ? ', ' : '') + `титул "${achievement.reward.title}"`;
+                    }
+                }
+
+                // Показываем уведомление о награде
+                if (rewardText) {
+                    console.log(`Получена награда за достижение "${achievement.name}": ${rewardText}`);
+                }
             }
 
-            // Проверяем связанные титулы
+            // Проверяем связанные титулы (старый способ для совместимости)
             const relatedTitle = TITLES.find(title =>
                 title.type === 'achievement' && title.condition && title.condition(user)
             );
@@ -2077,3 +2119,4 @@ window.APP_DATA = {
     BOOK_QUOTES,
     GAME_DATA
 };
+console.log('data.js loaded successfully');

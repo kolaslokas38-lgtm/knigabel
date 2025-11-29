@@ -180,6 +180,10 @@
                     <span class="nav-icon">💬</span>
                     <span class="nav-text">Отзывы</span>
                 </button>
+                <button class="nav-btn" onclick="showSection('achievements')">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-text">Достижения</span>
+                </button>
                 <button class="nav-btn" onclick="showSection('profile')">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Мой профиль</span>
@@ -207,21 +211,6 @@
         </section>
 
 
-        <!-- Книги недели -->
-        <section class="weekly-books-section">
-            <h2 class="weekly-books-title">📚 Книги недели</h2>
-            <div class="weekly-books-container" id="weeklyBooksContainer">
-                <!-- Книги недели будут загружены здесь -->
-            </div>
-        </section>
-
-        <!-- Книга дня -->
-        <section class="book-of-day-section">
-            <h2 class="book-of-day-title">⭐ Книга дня</h2>
-            <div class="book-of-day-container" id="bookOfDayContainer">
-                <!-- Книга дня будет загружена здесь -->
-            </div>
-        </section>
 
         <!-- Catalog Section -->
         <section class="content-section active" id="catalogSection">
@@ -229,10 +218,40 @@
                 <h2 id="sectionTitle">Каталог книг</h2>
                 <span class="books-count" id="booksCount">0 книг</span>
             </div>
-            
-            <div class="books-container" id="booksContainer">
-                <!-- Books will be loaded here -->
-            </div>
+
+            <!-- Книга дня -->
+            <section class="book-of-day-section">
+                <h2 class="book-of-day-title">⭐ Книга дня</h2>
+                <div class="book-of-day-container" id="bookOfDayContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка книги дня...</p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="section-divider">
+
+            <!-- Книги недели -->
+            <section class="weekly-books-section">
+                <h2 class="weekly-books-title">📚 Книги недели</h2>
+                <div class="weekly-books-container" id="weeklyBooksContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка книг недели...</p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="section-divider">
+
+            <!-- Каталог всех книг -->
+            <section class="all-books-section">
+                <h2 class="all-books-title">📚 Каталог всех книг</h2>
+                <div class="books-container" id="booksContainer">
+                    <!-- Books will be loaded here -->
+                </div>
+            </section>
             
             <div class="loading hidden" id="loading">
                 <div class="spinner"></div>
@@ -480,16 +499,6 @@
                 </div>
             </div>
 
-            <!-- Achievements -->
-            <div class="profile-section-card">
-                <div class="section-title">
-                    <h3>🏆 Достижения</h3>
-                    <span class="section-badge" id="achievementsCount">0</span>
-                </div>
-                <div class="achievements-grid" id="achievementsGrid">
-                    <!-- Achievements will be loaded here -->
-                </div>
-            </div>
 
             <!-- Titles -->
             <div class="profile-section-card">
@@ -683,6 +692,88 @@
                 <div class="empty-icon">💬</div>
                 <h3>Отзывов пока нет</h3>
                 <p>Будьте первым, кто поделится мнением о прочитанных книгах!</p>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section class="content-section" id="achievementsSection">
+            <div class="section-header">
+                <h2>🏆 Достижения</h2>
+                <span class="achievements-count" id="totalAchievementsCount">0/0</span>
+            </div>
+
+            <!-- Achievement Stats -->
+            <div class="achievement-stats">
+                <div class="achievement-stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="unlockedAchievements">0</div>
+                        <div class="stat-label">Разблокировано</div>
+                    </div>
+                </div>
+                <div class="achievement-stat-card">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalCoinsEarned">0</div>
+                        <div class="stat-label">Кристаллов заработано</div>
+                    </div>
+                </div>
+                <div class="achievement-stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalExpEarned">0</div>
+                        <div class="stat-label">Опыта заработано</div>
+                    </div>
+                </div>
+                <div class="achievement-stat-card">
+                    <div class="stat-icon">👑</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="titlesEarned">0</div>
+                        <div class="stat-label">Титулов получено</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement Categories -->
+            <div class="achievement-categories">
+                <div class="category-tabs">
+                    <button class="category-tab active" onclick="showAchievementCategory('all')">
+                        <span class="tab-icon">🏆</span>
+                        <span class="tab-text">Все</span>
+                    </button>
+                    <button class="category-tab" onclick="showAchievementCategory('reading')">
+                        <span class="tab-icon">📖</span>
+                        <span class="tab-text">Чтение</span>
+                    </button>
+                    <button class="category-tab" onclick="showAchievementCategory('education')">
+                        <span class="tab-icon">🎓</span>
+                        <span class="tab-text">Обучение</span>
+                    </button>
+                    <button class="category-tab" onclick="showAchievementCategory('social')">
+                        <span class="tab-icon">👥</span>
+                        <span class="tab-text">Социальное</span>
+                    </button>
+                    <button class="category-tab" onclick="showAchievementCategory('special')">
+                        <span class="tab-icon">⭐</span>
+                        <span class="tab-text">Особые</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Achievements Grid -->
+            <div class="achievements-showcase" id="achievementsShowcase">
+                <!-- Achievements will be loaded here -->
+            </div>
+
+            <div class="loading hidden" id="achievementsLoading">
+                <div class="spinner"></div>
+                <p>Загрузка достижений...</p>
+            </div>
+
+            <div class="empty-state hidden" id="achievementsEmptyState">
+                <div class="empty-icon">🏆</div>
+                <h3>Достижения временно недоступны</h3>
+                <p>Попробуйте обновить страницу</p>
             </div>
         </section>
 
