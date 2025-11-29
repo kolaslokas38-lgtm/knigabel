@@ -1083,6 +1083,81 @@ function showAchievementNotification(achievements) {
     });
 }
 
+// Функция для забора награды достижения
+function claimAchievementReward(achievementId) {
+    const achievement = window.APP_DATA.ACHIEVEMENTS.find(a => a.id === achievementId);
+    if (!achievement) {
+        tg.showAlert('Достижение не найдено');
+        return;
+    }
+
+    // Проверяем, забрана ли уже награда
+    if (userData.achievementRewardsClaimed && userData.achievementRewardsClaimed.includes(achievementId)) {
+        tg.showAlert('Награда за это достижение уже забрана');
+        return;
+    }
+
+    // Выдаем награду
+    let rewardMessage = 'Награда получена:\n';
+    const rewards = [];
+
+    if (achievement.reward) {
+        if (achievement.reward.exp > 0) {
+            userData.experience += achievement.reward.exp;
+            rewards.push(`${achievement.reward.exp} опыта`);
+            // Проверяем повышение уровня
+            const levelUp = window.APP_DATA.LevelSystem.addExperience(userData, 0); // 0 опыта, но проверка уровня
+            if (levelUp.leveledUp) {
+                tg.showPopup({
+                    title: '🎉 Новый уровень!',
+                    message: `Поздравляем! Вы достигли ${levelUp.newLevel} уровня!`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }
+        }
+
+        if (achievement.reward.coins > 0) {
+            userData.coins = (userData.coins || 0) + achievement.reward.coins;
+            rewards.push(`${achievement.reward.coins} 💎`);
+        }
+
+        if (achievement.reward.title) {
+            if (!userData.titles) userData.titles = [];
+            if (!userData.titles.includes(achievement.reward.title)) {
+                userData.titles.push(achievement.reward.title);
+                rewards.push(`титул "${achievement.reward.title}"`);
+            }
+        }
+    }
+
+    if (rewards.length === 0) {
+        tg.showAlert('У этого достижения нет награды');
+        return;
+    }
+
+    rewardMessage += rewards.join(', ');
+
+    // Добавляем в забранные награды
+    if (!userData.achievementRewardsClaimed) {
+        userData.achievementRewardsClaimed = [];
+    }
+    userData.achievementRewardsClaimed.push(achievementId);
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем UI
+    updateProfileDisplay();
+    updateAchievementsGrid();
+
+    // Показываем уведомление
+    tg.showPopup({
+        title: '🎁 Награда получена!',
+        message: rewardMessage,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
 // Функция для уведомления других вкладок об обновлении отзывов
 function notifyReviewsUpdate() {
     if (reviewsChannel) {

@@ -1963,6 +1963,62 @@ const AchievementSystem = {
             target: 1,
             percentage: 0
         };
+    },
+
+    claimReward(user, achievementId) {
+        // Проверяем, получено ли достижение
+        const userAchievement = user.achievements.find(a => a.id === achievementId);
+        if (!userAchievement) {
+            throw new Error('Достижение не получено');
+        }
+
+        // Проверяем, не забрана ли награда
+        if (!user.achievementRewardsClaimed) {
+            user.achievementRewardsClaimed = [];
+        }
+        if (user.achievementRewardsClaimed.includes(achievementId)) {
+            throw new Error('Награда уже забрана');
+        }
+
+        // Получаем данные достижения
+        const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+        if (!achievement || !achievement.reward) {
+            throw new Error('Награда недоступна');
+        }
+
+        // Выдаем награду
+        const reward = achievement.reward;
+        let rewardText = '';
+
+        if (reward.exp > 0) {
+            const levelUp = window.APP_DATA.LevelSystem.addExperience(user, reward.exp);
+            rewardText += `${reward.exp} опыта`;
+            if (levelUp.leveledUp) {
+                rewardText += ` (новый уровень ${levelUp.newLevel}!)`;
+            }
+        }
+
+        if (reward.coins > 0) {
+            user.coins = (user.coins || 0) + reward.coins;
+            rewardText += (rewardText ? ', ' : '') + `${reward.coins} 💎`;
+        }
+
+        if (reward.title) {
+            if (!user.titles) user.titles = [];
+            if (!user.titles.includes(reward.title)) {
+                user.titles.push(reward.title);
+                rewardText += (rewardText ? ', ' : '') + `титул "${reward.title}"`;
+            }
+        }
+
+        // Отмечаем награду как забранную
+        user.achievementRewardsClaimed.push(achievementId);
+
+        return {
+            success: true,
+            rewardText: rewardText,
+            achievement: achievement
+        };
     }
 };
 
