@@ -149,9 +149,10 @@ function calculateStats() {
     const totalBooks = 50;
     const availableBooks = 45 + Math.floor(Math.random() * 6); // от 45 до 50 доступных книг
     const borrowedBooks = totalBooks - availableBooks;
-    const totalGenres = window.APP_DATA && window.APP_DATA.MOCK_GENRES ? window.APP_DATA.MOCK_GENRES.length - 1 : 0;
+    const totalGenres = 16; // Всего 16 жанров в каталоге
 
     console.log('calculateStats:', {totalBooks, availableBooks, borrowedBooks, totalGenres});
+    console.log('totalGenres value:', totalGenres);
 
     return {
         totalBooks,
@@ -202,7 +203,11 @@ function updateStats(stats) {
     }
 
     const heroGenresEl = document.getElementById('heroGenres');
-    if (heroGenresEl) heroGenresEl.textContent = stats.totalGenres;
+    console.log('heroGenresEl:', heroGenresEl);
+    if (heroGenresEl) {
+        heroGenresEl.textContent = stats.totalGenres;
+        console.log('Updated heroGenres to:', stats.totalGenres);
+    }
 
     const heroAvailableEl = document.getElementById('heroAvailable');
     console.log('heroAvailableEl:', heroAvailableEl);
@@ -221,7 +226,7 @@ function updateStats(stats) {
     const borrowedBooksCardEl = document.getElementById('borrowedBooks');
     if (borrowedBooksCardEl) borrowedBooksCardEl.textContent = stats.borrowedBooks;
 
-    const totalGenresCardEl = document.getElementById('totalGenres');
+    const totalGenresCardEl = document.getElementById('totalGenresCard');
     if (totalGenresCardEl) totalGenresCardEl.textContent = stats.totalGenres;
 
     console.log('Stats updated successfully');
@@ -727,7 +732,6 @@ async function loadInitialData() {
             console.error('Ошибка при отображении каталога:', error);
         }
         populateGenreFilter(window.APP_DATA.MOCK_GENRES);
-        updateStats(calculateStats());
         updateUserProfile();
 
         // Отображаем книги недели и дня
@@ -738,6 +742,9 @@ async function loadInitialData() {
 
         // Переключаемся на каталог по умолчанию
         showSection('catalog');
+
+        // Обновляем статистику после отображения секции
+        updateStats(calculateStats());
 
         console.log('Данные загружены успешно');
         console.log('Книг отображено:', currentBooks.length);
