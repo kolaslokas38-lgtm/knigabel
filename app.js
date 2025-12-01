@@ -764,6 +764,12 @@ async function loadInitialData() {
 
         console.log('Найдено книг:', window.APP_DATA.MOCK_BOOKS.length);
 
+        // Загрузить сохраненные книги
+        const savedBooks = localStorage.getItem('books');
+        if (savedBooks) {
+            window.APP_DATA.MOCK_BOOKS = JSON.parse(savedBooks);
+        }
+
         // Ограничить количество книг до 50
         if (window.APP_DATA.MOCK_BOOKS.length > 50) {
             window.APP_DATA.MOCK_BOOKS = window.APP_DATA.MOCK_BOOKS.slice(0, 50);
@@ -5487,6 +5493,7 @@ function addBook() {
     };
 
     window.APP_DATA.MOCK_BOOKS.push(newBook);
+    localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
     const stats = calculateStats();
     updateStats(stats);
     window.APP_DATA.MOCK_STATS = stats;
@@ -5556,6 +5563,7 @@ function updateBook() {
         icon
     };
 
+    localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
     const stats = calculateStats();
     updateStats(stats);
     window.APP_DATA.MOCK_STATS = stats;
@@ -5566,6 +5574,7 @@ function updateBook() {
 function deleteBook(bookId) {
     if (confirm('Вы уверены, что хотите удалить эту книгу?')) {
         window.APP_DATA.MOCK_BOOKS = window.APP_DATA.MOCK_BOOKS.filter(book => book.id !== bookId);
+        localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
         const stats = calculateStats();
         updateStats(stats);
         window.APP_DATA.MOCK_STATS = stats;
@@ -5574,20 +5583,45 @@ function deleteBook(bookId) {
 }
 
 function updateUserAdmin(userId) {
-    const level = parseInt(document.getElementById(`userLevel${userId}`).value);
-    const exp = parseInt(document.getElementById(`userExp${userId}`).value);
-    const coins = parseInt(document.getElementById(`userCoins${userId}`).value);
-    const role = document.getElementById(`userRole${userId}`).value;
+    console.log('updateUserAdmin called with userId:', userId);
+    const levelInput = document.getElementById(`userLevel${userId}`);
+    const expInput = document.getElementById(`userExp${userId}`);
+    const coinsInput = document.getElementById(`userCoins${userId}`);
+    const roleSelect = document.getElementById(`userRole${userId}`);
 
-    if (userId === 'current') {
+    if (!levelInput || !expInput || !coinsInput || !roleSelect) {
+        console.error('Элементы формы не найдены для userId:', userId);
+        alert('Ошибка: элементы формы не найдены');
+        return;
+    }
+
+    const level = parseInt(levelInput.value) || 1;
+    const exp = parseInt(expInput.value) || 0;
+    const coins = parseInt(coinsInput.value) || 0;
+    const role = roleSelect.value;
+
+    console.log('Parsed values:', { level, exp, coins, role });
+    console.log('Current userData.telegramId:', userData.telegramId);
+
+    if (userId === 'current' || userId === userData.telegramId || userId === userData.telegramId?.toString()) {
+        console.log('Updating userData');
         userData.level = level;
         userData.experience = exp;
         userData.coins = coins;
         userData.role = role;
-        userData.experienceToNext = window.APP_DATA.LevelSystem.getExperienceToNextLevel(exp);
-        window.STORAGE.saveAllData(userData);
+        userData.experienceToNext = window.APP_DATA.LevelSystem ? window.APP_DATA.LevelSystem.getExperienceToNextLevel(exp) : 100;
+        if (window.STORAGE) {
+            window.STORAGE.saveAllData(userData);
+            console.log('Data saved to STORAGE');
+        } else {
+            console.warn('STORAGE not available');
+        }
         updateUserProfile();
+        updateStats(calculateStats());
+        console.log('User profile and stats updated');
         alert('Пользователь обновлен!');
+    } else {
+        console.log('UserId does not match, not updating');
     }
 
     loadUsersAdmin();
