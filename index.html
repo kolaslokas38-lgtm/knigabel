@@ -188,6 +188,10 @@
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Мой профиль</span>
                 </button>
+                <button class="nav-btn" onclick="showSection('admin')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Админ</span>
+                </button>
             </div>
         </section>
 
@@ -410,6 +414,7 @@
                 <div class="user-info">
                     <h2 id="userName">Пользователь</h2>
                     <p class="user-registration" id="userRegistration">Зарегистрирован: ...</p>
+                    <p id="userRole" class="user-role">Роль: Активный пользователь</p>
                     <p id="userTitle" class="user-title" style="display: none;"></p>
                     <div class="user-stats">
                         <span class="user-stat">📚 <span id="userTotalBooks">0</span> книг</span>
@@ -777,6 +782,45 @@
             </div>
         </section>
 
+        <!-- Admin Section -->
+        <section class="content-section" id="adminSection">
+            <div class="section-header">
+                <h2>⚙️ Админ панель</h2>
+            </div>
+
+            <div class="admin-login" id="adminLogin">
+                <div class="login-form">
+                    <h3>Вход в админ панель</h3>
+                    <input type="text" id="adminUsername" placeholder="Логин" class="admin-input">
+                    <input type="password" id="adminPassword" placeholder="Пароль" class="admin-input">
+                    <button onclick="adminLogin()" class="admin-btn">Войти</button>
+                    <p id="adminError" class="error-message" style="display: none;"></p>
+                </div>
+            </div>
+
+            <div class="admin-panel hidden" id="adminPanel">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="showAdminTab('books')">📚 Управление книгами</button>
+                    <button class="admin-tab" onclick="showAdminTab('users')">👥 Управление пользователями</button>
+                </div>
+
+                <div class="admin-content" id="adminBooksTab">
+                    <h3>Управление книгами</h3>
+                    <button onclick="showAddBookForm()" class="admin-btn">➕ Добавить книгу</button>
+                    <div class="books-admin-list" id="booksAdminList">
+                        <!-- Книги будут загружены здесь -->
+                    </div>
+                </div>
+
+                <div class="admin-content hidden" id="adminUsersTab">
+                    <h3>Управление пользователями</h3>
+                    <div class="users-admin-list" id="usersAdminList">
+                        <!-- Пользователи будут загружены здесь -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Settings Section -->
         <section class="content-section" id="settingsSection">
             <div class="section-header">
@@ -935,6 +979,56 @@
                         <div class="reading-actions">
                             <button onclick="markPageAsRead()" class="read-btn">Отметить страницу как прочитанную</button>
                             <button onclick="finishBook()" class="finish-btn">Завершить книгу</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Book Modal -->
+        <div class="modal hidden" id="addBookModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>➕ Добавить книгу</h3>
+                    <button onclick="closeAddBookModal()" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="add-book-form">
+                        <div class="form-group">
+                            <label>Название:</label>
+                            <input type="text" id="bookTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Автор:</label>
+                            <input type="text" id="bookAuthor" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Жанр:</label>
+                            <input type="text" id="bookGenre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Год:</label>
+                            <input type="number" id="bookYear" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Описание:</label>
+                            <textarea id="bookDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Страницы:</label>
+                            <input type="number" id="bookPages" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Рейтинг:</label>
+                            <input type="number" id="bookRating" step="0.1" min="0" max="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Иконка (emoji):</label>
+                            <input type="text" id="bookIcon" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="cancel-btn" onclick="closeAddBookModal()">Отмена</button>
+                            <button type="button" class="submit-btn" onclick="addBook()">Добавить книгу</button>
                         </div>
                     </div>
                 </div>

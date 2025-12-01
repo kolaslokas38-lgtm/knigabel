@@ -14,6 +14,7 @@ let reviewsChannel = null; // Для синхронизации отзывов �
 let currentReadingBook = null;
 let currentPage = 1;
 let currentQuiz = null;
+let isAdminLoggedIn = false;
 
 // Функция для получения случайных книг
 function getRandomBooks(count) {
@@ -280,6 +281,12 @@ function updateUserProfile() {
         userRegistrationElement.textContent = `Зарегистрирован: ${userData.registrationDate || 'Неизвестно'}`;
     }
 
+    // Обновляем роль
+    const userRoleElement = document.getElementById('userRole');
+    if (userRoleElement) {
+        userRoleElement.textContent = `Роль: ${userData.role || 'Активный пользователь'}`;
+    }
+
     // Обновляем уровень и опыт
     const userLevelElement = document.getElementById('userLevel');
     if (userLevelElement) {
@@ -514,10 +521,6 @@ async function initializeTelegramApp() {
     window.APP_DATA.BOOK_REVIEWS = [];
     if (window.STORAGE && window.STORAGE.loadAllData) {
         userData = window.STORAGE.loadAllData();
-        // Исправляем experienceToNext если необходимо
-        if (userData.experienceToNext === undefined || userData.experienceToNext <= 0) {
-            userData.experienceToNext = window.APP_DATA.LevelSystem.getExperienceToNextLevel(userData.experience);
-        }
     } else {
         userData = window.APP_DATA ? window.APP_DATA.DEFAULT_USER_DATA : {
             name: 'Пользователь',
@@ -584,6 +587,41 @@ async function initializeTelegramApp() {
                 }
             }
         };
+    }
+
+    // Сбрасываем достижения и челленджи для нового старта
+    userData.achievements = [];
+    userData.challenges = {
+        daily: { lastReset: null, completed: [], claimed: [] },
+        weekly: { lastReset: null, completed: [], claimed: [] },
+        monthly: { lastReset: null, completed: [], claimed: [] }
+    };
+    userData.achievementRewardsClaimed = [];
+    // Сбрасываем отзывы и избранное
+    userData.myReviews = [];
+    userData.favorites = [];
+    userData.borrowedBooks = [];
+    userData.history = [];
+    // Сбрасываем уровень и опыт
+    userData.level = 1;
+    userData.experience = 0;
+    userData.experienceToNext = 100;
+    userData.coins = 0;
+    userData.role = 'Активный пользователь';
+    // Сбрасываем дни использования
+    userData.stats.readingDays = 0;
+    userData.lastVisitDate = null;
+
+    // Проверяем дни использования
+    const today = new Date().toDateString();
+    if (!userData.lastVisitDate || userData.lastVisitDate !== today) {
+        userData.stats.readingDays = (userData.stats.readingDays || 0) + 1;
+        userData.lastVisitDate = today;
+    }
+
+    // Сохраняем данные
+    if (window.STORAGE) {
+        window.STORAGE.saveAllData(userData);
     }
 
     if (window.Telegram && window.Telegram.WebApp) {
@@ -670,7 +708,7 @@ function showSection(sectionName) {
     document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
 
     if (sectionName === 'profile') {
-        updateProfileDisplay();
+        updateUserProfile();
         updateInventoryList();
     }
     if (sectionName === 'redbook') {
@@ -700,6 +738,9 @@ function showSection(sectionName) {
     }
     if (sectionName === 'achievements') {
         loadAchievementsSection();
+    }
+    if (sectionName === 'admin') {
+        loadAdminSection();
     }
     if (sectionName === 'catalog') {
         // renderWeeklyBooks() and renderBookOfDay() are called in loadInitialData

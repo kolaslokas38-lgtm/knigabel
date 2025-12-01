@@ -1695,35 +1695,8 @@ const DEFAULT_USER_DATA = {
     experienceToNext: 100,
     totalPagesRead: 0,
     readingStreak: 0,
-    achievements: [
-        {
-            id: 'first_book',
-            name: 'Первый шаг',
-            description: 'Прочитайте первую книгу',
-            icon: '📖',
-            type: 'reading',
-            unlockedAt: new Date().toISOString(),
-            reward: { exp: 20, coins: 5 }
-        },
-        {
-            id: 'first_review',
-            name: 'Критик',
-            description: 'Напишите первый отзыв',
-            icon: '✍️',
-            type: 'reviews',
-            unlockedAt: new Date().toISOString(),
-            reward: { exp: 15, coins: 3 }
-        },
-        {
-            id: 'level_up',
-            name: 'Рост уровня',
-            description: 'Достигните 5 уровня',
-            icon: '⬆️',
-            type: 'level',
-            unlockedAt: new Date().toISOString(),
-            reward: { exp: 50, coins: 10 }
-        }
-    ],
+    achievements: [],
+    role: 'Активный пользователь',
     bookProgress: {}, // {bookId: {pagesRead: number, completed: boolean, achievements: []}}
     // Игровые данные
     coins: 0,
@@ -1739,57 +1712,21 @@ const DEFAULT_USER_DATA = {
         specialEvents: [],
         shopItems: []
     },
-    borrowedBooks: [
-        {
-            id: 1,
-            bookId: 3,
-            bookTitle: "Мастер и Маргарита",
-            borrowDate: "2024-01-10",
-            returnDate: "2024-01-24",
-            status: "active"
-        }
-    ],
-    history: [
-        {
-            id: 1,
-            bookId: 1,
-            bookTitle: "Война и мир",
-            borrowDate: "2023-12-01",
-            returnDate: "2023-12-15",
-            status: "returned"
-        },
-        {
-            id: 2,
-            bookId: 2,
-            bookTitle: "Преступление и наказание",
-            borrowDate: "2023-11-15",
-            returnDate: "2023-11-29",
-            status: "returned"
-        }
-    ],
-    favorites: [1, 2],
-    myReviews: [
-        {
-            id: 1,
-            bookId: 1,
-            bookTitle: "Война и мир",
-            rating: 5,
-            comment: "Великолепное произведение Льва Толстого! Эпопея, которая захватывает с первой страницы.",
-            date: new Date().toISOString(),
-            likes: 3
-        }
-    ], // Новое поле для отзывов пользователя
-    bookedEvents: [], // Новое поле для забронированных событий
-    titles: [], // Новое поле для титулов
+    borrowedBooks: [],
+    history: [],
+    favorites: [],
+    myReviews: [],
+    bookedEvents: [],
+    titles: [],
     stats: {
-        totalBooks: 50,
-        activeBorrows: 1,
-        totalRead: 2,
-        readingDays: 45,
-        reviewsWritten: 1,
-        totalEvents: 0, // Новое поле для статистики событий
+        totalBooks: 0,
+        activeBorrows: 0,
+        totalRead: 0,
+        readingDays: 0,
+        reviewsWritten: 0,
+        totalEvents: 0,
         booksCompleted: 0,
-        achievementsUnlocked: 3,
+        achievementsUnlocked: 0,
         dailyChallengesCompleted: 0,
         weeklyChallengesCompleted: 0,
         totalPagesRead: 0
