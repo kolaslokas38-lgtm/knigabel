@@ -1676,8 +1676,8 @@ const GAME_DATA = {
 const MOCK_STATS = {
     totalBooks: MOCK_BOOKS.length,
     availableBooks: MOCK_BOOKS.filter(book => book.available).length,
-    borrowedBooks: MOCK_BOOKS.filter(book => !book.available).length,
-    totalGenres: MOCK_GENRES.length - 1,
+    borrowedBooks: Math.max(0, MOCK_BOOKS.length - MOCK_BOOKS.filter(book => book.available).length),
+    totalGenres: 16,
     totalReviews: BOOK_REVIEWS.length
 };
 

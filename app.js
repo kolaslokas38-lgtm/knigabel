@@ -147,13 +147,12 @@ function getBooksOfWeek() {
 
 // Функции для расчета статистики
 function calculateStats() {
-    const totalBooks = 50;
-    const availableBooks = 45 + Math.floor(Math.random() * 6); // от 45 до 50 доступных книг
-    const borrowedBooks = totalBooks - availableBooks;
-    const totalGenres = 16; // Всего 16 жанров в каталоге
+    const totalBooks = 50; // Фиксированное количество книг - 50
+    const availableBooks = window.APP_DATA ? Math.min(totalBooks, window.APP_DATA.MOCK_BOOKS.filter(book => book.available).length) : totalBooks;
+    const borrowedBooks = Math.max(0, totalBooks - availableBooks);
+    const totalGenres = window.APP_DATA ? window.APP_DATA.MOCK_GENRES.length - 1 : 16;
 
     console.log('calculateStats:', {totalBooks, availableBooks, borrowedBooks, totalGenres});
-    console.log('totalGenres value:', totalGenres);
 
     return {
         totalBooks,
@@ -511,7 +510,9 @@ async function initializeApp() {
     // Дополнительное обновление статистики после полной загрузки
     setTimeout(() => {
         console.log('Delayed stats update');
-        updateStats(calculateStats());
+        const stats = calculateStats();
+        updateStats(stats);
+        window.APP_DATA.MOCK_STATS = stats; // Обновляем MOCK_STATS
     }, 500);
 }
 
@@ -739,9 +740,6 @@ function showSection(sectionName) {
     if (sectionName === 'achievements') {
         loadAchievementsSection();
     }
-    if (sectionName === 'admin') {
-        loadAdminSection();
-    }
     if (sectionName === 'catalog') {
         // renderWeeklyBooks() and renderBookOfDay() are called in loadInitialData
     }
@@ -766,6 +764,20 @@ async function loadInitialData() {
 
         console.log('Найдено книг:', window.APP_DATA.MOCK_BOOKS.length);
 
+        // Ограничить количество книг до 50
+        if (window.APP_DATA.MOCK_BOOKS.length > 50) {
+            window.APP_DATA.MOCK_BOOKS = window.APP_DATA.MOCK_BOOKS.slice(0, 50);
+        }
+
+        // Установить правильную статистику
+        const availableCount = window.APP_DATA.MOCK_BOOKS.filter(book => book.available).length;
+        window.APP_DATA.MOCK_STATS = {
+            totalBooks: 50,
+            availableBooks: Math.min(50, availableCount),
+            borrowedBooks: Math.max(0, 50 - Math.min(50, availableCount)),
+            totalGenres: window.APP_DATA.MOCK_GENRES.length - 1
+        };
+
         // Немедленная загрузка данных без задержки
         try {
             updateBooksDisplay(window.APP_DATA.MOCK_BOOKS);
@@ -785,7 +797,7 @@ async function loadInitialData() {
         showSection('catalog');
 
         // Обновляем статистику после отображения секции
-        updateStats(calculateStats());
+        updateStats(window.APP_DATA.MOCK_STATS);
 
         console.log('Данные загружены успешно');
         console.log('Книг отображено:', currentBooks.length);
@@ -847,7 +859,9 @@ function loadDemoData() {
 
     updateBooksDisplay(demoBooks);
     populateGenreFilter(window.APP_DATA.MOCK_GENRES);
-    updateStats(window.APP_DATA.MOCK_STATS);
+    const stats = calculateStats();
+    updateStats(stats);
+    window.APP_DATA.MOCK_STATS = stats;
     updateUserProfile();
 
     // Отображаем книги недели и дня
@@ -5317,3 +5331,264 @@ window.sortReviews = sortReviews;
 window.filterReviewsByBook = filterReviewsByBook;
 window.loadAchievementsSection = loadAchievementsSection;
 window.showAchievementCategory = showAchievementCategory;
+window.openAdminModal = openAdminModal;
+window.closeAdminModal = closeAdminModal;
+window.adminLogin = adminLogin;
+window.showAdminTab = showAdminTab;
+window.showAddBookForm = showAddBookForm;
+window.closeAddBookModal = closeAddBookModal;
+window.addBook = addBook;
+window.editBook = editBook;
+window.closeEditBookModal = closeEditBookModal;
+window.updateBook = updateBook;
+window.deleteBook = deleteBook;
+window.loadBooksAdmin = loadBooksAdmin;
+window.loadUsersAdmin = loadUsersAdmin;
+window.updateUserAdmin = updateUserAdmin;
+
+// Админ функции
+function openAdminModal() {
+    document.getElementById('adminModal').classList.remove('hidden');
+    if (isAdminLoggedIn) {
+        document.getElementById('adminLogin').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        loadBooksAdmin();
+        loadUsersAdmin();
+    } else {
+        document.getElementById('adminLogin').classList.remove('hidden');
+        document.getElementById('adminPanel').classList.add('hidden');
+    }
+}
+
+function closeAdminModal() {
+    document.getElementById('adminModal').classList.add('hidden');
+}
+
+function adminLogin() {
+    const username = document.getElementById('adminUsername').value;
+    const password = document.getElementById('adminPassword').value;
+    const errorEl = document.getElementById('adminError');
+
+    if (username === 'pinkleaf' && password === '1212') {
+        isAdminLoggedIn = true;
+        errorEl.style.display = 'none';
+        document.getElementById('adminLogin').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        loadBooksAdmin();
+        loadUsersAdmin();
+    } else {
+        errorEl.textContent = 'Неверный логин или пароль';
+        errorEl.style.display = 'block';
+    }
+}
+
+function showAdminTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[onclick="showAdminTab('${tab}')"]`).classList.add('active');
+
+    document.querySelectorAll('.admin-content').forEach(content => content.classList.add('hidden'));
+    document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').classList.remove('hidden');
+}
+
+function loadBooksAdmin() {
+    const container = document.getElementById('booksAdminList');
+    if (!container) return;
+
+    const books = window.APP_DATA.MOCK_BOOKS || [];
+    container.innerHTML = books.map(book => `
+        <div class="admin-book-item">
+            <div class="book-info">
+                <strong>${book.title}</strong> - ${book.author} (${book.genre})
+            </div>
+            <div class="book-actions">
+                <button onclick="editBook(${book.id})" class="edit-btn">✏️ Редактировать</button>
+                <button onclick="deleteBook(${book.id})" class="delete-btn">🗑️ Удалить</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadUsersAdmin() {
+    const container = document.getElementById('usersAdminList');
+    if (!container) return;
+
+    // Для демонстрации, показываем текущего пользователя
+    const users = [userData];
+
+    // Функция для получения класса роли
+    function getRoleClass(role) {
+        switch(role) {
+            case 'Активный пользователь': return 'role-active';
+            case 'Модератор': return 'role-moderator';
+            case 'Администратор': return 'role-admin';
+            case 'VIP': return 'role-vip';
+            default: return 'role-active';
+        }
+    }
+
+    container.innerHTML = users.map(user => `
+        <div class="admin-user-item">
+            <div class="user-info">
+                <strong>${user.name}</strong> (ID: ${user.telegramId || 'Неизвестен'})
+                <br>Уровень: ${user.level}, Опыт: ${user.experience}, Кристаллы: ${user.coins}
+                <br><span class="user-role ${getRoleClass(user.role)}">${user.role}</span>
+            </div>
+            <div class="user-controls">
+                <input type="number" id="userLevel${user.telegramId || 'current'}" value="${user.level}" placeholder="Уровень">
+                <input type="number" id="userExp${user.telegramId || 'current'}" value="${user.experience}" placeholder="Опыт">
+                <input type="number" id="userCoins${user.telegramId || 'current'}" value="${user.coins}" placeholder="Кристаллы">
+                <select id="userRole${user.telegramId || 'current'}">
+                    <option value="Активный пользователь" ${user.role === 'Активный пользователь' ? 'selected' : ''}>Активный пользователь</option>
+                    <option value="Модератор" ${user.role === 'Модератор' ? 'selected' : ''}>Модератор</option>
+                    <option value="Администратор" ${user.role === 'Администратор' ? 'selected' : ''}>Администратор</option>
+                    <option value="VIP" ${user.role === 'VIP' ? 'selected' : ''}>VIP</option>
+                </select>
+                <button onclick="updateUserAdmin('${user.telegramId || 'current'}')" class="update-btn">Обновить</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddBookForm() {
+    document.getElementById('addBookModal').classList.remove('hidden');
+}
+
+function closeAddBookModal() {
+    document.getElementById('addBookModal').classList.add('hidden');
+}
+
+function addBook() {
+    const title = document.getElementById('bookTitle').value;
+    const author = document.getElementById('bookAuthor').value;
+    const genre = document.getElementById('bookGenre').value;
+    const year = parseInt(document.getElementById('bookYear').value);
+    const description = document.getElementById('bookDescription').value;
+    const pages = parseInt(document.getElementById('bookPages').value);
+    const rating = parseFloat(document.getElementById('bookRating').value);
+    const icon = document.getElementById('bookIcon').value;
+
+    if (!title || !author || !genre || !year || !description || !pages || !rating || !icon) {
+        alert('Заполните все поля');
+        return;
+    }
+
+    const newBook = {
+        id: Date.now(), // Простой ID
+        title,
+        author,
+        year,
+        genre,
+        description,
+        pages,
+        rating,
+        icon,
+        available: true,
+        reviewsCount: 0
+    };
+
+    window.APP_DATA.MOCK_BOOKS.push(newBook);
+    const stats = calculateStats();
+    updateStats(stats);
+    window.APP_DATA.MOCK_STATS = stats;
+    loadBooksAdmin();
+    closeAddBookModal();
+
+    // Очистить форму
+    document.getElementById('bookTitle').value = '';
+    document.getElementById('bookAuthor').value = '';
+    document.getElementById('bookGenre').value = '';
+    document.getElementById('bookYear').value = '';
+    document.getElementById('bookDescription').value = '';
+    document.getElementById('bookPages').value = '';
+    document.getElementById('bookRating').value = '';
+    document.getElementById('bookIcon').value = '';
+}
+
+function editBook(bookId) {
+    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
+    if (!book) return;
+
+    document.getElementById('editBookId').value = book.id;
+    document.getElementById('editBookTitle').value = book.title;
+    document.getElementById('editBookAuthor').value = book.author;
+    document.getElementById('editBookGenre').value = book.genre;
+    document.getElementById('editBookYear').value = book.year;
+    document.getElementById('editBookDescription').value = book.description;
+    document.getElementById('editBookPages').value = book.pages;
+    document.getElementById('editBookRating').value = book.rating;
+    document.getElementById('editBookIcon').value = book.icon;
+
+    document.getElementById('editBookModal').classList.remove('hidden');
+}
+
+function closeEditBookModal() {
+    document.getElementById('editBookModal').classList.add('hidden');
+}
+
+function updateBook() {
+    const id = parseInt(document.getElementById('editBookId').value);
+    const title = document.getElementById('editBookTitle').value;
+    const author = document.getElementById('editBookAuthor').value;
+    const genre = document.getElementById('editBookGenre').value;
+    const year = parseInt(document.getElementById('editBookYear').value);
+    const description = document.getElementById('editBookDescription').value;
+    const pages = parseInt(document.getElementById('editBookPages').value);
+    const rating = parseFloat(document.getElementById('editBookRating').value);
+    const icon = document.getElementById('editBookIcon').value;
+
+    if (!title || !author || !genre || !year || !description || !pages || !rating || !icon) {
+        alert('Заполните все поля');
+        return;
+    }
+
+    const bookIndex = window.APP_DATA.MOCK_BOOKS.findIndex(b => b.id === id);
+    if (bookIndex === -1) return;
+
+    window.APP_DATA.MOCK_BOOKS[bookIndex] = {
+        ...window.APP_DATA.MOCK_BOOKS[bookIndex],
+        title,
+        author,
+        genre,
+        year,
+        description,
+        pages,
+        rating,
+        icon
+    };
+
+    const stats = calculateStats();
+    updateStats(stats);
+    window.APP_DATA.MOCK_STATS = stats;
+    loadBooksAdmin();
+    closeEditBookModal();
+}
+
+function deleteBook(bookId) {
+    if (confirm('Вы уверены, что хотите удалить эту книгу?')) {
+        window.APP_DATA.MOCK_BOOKS = window.APP_DATA.MOCK_BOOKS.filter(book => book.id !== bookId);
+        const stats = calculateStats();
+        updateStats(stats);
+        window.APP_DATA.MOCK_STATS = stats;
+        loadBooksAdmin();
+    }
+}
+
+function updateUserAdmin(userId) {
+    const level = parseInt(document.getElementById(`userLevel${userId}`).value);
+    const exp = parseInt(document.getElementById(`userExp${userId}`).value);
+    const coins = parseInt(document.getElementById(`userCoins${userId}`).value);
+    const role = document.getElementById(`userRole${userId}`).value;
+
+    if (userId === 'current') {
+        userData.level = level;
+        userData.experience = exp;
+        userData.coins = coins;
+        userData.role = role;
+        userData.experienceToNext = window.APP_DATA.LevelSystem.getExperienceToNextLevel(exp);
+        window.STORAGE.saveAllData(userData);
+        updateUserProfile();
+        alert('Пользователь обновлен!');
+    }
+
+    loadUsersAdmin();
+}
