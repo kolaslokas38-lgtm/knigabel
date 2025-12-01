@@ -5603,26 +5603,23 @@ function updateUserAdmin(userId) {
     console.log('Parsed values:', { level, exp, coins, role });
     console.log('Current userData.telegramId:', userData.telegramId);
 
-    if (userId === 'current' || userId === userData.telegramId || userId === userData.telegramId?.toString()) {
-        console.log('Updating userData');
-        userData.level = level;
-        userData.experience = exp;
-        userData.coins = coins;
-        userData.role = role;
-        userData.experienceToNext = window.APP_DATA.LevelSystem ? window.APP_DATA.LevelSystem.getExperienceToNextLevel(exp) : 100;
-        if (window.STORAGE) {
-            window.STORAGE.saveAllData(userData);
-            console.log('Data saved to STORAGE');
-        } else {
-            console.warn('STORAGE not available');
-        }
-        updateUserProfile();
-        updateStats(calculateStats());
-        console.log('User profile and stats updated');
-        alert('Пользователь обновлен!');
+    // Всегда обновляем, поскольку в админке показывается только текущий пользователь
+    console.log('Updating userData');
+    userData.level = level;
+    userData.experience = exp;
+    userData.coins = coins;
+    userData.role = role;
+    userData.experienceToNext = window.APP_DATA.LevelSystem ? window.APP_DATA.LevelSystem.getExperienceToNextLevel(exp) : 100;
+    if (window.STORAGE) {
+        window.STORAGE.saveAllData(userData);
+        console.log('Data saved to STORAGE');
     } else {
-        console.log('UserId does not match, not updating');
+        console.warn('STORAGE not available');
     }
+    updateUserProfile();
+    updateStats(calculateStats());
+    console.log('User profile and stats updated');
+    alert('Изменения применены! Роль, уровень, опыт и кристаллы обновлены.');
 
     loadUsersAdmin();
 }
