@@ -803,20 +803,190 @@
                         <div class="admin-tabs">
                             <button class="admin-tab active" onclick="showAdminTab('books')">📚 Управление книгами</button>
                             <button class="admin-tab" onclick="showAdminTab('users')">👥 Управление пользователями</button>
+                            <button class="admin-tab" onclick="showAdminTab('roles')">👑 Управление ролями</button>
                         </div>
 
                         <div class="admin-content" id="adminBooksTab">
-                            <h3>Управление книгами</h3>
-                            <button onclick="showAddBookForm()" class="admin-btn">➕ Добавить книгу</button>
+                            <div class="admin-actions">
+                                <button onclick="showAddBookForm()" class="admin-action-btn">
+                                    <span>➕</span> Добавить книгу
+                                </button>
+                                <button onclick="exportBooksData()" class="admin-action-btn success">
+                                    <span>📤</span> Экспорт данных
+                                </button>
+                                <button onclick="importBooksData()" class="admin-action-btn">
+                                    <span>📥</span> Импорт данных
+                                </button>
+                                <button onclick="resetBooksToDefault()" class="admin-action-btn danger">
+                                    <span>🔄</span> Сброс к исходному
+                                </button>
+                            </div>
+
+                            <div class="admin-stats">
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">📚</div>
+                                    <div class="admin-stat-number" id="adminTotalBooks">0</div>
+                                    <div class="admin-stat-label">Всего книг</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">✅</div>
+                                    <div class="admin-stat-number" id="adminAvailableBooks">0</div>
+                                    <div class="admin-stat-label">Доступно</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">📖</div>
+                                    <div class="admin-stat-number" id="adminBorrowedBooks">0</div>
+                                    <div class="admin-stat-label">Выдано</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">⭐</div>
+                                    <div class="admin-stat-number" id="adminAvgRating">0</div>
+                                    <div class="admin-stat-label">Средний рейтинг</div>
+                                </div>
+                            </div>
+
+                            <div class="admin-search">
+                                <input type="text" id="adminBookSearch" class="admin-search-input" placeholder="Поиск книг..." oninput="searchAdminBooks()">
+                                <select id="adminGenreFilter" class="admin-filter-select" onchange="filterAdminBooks()">
+                                    <option value="">Все жанры</option>
+                                </select>
+                            </div>
+
                             <div class="books-admin-list" id="booksAdminList">
                                 <!-- Книги будут загружены здесь -->
+                            </div>
+
+                            <div class="admin-loading hidden" id="adminBooksLoading">
+                                <div class="admin-spinner"></div>
+                                <p>Загрузка книг...</p>
                             </div>
                         </div>
 
                         <div class="admin-content hidden" id="adminUsersTab">
-                            <h3>Управление пользователями</h3>
+                            <div class="admin-actions">
+                                <button onclick="exportUsersData()" class="admin-action-btn success">
+                                    <span>📤</span> Экспорт пользователей
+                                </button>
+                                <button onclick="resetUsersToDefault()" class="admin-action-btn danger">
+                                    <span>🔄</span> Сброс пользователей
+                                </button>
+                            </div>
+
+                            <div class="admin-stats">
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">👥</div>
+                                    <div class="admin-stat-number" id="adminTotalUsers">1</div>
+                                    <div class="admin-stat-label">Всего пользователей</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">⭐</div>
+                                    <div class="admin-stat-number" id="adminActiveUsers">1</div>
+                                    <div class="admin-stat-label">Активных</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">💎</div>
+                                    <div class="admin-stat-number" id="adminTotalCoins">0</div>
+                                    <div class="admin-stat-label">Кристаллов всего</div>
+                                </div>
+                                <div class="admin-stat-card">
+                                    <div class="admin-stat-icon">🏆</div>
+                                    <div class="admin-stat-number" id="adminTotalExp">0</div>
+                                    <div class="admin-stat-label">Опыта всего</div>
+                                </div>
+                            </div>
+
+                            <div class="admin-search">
+                                <input type="text" id="adminUserSearch" class="admin-search-input" placeholder="Поиск пользователей..." oninput="searchAdminUsers()">
+                                <select id="adminRoleFilter" class="admin-filter-select" onchange="filterAdminUsers()">
+                                    <option value="">Все роли</option>
+                                    <option value="Активный пользователь">Активный пользователь</option>
+                                    <option value="Модератор">Модератор</option>
+                                    <option value="Администратор">Администратор</option>
+                                    <option value="VIP">VIP</option>
+                                </select>
+                            </div>
+
                             <div class="users-admin-list" id="usersAdminList">
                                 <!-- Пользователи будут загружены здесь -->
+                            </div>
+
+                            <div class="admin-loading hidden" id="adminUsersLoading">
+                                <div class="admin-spinner"></div>
+                                <p>Загрузка пользователей...</p>
+                            </div>
+                        </div>
+
+                        <div class="admin-content hidden" id="adminRolesTab">
+                            <div class="admin-actions">
+                                <button onclick="loadUsersForRoleManagement()" class="admin-action-btn">
+                                    <span>🔄</span> Обновить список
+                                </button>
+                            </div>
+
+                            <div class="role-management-section">
+                                <h3>👑 Управление ролями пользователей</h3>
+                                <div class="role-form">
+                                    <div class="form-group">
+                                        <label>Выберите пользователя:</label>
+                                        <select id="roleUserSelect" class="admin-filter-select">
+                                            <option value="">Загрузка пользователей...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Новая роль:</label>
+                                        <select id="roleSelect" class="admin-filter-select">
+                                            <option value="user">Пользователь</option>
+                                            <option value="premium">Премиум</option>
+                                            <option value="vip">VIP</option>
+                                            <option value="moderator">Модератор</option>
+                                            <option value="administrator">Администратор</option>
+                                            <option value="owner">Владелец</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button onclick="changeUserRole()" class="admin-action-btn success">
+                                            <span>✅</span> Изменить роль
+                                        </button>
+                                        <button onclick="setOwnRole()" class="admin-action-btn">
+                                            <span>👤</span> Изменить свою роль
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="role-info">
+                                    <h4>📋 Информация о ролях:</h4>
+                                    <div class="role-descriptions">
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #666666; font-weight: bold;">Пользователь</span>
+                                            - Базовая роль для обычных пользователей
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #FFD700; font-weight: bold;">Премиум</span>
+                                            - Расширенные возможности и преимущества
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #FF6B6B; font-weight: bold;">VIP</span>
+                                            - Особые привилегии и доступ к эксклюзивному контенту
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #4ECDC4; font-weight: bold;">Модератор</span>
+                                            - Возможность модерировать контент и пользователей
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #45B7D1; font-weight: bold;">Администратор</span>
+                                            - Полный доступ к управлению системой
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #9B59B6; font-weight: bold;">Владелец</span>
+                                            - Максимальные права и полный контроль
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="admin-loading hidden" id="adminRolesLoading">
+                                <div class="admin-spinner"></div>
+                                <p>Загрузка данных...</p>
                             </div>
                         </div>
                     </div>
@@ -1118,6 +1288,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Real-time Status Indicator -->
+    <div class="realtime-status" id="realtimeStatus">
+        <span>🔴</span> Оффлайн
     </div>
 
     <!-- Подключаем файлы в правильном порядке -->

@@ -15,6 +15,8 @@ let currentReadingBook = null;
 let currentPage = 1;
 let currentQuiz = null;
 let isAdminLoggedIn = false;
+let wsConnection = null; // WebSocket соединение
+let isRealtimeConnected = false;
 
 // Функция для получения случайных книг
 function getRandomBooks(count) {
@@ -280,10 +282,21 @@ function updateUserProfile() {
         userRegistrationElement.textContent = `Зарегистрирован: ${userData.registrationDate || 'Неизвестно'}`;
     }
 
-    // Обновляем роль
+    // Обновляем роль с цветом
     const userRoleElement = document.getElementById('userRole');
     if (userRoleElement) {
-        userRoleElement.textContent = `Роль: ${userData.role || 'Активный пользователь'}`;
+        const roleColors = {
+            'user': '#666666',
+            'premium': '#FFD700',
+            'vip': '#FF6B6B',
+            'moderator': '#4ECDC4',
+            'administrator': '#45B7D1',
+            'owner': '#9B59B6'
+        };
+        const roleKey = userData.role ? userData.role.toLowerCase() : 'user';
+        const roleColor = roleColors[roleKey] || '#666666';
+        const roleName = userData.role || 'Пользователь';
+        userRoleElement.innerHTML = `Роль: <span style="color: ${roleColor}; font-weight: bold;">${roleName}</span>`;
     }
 
     // Обновляем уровень и опыт
@@ -498,6 +511,7 @@ async function initializeApp() {
     console.log('Инициализация приложения...');
     await initializeTelegramApp();
     initializeReviewsSync();
+    initializeWebSocket();
 
     // Показываем демо книги сразу
     renderWeeklyBooks();
@@ -647,20 +661,177 @@ async function initializeTelegramApp() {
         
         tg.onEvent('viewportChanged', () => window.STORAGE.saveAllData(userData));
         tg.onEvent('closing', () => window.STORAGE.saveAllData(userData));
-        
-    } else {
-        tg = {
-            showPopup: (params) => alert(params.title + ": " + params.message),
-            showAlert: (message) => alert(message),
-            BackButton: {
-                show: () => console.log('BackButton show'),
-                hide: () => console.log('BackButton hide'),
-                onClick: (cb) => console.log('BackButton onClick')
-            },
-            onEvent: (event, callback) => console.log('Event listener:', event)
-        };
+    
+        } else {
+            tg = {
+                showPopup: (params) => alert(params.title + ": " + params.message),
+                showAlert: (message) => alert(message),
+                BackButton: {
+                    show: () => console.log('BackButton show'),
+                    hide: () => console.log('BackButton hide'),
+                    onClick: (cb) => console.log('BackButton onClick')
+                },
+                onEvent: (event, callback) => console.log('Event listener:', event)
+            };
+        }
     }
-}
+    
+    // Инициализация WebSocket для реального времени
+    function initializeWebSocket() {
+        try {
+            wsConnection = new WebSocket('ws://localhost:8080');
+    
+            wsConnection.onopen = () => {
+                console.log('🔗 WebSocket подключен');
+                isRealtimeConnected = true;
+                updateRealtimeStatus(true);
+            };
+    
+            wsConnection.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleRealtimeMessage(data);
+                } catch (error) {
+                    console.error('Ошибка обработки WebSocket сообщения:', error);
+                }
+            };
+    
+            wsConnection.onclose = () => {
+                console.log('🔌 WebSocket отключен');
+                isRealtimeConnected = false;
+                updateRealtimeStatus(false);
+    
+                // Попытка переподключения через 5 секунд
+                setTimeout(() => {
+                    if (!isRealtimeConnected) {
+                        console.log('🔄 Попытка переподключения WebSocket...');
+                        initializeWebSocket();
+                    }
+                }, 5000);
+            };
+    
+            wsConnection.onerror = (error) => {
+                console.error('WebSocket ошибка:', error);
+                isRealtimeConnected = false;
+                updateRealtimeStatus(false);
+            };
+    
+        } catch (error) {
+            console.error('Ошибка инициализации WebSocket:', error);
+            updateRealtimeStatus(false);
+        }
+    }
+    
+    // Обработка сообщений реального времени
+    function handleRealtimeMessage(data) {
+        console.log('📡 Получено сообщение:', data.type);
+    
+        switch (data.type) {
+            case 'connected':
+                console.log('✅ Подключено к серверу реального времени');
+                break;
+    
+            case 'book_borrowed':
+            case 'book_returned':
+                // Обновляем статистику и отображение книг
+                updateStats(data.stats);
+                updateBookInDisplay(data.bookId, data.book);
+    
+                // Показываем уведомление
+                showRealtimeNotification(
+                    data.type === 'book_borrowed' ? '📚 Книга забронирована' : '📚 Книга возвращена',
+                    `Книга "${data.book.title}" ${data.type === 'book_borrowed' ? 'забронирована' : 'возвращена'}`
+                );
+                break;
+    
+            case 'review_added':
+                // Обновляем отзывы и рейтинг книги
+                updateBookRating(data.bookId, data.review.rating);
+                showRealtimeNotification(
+                    '💬 Новый отзыв',
+                    `Добавлен отзыв к книге с рейтингом ${data.review.rating}/5`
+                );
+                break;
+    
+            case 'review_deleted':
+                // Обновляем отзывы
+                updateBookRating(data.bookId);
+                showRealtimeNotification(
+                    '🗑️ Отзыв удален',
+                    'Отзыв был удален из системы'
+                );
+                break;
+    
+            default:
+                console.log('Неизвестный тип сообщения:', data.type);
+        }
+    }
+    
+    // Обновление статуса реального времени
+    function updateRealtimeStatus(connected) {
+        const statusElement = document.getElementById('realtimeStatus');
+        if (statusElement) {
+            statusElement.innerHTML = connected ?
+                '<span>🟢</span> Онлайн' :
+                '<span>🔴</span> Оффлайн';
+            statusElement.classList.toggle('offline', !connected);
+        }
+    }
+    
+    // Показать уведомление реального времени
+    function showRealtimeNotification(title, message) {
+        // Создаем уведомление
+        const notification = document.createElement('div');
+        notification.className = 'realtime-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+            </div>
+        `;
+    
+        document.body.appendChild(notification);
+    
+        // Анимация появления
+        setTimeout(() => notification.classList.add('show'), 100);
+    
+        // Автоматическое удаление через 5 секунд
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    // Обновление книги в отображении
+    function updateBookInDisplay(bookId, updatedBook) {
+        // Обновляем книгу в текущем отображении
+        const bookElements = document.querySelectorAll(`[data-book-id="${bookId}"]`);
+        bookElements.forEach(element => {
+            // Обновляем статус доступности
+            if (updatedBook) {
+                element.classList.toggle('borrowed', !updatedBook.available);
+                const statusElement = element.querySelector('.book-status');
+                if (statusElement) {
+                    statusElement.textContent = updatedBook.available ? 'Доступна' : 'Забронирована';
+                    statusElement.className = `book-status ${updatedBook.available ? 'status-available' : 'status-unavailable'}`;
+                }
+            }
+        });
+    }
+    
+    // Обновление рейтинга книги
+    function updateBookRating(bookId, newRating) {
+        // Обновляем рейтинг в отображении
+        const ratingElements = document.querySelectorAll(`[data-book-id="${bookId}"] .book-rating-small`);
+        ratingElements.forEach(element => {
+            if (newRating !== undefined) {
+                const starsElement = element.querySelector('.stars');
+                if (starsElement) {
+                    starsElement.innerHTML = createRatingStars(newRating);
+                }
+            }
+        });
+    }
 
 function handleBackButton() {
     if (document.getElementById('bookModal').classList.contains('hidden') && 
@@ -1165,10 +1336,18 @@ async function showBookDetails(bookId) {
                         <div class="reviews-list">
                             ${bookReviews.length > 0 ? bookReviews.map(review => {
                                 const isOwnReview = review.userId === userId;
+                                const roleColor = review.userInfo?.roleInfo?.color || '#666666';
+                                const roleName = review.userInfo?.roleInfo?.name || 'Пользователь';
                                 return `
                                 <div class="review-item">
                                     <div class="review-header">
-                                        <div class="review-user">${review.userAvatar} ${review.userName}</div>
+                                        <div class="review-user">
+                                            ${review.userAvatar}
+                                            <span>${review.userName}</span>
+                                            <span class="review-user-role" style="color: ${roleColor}; font-weight: bold; font-size: 0.8em; margin-left: 5px;">
+                                                ${roleName}
+                                            </span>
+                                        </div>
                                         <div class="review-rating">${createRatingStars(review.rating)}</div>
                                     </div>
                                     <div class="review-comment">${escapeHtml(review.comment)}</div>
@@ -5018,6 +5197,10 @@ function displayAllReviews() {
         const bookTitle = book ? book.title : 'Неизвестная книга';
         const bookAuthor = book ? book.author : 'Неизвестный автор';
 
+        // Получаем цвет роли
+        const roleColor = review.userInfo?.roleInfo?.color || '#666666';
+        const roleName = review.userInfo?.roleInfo?.name || 'Пользователь';
+
         return `
             <div class="review-card">
                 <div class="review-header">
@@ -5025,6 +5208,9 @@ function displayAllReviews() {
                         <div class="review-avatar">${review.userAvatar}</div>
                         <div class="review-user-details">
                             <div class="review-user-name">${escapeHtml(review.userName)}</div>
+                            <div class="review-user-role" style="color: ${roleColor}; font-weight: bold; font-size: 0.8em;">
+                                ${roleName}
+                            </div>
                             <div class="review-book-info">
                                 <span class="review-book-title">${escapeHtml(bookTitle)}</span>
                                 <span class="review-book-author">${escapeHtml(bookAuthor)}</span>
@@ -5350,7 +5536,475 @@ window.updateBook = updateBook;
 window.deleteBook = deleteBook;
 window.loadBooksAdmin = loadBooksAdmin;
 window.loadUsersAdmin = loadUsersAdmin;
-window.updateUserAdmin = updateUserAdmin;
+window.updateUserRole = updateUserRole;
+window.deleteUser = deleteUser;
+
+// Функции админ-панели
+
+// Экспорт данных книг
+async function exportBooksData() {
+    try {
+        const response = await fetch('/api/admin/export/books');
+        const data = await response.json();
+
+        // Создаем и скачиваем JSON файл
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `books-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        tg.showPopup({
+            title: '✅ Экспорт завершен',
+            message: 'Данные книг успешно экспортированы',
+            buttons: [{ type: 'ok' }]
+        });
+    } catch (error) {
+        console.error('Ошибка экспорта:', error);
+        tg.showPopup({
+            title: '❌ Ошибка экспорта',
+            message: 'Не удалось экспортировать данные',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Импорт данных книг
+async function importBooksData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            const response = await fetch('/api/admin/import/books', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                tg.showPopup({
+                    title: '✅ Импорт завершен',
+                    message: `Импортировано ${result.booksCount} книг`,
+                    buttons: [{ type: 'ok' }]
+                });
+
+                // Перезагружаем страницу для обновления данных
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка импорта:', error);
+            tg.showPopup({
+                title: '❌ Ошибка импорта',
+                message: 'Не удалось импортировать данные',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    };
+
+    input.click();
+}
+
+// Сброс книг к исходному состоянию
+async function resetBooksToDefault() {
+    if (!confirm('Вы уверены, что хотите сбросить все книги к исходному состоянию? Это действие нельзя отменить.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/reset/books', { method: 'POST' });
+        const result = await response.json();
+
+        if (result.success) {
+            tg.showPopup({
+                title: '✅ Сброс завершен',
+                message: `Книги сброшены к исходному состоянию (${result.booksCount} книг)`,
+                buttons: [{ type: 'ok' }]
+            });
+
+            // Перезагружаем страницу
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Ошибка сброса:', error);
+        tg.showPopup({
+            title: '❌ Ошибка сброса',
+            message: 'Не удалось сбросить данные',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Экспорт данных пользователей
+async function exportUsersData() {
+    tg.showPopup({
+        title: 'ℹ️ Экспорт пользователей',
+        message: 'Функция экспорта пользователей будет доступна в следующих версиях',
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+// Сброс пользователей к исходному состоянию
+async function resetUsersToDefault() {
+    if (!confirm('Вы уверены, что хотите сбросить всех пользователей к исходному состоянию?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/reset/users', { method: 'POST' });
+        const result = await response.json();
+
+        tg.showPopup({
+            title: '✅ Сброс пользователей',
+            message: result.message,
+            buttons: [{ type: 'ok' }]
+        });
+    } catch (error) {
+        console.error('Ошибка сброса пользователей:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось сбросить пользователей',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Поиск в админ-панели книг
+function searchAdminBooks() {
+    const searchTerm = document.getElementById('adminBookSearch').value.toLowerCase();
+    const bookItems = document.querySelectorAll('.admin-book-item');
+
+    bookItems.forEach(item => {
+        const title = item.querySelector('.book-info strong').textContent.toLowerCase();
+        const author = item.querySelector('.book-info span').textContent.toLowerCase();
+
+        const matches = title.includes(searchTerm) || author.includes(searchTerm);
+        item.style.display = matches ? 'block' : 'none';
+    });
+}
+
+// Фильтр книг по жанру в админ-панели
+function filterAdminBooks() {
+    const selectedGenre = document.getElementById('adminGenreFilter').value;
+    const bookItems = document.querySelectorAll('.admin-book-item');
+
+    bookItems.forEach(item => {
+        const genre = item.dataset.genre;
+        const matches = !selectedGenre || genre === selectedGenre;
+        item.style.display = matches ? 'block' : 'none';
+    });
+}
+
+// Поиск пользователей в админ-панели
+function searchAdminUsers() {
+    const searchTerm = document.getElementById('adminUserSearch').value.toLowerCase();
+    const userItems = document.querySelectorAll('.admin-user-item');
+
+    userItems.forEach(item => {
+        const name = item.querySelector('.user-info strong').textContent.toLowerCase();
+        const role = item.querySelector('.user-role').textContent.toLowerCase();
+
+        const matches = name.includes(searchTerm) || role.includes(searchTerm);
+        item.style.display = matches ? 'block' : 'none';
+    });
+}
+
+// Фильтр пользователей по роли в админ-панели
+function filterAdminUsers() {
+    const selectedRole = document.getElementById('adminRoleFilter').value;
+    const userItems = document.querySelectorAll('.admin-user-item');
+
+    userItems.forEach(item => {
+        const role = item.dataset.role;
+        const matches = !selectedRole || role === selectedRole;
+        item.style.display = matches ? 'block' : 'none';
+    });
+}
+
+// Загрузка админ-панели с данными
+async function loadAdminPanel() {
+    if (!isAdminLoggedIn) return;
+
+    try {
+        // Загружаем статистику
+        const statsResponse = await fetch('/api/admin/stats');
+        const stats = await statsResponse.json();
+
+        // Обновляем статистику книг
+        document.getElementById('adminTotalBooks').textContent = stats.books.total;
+        document.getElementById('adminAvailableBooks').textContent = stats.books.available;
+        document.getElementById('adminBorrowedBooks').textContent = stats.books.borrowed;
+        document.getElementById('adminAvgRating').textContent = stats.books.averageRating.toFixed(1);
+
+        // Обновляем статистику пользователей
+        document.getElementById('adminTotalUsers').textContent = stats.users.total;
+        document.getElementById('adminActiveUsers').textContent = stats.users.total; // Пока считаем всех активными
+        document.getElementById('adminTotalCoins').textContent = userData.coins || 0;
+        document.getElementById('adminTotalExp').textContent = userData.experience || 0;
+
+        // Заполняем фильтр жанров
+        const genreFilter = document.getElementById('adminGenreFilter');
+        if (genreFilter && window.APP_DATA.MOCK_GENRES) {
+            genreFilter.innerHTML = '<option value="">Все жанры</option>';
+            window.APP_DATA.MOCK_GENRES.forEach(genre => {
+                if (genre !== 'Все жанры') {
+                    genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
+                }
+            });
+        }
+
+        // Загружаем книги и пользователей
+        loadBooksAdmin();
+        loadUsersAdmin();
+
+    } catch (error) {
+        console.error('Ошибка загрузки админ-панели:', error);
+    }
+}
+
+// Обновленная функция загрузки книг в админ-панели
+function loadBooksAdmin() {
+    const container = document.getElementById('booksAdminList');
+    if (!container) return;
+
+    const books = window.APP_DATA.MOCK_BOOKS || [];
+    container.innerHTML = books.map(book => `
+        <div class="admin-book-item" data-genre="${book.genre}" data-book-id="${book.id}">
+            <div class="book-info">
+                <strong>${book.title}</strong>
+                <br><span>${book.author} • ${book.genre} • ${book.year}</span>
+                <br><span>Рейтинг: ${book.rating || 0}/5 • Отзывов: ${book.reviewsCount || 0}</span>
+                <br><span>Статус: ${book.available ? 'Доступна' : 'Забронирована'}</span>
+            </div>
+            <div class="book-actions">
+                <button onclick="editBook(${book.id})" class="edit-btn">✏️ Редактировать</button>
+                <button onclick="deleteBook(${book.id})" class="delete-btn">🗑️ Удалить</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Скрываем загрузку
+    const loading = document.getElementById('adminBooksLoading');
+    if (loading) loading.classList.add('hidden');
+}
+
+// Обновленная функция загрузки пользователей в админ-панели
+async function loadUsersAdmin() {
+    const container = document.getElementById('usersAdminList');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка загрузки пользователей');
+        }
+
+        const users = data.users || [];
+
+        // Функция для получения стиля цвета роли
+        function getRoleStyle(role) {
+            const roleColors = {
+                'user': '#666666',
+                'premium': '#FFD700',
+                'vip': '#FF6B6B',
+                'moderator': '#4ECDC4',
+                'administrator': '#45B7D1',
+                'owner': '#9B59B6'
+            };
+            return `color: ${roleColors[role] || '#666666'}; font-weight: bold;`;
+        }
+
+        container.innerHTML = users.map(user => `
+            <div class="admin-user-item" data-role="${user.role}" data-user-id="${user.id}">
+                <div class="user-info">
+                    <strong>${user.name}</strong>
+                    <br><span>ID: ${user.id}</span>
+                    <br><span>Последняя активность: ${new Date(user.lastActive).toLocaleDateString('ru-RU')}</span>
+                    <br><span class="user-role" style="${getRoleStyle(user.role)}">${user.roleInfo.name}</span>
+                </div>
+                <div class="user-controls">
+                    <select id="userRole${user.id}">
+                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                        <option value="premium" ${user.role === 'premium' ? 'selected' : ''}>Премиум</option>
+                        <option value="vip" ${user.role === 'vip' ? 'selected' : ''}>VIP</option>
+                        <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                        <option value="administrator" ${user.role === 'administrator' ? 'selected' : ''}>Администратор</option>
+                        <option value="owner" ${user.role === 'owner' ? 'selected' : ''}>Владелец</option>
+                    </select>
+                    <button onclick="updateUserRole('${user.id}')" class="update-btn">Изменить роль</button>
+                    <button onclick="deleteUser('${user.id}')" class="delete-btn">Удалить</button>
+                </div>
+            </div>
+        `).join('');
+
+        // Скрываем загрузку
+        const loading = document.getElementById('adminUsersLoading');
+        if (loading) loading.classList.add('hidden');
+
+    } catch (error) {
+        console.error('Ошибка загрузки пользователей:', error);
+        container.innerHTML = '<div class="error">Ошибка загрузки пользователей</div>';
+        const loading = document.getElementById('adminUsersLoading');
+        if (loading) loading.classList.add('hidden');
+    }
+}
+
+// Функции управления ролями
+
+// Загрузка пользователей для управления ролями
+async function loadUsersForRoleManagement() {
+    try {
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+
+        if (data.users && data.users.length > 0) {
+            const userSelect = document.getElementById('roleUserSelect');
+            userSelect.innerHTML = '<option value="">Выберите пользователя...</option>';
+
+            // Добавляем текущего пользователя первым
+            const currentUser = data.users.find(u => u.id === userData.telegramId || u.id === 'current');
+            if (currentUser) {
+                userSelect.innerHTML += `<option value="${currentUser.id}">👤 ${currentUser.name} (Вы)</option>`;
+            }
+
+            // Добавляем остальных пользователей
+            data.users.forEach(user => {
+                if (user.id !== (userData.telegramId || 'current')) {
+                    userSelect.innerHTML += `<option value="${user.id}">${user.name}</option>`;
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки пользователей:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось загрузить список пользователей',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Изменение роли пользователя
+async function changeUserRole() {
+    const userSelect = document.getElementById('roleUserSelect');
+    const roleSelect = document.getElementById('roleSelect');
+
+    const userId = userSelect.value;
+    const newRole = roleSelect.value;
+
+    if (!userId) {
+        tg.showPopup({
+            title: '⚠️ Выберите пользователя',
+            message: 'Пожалуйста, выберите пользователя для изменения роли',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    if (!newRole) {
+        tg.showPopup({
+            title: '⚠️ Выберите роль',
+            message: 'Пожалуйста, выберите новую роль',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ role: newRole })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            tg.showPopup({
+                title: '✅ Роль изменена',
+                message: `Роль пользователя успешно изменена на "${result.user.roleInfo.name}"`,
+                buttons: [{ type: 'ok' }]
+            });
+
+            // Обновляем профиль если изменили свою роль
+            if (userId === (userData.telegramId || 'current')) {
+                userData.role = newRole;
+                updateUserProfile();
+            }
+
+            // Перезагружаем список пользователей
+            loadUsersForRoleManagement();
+        } else {
+            throw new Error(result.error || 'Неизвестная ошибка');
+        }
+    } catch (error) {
+        console.error('Ошибка изменения роли:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось изменить роль пользователя',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// Изменение своей роли
+function setOwnRole() {
+    const roleSelect = document.getElementById('roleSelect');
+    const newRole = roleSelect.value;
+
+    if (!newRole) {
+        tg.showPopup({
+            title: '⚠️ Выберите роль',
+            message: 'Пожалуйста, выберите новую роль для себя',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    // Автоматически выбираем текущего пользователя
+    const userSelect = document.getElementById('roleUserSelect');
+    const currentUserId = userData.telegramId || 'current';
+    userSelect.value = currentUserId;
+
+    // Вызываем функцию изменения роли
+    changeUserRole();
+}
+
+// Экспортируем новые функции
+window.exportBooksData = exportBooksData;
+window.importBooksData = importBooksData;
+window.resetBooksToDefault = resetBooksToDefault;
+window.exportUsersData = exportUsersData;
+window.resetUsersToDefault = resetUsersToDefault;
+window.searchAdminBooks = searchAdminBooks;
+window.filterAdminBooks = filterAdminBooks;
+window.searchAdminUsers = searchAdminUsers;
+window.filterAdminUsers = filterAdminUsers;
+window.loadAdminPanel = loadAdminPanel;
+window.loadUsersForRoleManagement = loadUsersForRoleManagement;
+window.changeUserRole = changeUserRole;
+window.setOwnRole = setOwnRole;
 
 // Админ функции
 function openAdminModal() {
@@ -5358,8 +6012,7 @@ function openAdminModal() {
     if (isAdminLoggedIn) {
         document.getElementById('adminLogin').classList.add('hidden');
         document.getElementById('adminPanel').classList.remove('hidden');
-        loadBooksAdmin();
-        loadUsersAdmin();
+        loadAdminPanel();
     } else {
         document.getElementById('adminLogin').classList.remove('hidden');
         document.getElementById('adminPanel').classList.add('hidden');
@@ -5380,8 +6033,7 @@ function adminLogin() {
         errorEl.style.display = 'none';
         document.getElementById('adminLogin').classList.add('hidden');
         document.getElementById('adminPanel').classList.remove('hidden');
-        loadBooksAdmin();
-        loadUsersAdmin();
+        loadAdminPanel();
     } else {
         errorEl.textContent = 'Неверный логин или пароль';
         errorEl.style.display = 'block';
@@ -5394,6 +6046,13 @@ function showAdminTab(tab) {
 
     document.querySelectorAll('.admin-content').forEach(content => content.classList.add('hidden'));
     document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').classList.remove('hidden');
+
+    // Загружаем данные при переключении на соответствующую вкладку
+    if (tab === 'users') {
+        loadUsersAdmin();
+    } else if (tab === 'books') {
+        loadBooksAdmin();
+    }
 }
 
 function loadBooksAdmin() {
@@ -5582,44 +6241,82 @@ function deleteBook(bookId) {
     }
 }
 
-function updateUserAdmin(userId) {
-    console.log('updateUserAdmin called with userId:', userId);
-    const levelInput = document.getElementById(`userLevel${userId}`);
-    const expInput = document.getElementById(`userExp${userId}`);
-    const coinsInput = document.getElementById(`userCoins${userId}`);
+// Функция для изменения роли пользователя через API
+async function updateUserRole(userId) {
     const roleSelect = document.getElementById(`userRole${userId}`);
-
-    if (!levelInput || !expInput || !coinsInput || !roleSelect) {
-        console.error('Элементы формы не найдены для userId:', userId);
-        alert('Ошибка: элементы формы не найдены');
+    if (!roleSelect) {
+        alert('Ошибка: элемент выбора роли не найден');
         return;
     }
 
-    const level = parseInt(levelInput.value) || 1;
-    const exp = parseInt(expInput.value) || 0;
-    const coins = parseInt(coinsInput.value) || 0;
-    const role = roleSelect.value;
+    const newRole = roleSelect.value;
 
-    console.log('Parsed values:', { level, exp, coins, role });
-    console.log('Current userData.telegramId:', userData.telegramId);
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ role: newRole })
+        });
 
-    // Всегда обновляем, поскольку в админке показывается только текущий пользователь
-    console.log('Updating userData');
-    userData.level = level;
-    userData.experience = exp;
-    userData.coins = coins;
-    userData.role = role;
-    userData.experienceToNext = window.APP_DATA.LevelSystem ? window.APP_DATA.LevelSystem.getExperienceToNextLevel(exp) : 100;
-    if (window.STORAGE) {
-        window.STORAGE.saveAllData(userData);
-        console.log('Data saved to STORAGE');
-    } else {
-        console.warn('STORAGE not available');
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка изменения роли');
+        }
+
+        tg.showPopup({
+            title: '✅ Роль изменена',
+            message: `Роль пользователя успешно изменена на "${data.user.roleInfo.name}"`,
+            buttons: [{ type: 'ok' }]
+        });
+
+        // Перезагружаем список пользователей
+        loadUsersAdmin();
+
+    } catch (error) {
+        console.error('Ошибка изменения роли:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось изменить роль пользователя',
+            buttons: [{ type: 'ok' }]
+        });
     }
-    updateUserProfile();
-    updateStats(calculateStats());
-    console.log('User profile and stats updated');
-    alert('Изменения применены! Роль, уровень, опыт и кристаллы обновлены.');
+}
 
-    loadUsersAdmin();
+// Функция для удаления пользователя через API
+async function deleteUser(userId) {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка удаления пользователя');
+        }
+
+        tg.showPopup({
+            title: '✅ Пользователь удален',
+            message: 'Пользователь успешно удален из системы',
+            buttons: [{ type: 'ok' }]
+        });
+
+        // Перезагружаем список пользователей
+        loadUsersAdmin();
+
+    } catch (error) {
+        console.error('Ошибка удаления пользователя:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось удалить пользователя',
+            buttons: [{ type: 'ok' }]
+        });
+    }
 }
