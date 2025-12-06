@@ -834,12 +834,23 @@ async function initializeTelegramApp() {
     }
 
 function handleBackButton() {
-    if (document.getElementById('bookModal').classList.contains('hidden') && 
+    if (document.getElementById('bookModal').classList.contains('hidden') &&
         document.getElementById('reviewModal').classList.contains('hidden')) {
         tg.close();
     } else {
         closeModal();
         closeReviewModal();
+    }
+}
+
+function exitApp() {
+    if (tg) {
+        tg.close();
+    } else {
+        // Для браузера - просто закрыть вкладку или показать сообщение
+        if (confirm('Вы действительно хотите выйти из приложения?')) {
+            window.close();
+        }
     }
 }
 
@@ -877,7 +888,7 @@ function showSection(sectionName) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
+    document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
 
     if (sectionName === 'profile') {
         updateUserProfile();
@@ -5527,6 +5538,7 @@ window.openAdminModal = openAdminModal;
 window.closeAdminModal = closeAdminModal;
 window.adminLogin = adminLogin;
 window.showAdminTab = showAdminTab;
+window.exitApp = exitApp;
 window.showAddBookForm = showAddBookForm;
 window.closeAddBookModal = closeAddBookModal;
 window.addBook = addBook;
@@ -5991,6 +6003,147 @@ function setOwnRole() {
     changeUserRole();
 }
 
+// Функция загрузки авторов
+function loadAuthors(searchQuery = '') {
+    const authorsGrid = document.getElementById('authorsGrid');
+    const authorsCount = document.getElementById('authorsCount');
+
+    if (!authorsGrid || !authorsCount) return;
+
+    const authorBios = window.APP_DATA.AUTHOR_BIOS || {};
+    const authorNames = Object.keys(authorBios);
+
+    // Фильтруем авторов по поисковому запросу
+    const filteredAuthors = authorNames.filter(authorName =>
+        authorName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Обновляем счетчик
+    authorsCount.textContent = `${filteredAuthors.length} ${getAuthorsWord(filteredAuthors.length)}`;
+
+    // Очищаем контейнер
+    authorsGrid.innerHTML = '';
+
+    if (filteredAuthors.length === 0) {
+        authorsGrid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>Авторы не найдены</h3>
+                <p>Попробуйте изменить поисковый запрос</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Отображаем авторов
+    filteredAuthors.forEach(authorName => {
+        const authorData = authorBios[authorName];
+        const authorCard = createAuthorCard(authorName, authorData);
+        authorsGrid.appendChild(authorCard);
+    });
+}
+
+// Функция создания карточки автора
+function createAuthorCard(authorName, authorData) {
+    const card = document.createElement('div');
+    card.className = 'author-card';
+    card.onclick = () => openAuthorModal(authorName);
+
+    card.innerHTML = `
+        <div class="author-header">
+            <div class="author-avatar">
+                <img src="${authorData.image}" alt="${authorName}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 2em;">👤</div>
+            </div>
+            <div class="author-info">
+                <h3 class="author-name">${authorName}</h3>
+                <p class="author-bio">${authorData.bio.substring(0, 120)}...</p>
+                <div class="author-works">
+                    <strong>${authorData.famousWorks ? authorData.famousWorks.length : 0} произведений</strong>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return card;
+}
+
+// Функция поиска авторов
+function searchAuthors() {
+    const searchInput = document.getElementById('authorsSearchInput');
+    if (!searchInput) return;
+
+    const query = searchInput.value.trim();
+    loadAuthors(query);
+}
+
+// Функция для склонения слова "автор"
+function getAuthorsWord(count) {
+    if (count % 10 === 1 && count % 100 !== 11) return 'автор';
+    if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'автора';
+    return 'авторов';
+}
+
+// Функция открытия модального окна автора
+function openAuthorModal(authorName) {
+    const authorData = window.APP_DATA.AUTHOR_BIOS[authorName];
+    if (!authorData) return;
+
+    const modal = document.getElementById('authorModal');
+    const modalTitle = document.getElementById('authorModalTitle');
+    const modalBody = document.getElementById('authorModalBody');
+
+    if (!modal || !modalTitle || !modalBody) return;
+
+    modalTitle.textContent = `Биография ${authorName}`;
+
+    modalBody.innerHTML = `
+        <div class="author-modal-content">
+            <div class="author-modal-image">
+                <img src="${authorData.image}" alt="${authorName}" onerror="this.src='👤'">
+            </div>
+            <div class="author-modal-info">
+                <h3>${authorName}</h3>
+                <p class="author-bio">${authorData.bio}</p>
+
+                ${authorData.famousWorks ? `
+                    <div class="author-works">
+                        <h4>Известные произведения:</h4>
+                        <ul>
+                            ${authorData.famousWorks.map(work => `<li>${work}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${authorData.quotes ? `
+                    <div class="author-quotes">
+                        <h4>Цитаты:</h4>
+                        ${authorData.quotes.map(quote => `<blockquote>"${quote}"</blockquote>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+}
+
+// Функция закрытия модального окна автора
+function closeAuthorModal() {
+    const modal = document.getElementById('authorModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+// Добавляем обработчик для поиска при вводе текста
+document.addEventListener('DOMContentLoaded', function() {
+    const authorsSearchInput = document.getElementById('authorsSearchInput');
+    if (authorsSearchInput) {
+        authorsSearchInput.addEventListener('input', function() {
+            searchAuthors();
+        });
+    }
+});
+
 // Экспортируем новые функции
 window.exportBooksData = exportBooksData;
 window.importBooksData = importBooksData;
@@ -6005,6 +6158,10 @@ window.loadAdminPanel = loadAdminPanel;
 window.loadUsersForRoleManagement = loadUsersForRoleManagement;
 window.changeUserRole = changeUserRole;
 window.setOwnRole = setOwnRole;
+window.loadAuthors = loadAuthors;
+window.searchAuthors = searchAuthors;
+window.openAuthorModal = openAuthorModal;
+window.closeAuthorModal = closeAuthorModal;
 
 // Админ функции
 function openAdminModal() {

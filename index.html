@@ -51,6 +51,12 @@
                             <span class="theme-text">Тема</span>
                         </button>
                     </div>
+                    <div class="exit-toggle">
+                        <button onclick="exitApp()" class="exit-btn" id="exitToggle">
+                            <span id="exitIcon">🚪</span>
+                            <span class="exit-text">Выход</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="header-stats" id="stats">
@@ -152,39 +158,39 @@
         <!-- Navigation Tabs -->
         <section class="navigation-section">
             <div class="nav-tabs">
-                <button class="nav-btn active" onclick="showSection('catalog')">
+                <button class="nav-btn active" data-section="catalog" onclick="showSection('catalog')">
                     <span class="nav-icon">📚</span>
                     <span class="nav-text">Каталог</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('authors')">
+                <button class="nav-btn" data-section="authors" onclick="showSection('authors')">
                     <span class="nav-icon">👥</span>
                     <span class="nav-text">Авторы</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('education')">
+                <button class="nav-btn" data-section="education" onclick="showSection('education')">
                     <span class="nav-icon">🎓</span>
                     <span class="nav-text">Обучение</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('games')">
+                <button class="nav-btn" data-section="games" onclick="showSection('games')">
                     <span class="nav-icon">🎮</span>
                     <span class="nav-text">Игры</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('events')">
+                <button class="nav-btn" data-section="events" onclick="showSection('events')">
                     <span class="nav-icon">📅</span>
                     <span class="nav-text">События</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('redbook')">
+                <button class="nav-btn" data-section="redbook" onclick="showSection('redbook')">
                     <span class="nav-icon">🐾</span>
                     <span class="nav-text">Красная Книга</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('reviews')">
+                <button class="nav-btn" data-section="reviews" onclick="showSection('reviews')">
                     <span class="nav-icon">💬</span>
                     <span class="nav-text">Отзывы</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('achievements')">
+                <button class="nav-btn" data-section="achievements" onclick="showSection('achievements')">
                     <span class="nav-icon">🏆</span>
                     <span class="nav-text">Достижения</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('profile')">
+                <button class="nav-btn" data-section="profile" onclick="showSection('profile')">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Мой профиль</span>
                 </button>
@@ -272,6 +278,19 @@
                 <h2>👥 Знаменитые авторы</h2>
                 <span class="authors-count" id="authorsCount">3 автора</span>
             </div>
+
+            <!-- Search Section for Authors -->
+            <section class="search-section" id="authorsSearchSection">
+                <div class="search-container">
+                    <input
+                        type="text"
+                        id="authorsSearchInput"
+                        placeholder="Поиск по имени автора..."
+                        class="search-input"
+                    >
+                    <button onclick="searchAuthors()" class="search-btn">🔍</button>
+                </div>
+            </section>
 
             <div class="authors-grid" id="authorsGrid">
                 <!-- Authors will be loaded here -->
