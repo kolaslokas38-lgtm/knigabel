@@ -534,6 +534,16 @@ async function initializeApp() {
 async function initializeTelegramApp() {
     // Отзывы загружаются по требованию
     window.APP_DATA.BOOK_REVIEWS = [];
+    // Загружаем сохраненные отзывы
+    const savedReviews = localStorage.getItem('reviews');
+    if (savedReviews) {
+        try {
+            window.APP_DATA.BOOK_REVIEWS = JSON.parse(savedReviews);
+        } catch (error) {
+            console.error('Ошибка загрузки отзывов из localStorage:', error);
+            window.APP_DATA.BOOK_REVIEWS = [];
+        }
+    }
     if (window.STORAGE && window.STORAGE.loadAllData) {
         userData = window.STORAGE.loadAllData();
     } else {
@@ -834,12 +844,23 @@ async function initializeTelegramApp() {
     }
 
 function handleBackButton() {
-    if (document.getElementById('bookModal').classList.contains('hidden') && 
+    if (document.getElementById('bookModal').classList.contains('hidden') &&
         document.getElementById('reviewModal').classList.contains('hidden')) {
         tg.close();
     } else {
         closeModal();
         closeReviewModal();
+    }
+}
+
+function exitApp() {
+    if (tg) {
+        tg.close();
+    } else {
+        // Для браузера - просто закрыть вкладку или показать сообщение
+        if (confirm('Вы действительно хотите выйти из приложения?')) {
+            window.close();
+        }
     }
 }
 
@@ -877,11 +898,12 @@ function showSection(sectionName) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
+    document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
 
     if (sectionName === 'profile') {
         updateUserProfile();
         updateInventoryList();
+        updateMyReviewsList();
     }
     if (sectionName === 'redbook') {
         loadRedBookAnimals();
@@ -1531,6 +1553,11 @@ async function submitReview() {
         });
         userData.stats.reviewsWritten = userData.myReviews.length;
 
+        // Добавляем в глобальные отзывы для синхронизации
+        if (!window.APP_DATA.BOOK_REVIEWS) window.APP_DATA.BOOK_REVIEWS = [];
+        window.APP_DATA.BOOK_REVIEWS.unshift(result.review);
+        localStorage.setItem('reviews', JSON.stringify(window.APP_DATA.BOOK_REVIEWS));
+
         // Начисляем опыт за написание отзыва
         handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
 
@@ -1554,6 +1581,11 @@ async function submitReview() {
             showBookDetails(currentReviewBookId);
         }
 
+        // Обновляем вкладку отзывов, если она активна
+        if (document.getElementById('reviewsSection').classList.contains('active')) {
+            loadReviewsSection();
+        }
+
     } catch (error) {
         tg.showAlert('Ошибка при отправке отзыва: ' + error.message);
     }
@@ -1563,11 +1595,26 @@ async function likeReview(reviewId) {
     try {
         const newLikes = await likeReviewOnServer(reviewId);
         if (newLikes > 0) {
+            // Обновляем лайки в глобальных отзывах
+            if (window.APP_DATA.BOOK_REVIEWS) {
+                const review = window.APP_DATA.BOOK_REVIEWS.find(r => r.id === reviewId);
+                if (review) {
+                    review.likes = newLikes;
+                    localStorage.setItem('reviews', JSON.stringify(window.APP_DATA.BOOK_REVIEWS));
+                }
+            }
+
             const modalTitle = document.getElementById('modalTitle').textContent;
             const book = window.APP_DATA.MOCK_BOOKS.find(b => b.title === modalTitle);
             if (book) {
                 showBookDetails(book.id);
             }
+
+            // Обновляем вкладку отзывов, если она активна
+            if (document.getElementById('reviewsSection').classList.contains('active')) {
+                loadReviewsSection();
+            }
+
             tg.showAlert('Спасибо за ваш лайк! ❤️');
         }
     } catch (error) {
@@ -1593,12 +1640,26 @@ async function deleteReview(reviewId, bookId) {
             userData.stats.reviewsWritten = userData.myReviews.length;
         }
 
+        // Удаляем из глобальных отзывов
+        if (window.APP_DATA.BOOK_REVIEWS) {
+            const globalIndex = window.APP_DATA.BOOK_REVIEWS.findIndex(review => review.id === reviewId);
+            if (globalIndex !== -1) {
+                window.APP_DATA.BOOK_REVIEWS.splice(globalIndex, 1);
+                localStorage.setItem('reviews', JSON.stringify(window.APP_DATA.BOOK_REVIEWS));
+            }
+        }
+
         // Сохраняем данные
         window.STORAGE.saveAllData(userData);
 
         // Обновляем отображение
         updateMyReviewsList();
         showBookDetails(bookId);
+
+        // Обновляем вкладку отзывов, если она активна
+        if (document.getElementById('reviewsSection').classList.contains('active')) {
+            loadReviewsSection();
+        }
 
         tg.showPopup({
             title: 'Отзыв удален',
@@ -5104,13 +5165,77 @@ let allReviews = [];
 let currentReviewsSort = 'newest';
 let currentReviewsBookFilter = '';
 
+// Функция для обновления списка отзывов пользователя в профиле
+function updateMyReviewsList() {
+    const container = document.getElementById('myReviewsList');
+    const countElement = document.getElementById('myReviewsCount');
+
+    if (!container || !countElement) return;
+
+    const myReviews = userData.myReviews || [];
+
+    // Обновляем счетчик
+    countElement.textContent = myReviews.length;
+
+    if (myReviews.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">💬</div>
+                <h4>У вас пока нет отзывов</h4>
+                <p>Напишите отзыв о прочитанной книге!</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Отображаем отзывы
+    container.innerHTML = myReviews.map(review => {
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === review.bookId);
+        const bookTitle = book ? book.title : review.bookTitle || 'Неизвестная книга';
+        const bookAuthor = book ? book.author : 'Неизвестный автор';
+
+        return `
+            <div class="review-card profile-review">
+                <div class="review-header">
+                    <div class="review-book-info">
+                        <div class="review-book-title">${escapeHtml(bookTitle)}</div>
+                        <div class="review-book-author">${escapeHtml(bookAuthor)}</div>
+                    </div>
+                    <div class="review-rating">
+                        ${createRatingStars(review.rating)}
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p class="review-text">${escapeHtml(review.comment)}</p>
+                </div>
+                <div class="review-footer">
+                    <div class="review-date">${formatReviewDate(review.date)}</div>
+                    <div class="review-actions">
+                        <button class="like-review-btn" onclick="likeReview(${review.id})">
+                            ❤️ ${review.likes || 0}
+                        </button>
+                        <button class="view-book-btn" onclick="showBookDetails(${review.bookId})">
+                            📖 Посмотреть книгу
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 // Загрузка секции отзывов
 async function loadReviewsSection() {
     try {
         showReviewsLoading(true);
 
-        // Загружаем все отзывы
-        allReviews = await fetchReviews();
+        // Загружаем все отзывы из API
+        const response = await fetchReviews();
+        allReviews = response.reviews || [];
+
+        // Обновляем глобальные отзывы для совместимости
+        window.APP_DATA.BOOK_REVIEWS = allReviews;
+        localStorage.setItem('reviews', JSON.stringify(allReviews));
 
         // Заполняем фильтр книг
         populateBookFilter();
@@ -5121,7 +5246,10 @@ async function loadReviewsSection() {
         showReviewsLoading(false);
     } catch (error) {
         console.error('Ошибка загрузки отзывов:', error);
-        showError('Не удалось загрузить отзывы');
+        // Fallback: используем локальные отзывы
+        allReviews = window.APP_DATA.BOOK_REVIEWS || [];
+        populateBookFilter();
+        displayAllReviews();
         showReviewsLoading(false);
     }
 }
@@ -5527,6 +5655,7 @@ window.openAdminModal = openAdminModal;
 window.closeAdminModal = closeAdminModal;
 window.adminLogin = adminLogin;
 window.showAdminTab = showAdminTab;
+window.exitApp = exitApp;
 window.showAddBookForm = showAddBookForm;
 window.closeAddBookModal = closeAddBookModal;
 window.addBook = addBook;
@@ -5536,7 +5665,6 @@ window.updateBook = updateBook;
 window.deleteBook = deleteBook;
 window.loadBooksAdmin = loadBooksAdmin;
 window.loadUsersAdmin = loadUsersAdmin;
-window.updateUserRole = updateUserRole;
 window.deleteUser = deleteUser;
 
 // Функции админ-панели
@@ -5759,24 +5887,34 @@ async function loadAdminPanel() {
         document.getElementById('adminTotalCoins').textContent = userData.coins || 0;
         document.getElementById('adminTotalExp').textContent = userData.experience || 0;
 
-        // Заполняем фильтр жанров
-        const genreFilter = document.getElementById('adminGenreFilter');
-        if (genreFilter && window.APP_DATA.MOCK_GENRES) {
-            genreFilter.innerHTML = '<option value="">Все жанры</option>';
-            window.APP_DATA.MOCK_GENRES.forEach(genre => {
-                if (genre !== 'Все жанры') {
-                    genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
-                }
-            });
-        }
-
-        // Загружаем книги и пользователей
-        loadBooksAdmin();
-        loadUsersAdmin();
-
     } catch (error) {
-        console.error('Ошибка загрузки админ-панели:', error);
+        console.error('Ошибка загрузки статистики админ-панели:', error);
+        // Fallback: используем локальные данные
+        const books = window.APP_DATA.MOCK_BOOKS || [];
+        document.getElementById('adminTotalBooks').textContent = books.length;
+        document.getElementById('adminAvailableBooks').textContent = books.filter(b => b.available).length;
+        document.getElementById('adminBorrowedBooks').textContent = books.filter(b => !b.available).length;
+        document.getElementById('adminAvgRating').textContent = (books.reduce((sum, b) => sum + (b.rating || 0), 0) / books.length).toFixed(1);
+        document.getElementById('adminTotalUsers').textContent = 1;
+        document.getElementById('adminActiveUsers').textContent = 1;
+        document.getElementById('adminTotalCoins').textContent = userData.coins || 0;
+        document.getElementById('adminTotalExp').textContent = userData.experience || 0;
     }
+
+    // Заполняем фильтр жанров
+    const genreFilter = document.getElementById('adminGenreFilter');
+    if (genreFilter && window.APP_DATA.MOCK_GENRES) {
+        genreFilter.innerHTML = '<option value="">Все жанры</option>';
+        window.APP_DATA.MOCK_GENRES.forEach(genre => {
+            if (genre !== 'Все жанры') {
+                genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
+            }
+        });
+    }
+
+    // Загружаем книги и пользователей
+    loadBooksAdmin();
+    loadUsersAdmin();
 }
 
 // Обновленная функция загрузки книг в админ-панели
@@ -5834,23 +5972,19 @@ async function loadUsersAdmin() {
         }
 
         container.innerHTML = users.map(user => `
-            <div class="admin-user-item" data-role="${user.role}" data-user-id="${user.id}">
+            <div class="admin-user-item" data-user-id="${user.id}">
                 <div class="user-info">
                     <strong>${user.name}</strong>
                     <br><span>ID: ${user.id}</span>
                     <br><span>Последняя активность: ${new Date(user.lastActive).toLocaleDateString('ru-RU')}</span>
-                    <br><span class="user-role" style="${getRoleStyle(user.role)}">${user.roleInfo.name}</span>
+                    <br><span>Уровень: ${user.level || 1}, Кристаллы: ${user.coins || 0}</span>
                 </div>
                 <div class="user-controls">
-                    <select id="userRole${user.id}">
-                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
-                        <option value="premium" ${user.role === 'premium' ? 'selected' : ''}>Премиум</option>
-                        <option value="vip" ${user.role === 'vip' ? 'selected' : ''}>VIP</option>
-                        <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
-                        <option value="administrator" ${user.role === 'administrator' ? 'selected' : ''}>Администратор</option>
-                        <option value="owner" ${user.role === 'owner' ? 'selected' : ''}>Владелец</option>
-                    </select>
-                    <button onclick="updateUserRole('${user.id}')" class="update-btn">Изменить роль</button>
+                    <div class="user-edit-fields">
+                        <input type="number" id="userLevel${user.id}" value="${user.level || 1}" placeholder="Уровень" min="1" max="100">
+                        <input type="number" id="userCoins${user.id}" value="${user.coins || 0}" placeholder="Кристаллы" min="0">
+                    </div>
+                    <button onclick="updateUserAdmin('${user.id}')" class="update-btn">Обновить</button>
                     <button onclick="deleteUser('${user.id}')" class="delete-btn">Удалить</button>
                 </div>
             </div>
@@ -5862,134 +5996,202 @@ async function loadUsersAdmin() {
 
     } catch (error) {
         console.error('Ошибка загрузки пользователей:', error);
-        container.innerHTML = '<div class="error">Ошибка загрузки пользователей</div>';
+        // Fallback: показываем текущего пользователя
+        const users = [userData];
+        container.innerHTML = users.map(user => `
+            <div class="admin-user-item" data-user-id="${user.telegramId || 'current'}">
+                <div class="user-info">
+                    <strong>${user.name}</strong>
+                    <br><span>ID: ${user.telegramId || 'Неизвестен'}</span>
+                    <br><span>Последняя активность: ${new Date().toLocaleDateString('ru-RU')}</span>
+                    <br><span>Уровень: ${user.level || 1}, Кристаллы: ${user.coins || 0}</span>
+                </div>
+                <div class="user-controls">
+                    <div class="user-edit-fields">
+                        <input type="number" id="userLevel${user.telegramId || 'current'}" value="${user.level || 1}" placeholder="Уровень" min="1" max="100">
+                        <input type="number" id="userCoins${user.telegramId || 'current'}" value="${user.coins || 0}" placeholder="Кристаллы" min="0">
+                    </div>
+                    <button onclick="updateUserAdmin('${user.telegramId || 'current'}')" class="update-btn">Обновить</button>
+                    <button onclick="deleteUser('${user.telegramId || 'current'}')" class="delete-btn">Удалить</button>
+                </div>
+            </div>
+        `).join('');
         const loading = document.getElementById('adminUsersLoading');
         if (loading) loading.classList.add('hidden');
     }
 }
 
-// Функции управления ролями
+// Функция для обновления данных пользователя в админ-панели
+function updateUserAdmin(userId) {
+    const levelInput = document.getElementById(`userLevel${userId}`);
+    const coinsInput = document.getElementById(`userCoins${userId}`);
 
-// Загрузка пользователей для управления ролями
-async function loadUsersForRoleManagement() {
-    try {
-        const response = await fetch('/api/admin/users');
-        const data = await response.json();
-
-        if (data.users && data.users.length > 0) {
-            const userSelect = document.getElementById('roleUserSelect');
-            userSelect.innerHTML = '<option value="">Выберите пользователя...</option>';
-
-            // Добавляем текущего пользователя первым
-            const currentUser = data.users.find(u => u.id === userData.telegramId || u.id === 'current');
-            if (currentUser) {
-                userSelect.innerHTML += `<option value="${currentUser.id}">👤 ${currentUser.name} (Вы)</option>`;
-            }
-
-            // Добавляем остальных пользователей
-            data.users.forEach(user => {
-                if (user.id !== (userData.telegramId || 'current')) {
-                    userSelect.innerHTML += `<option value="${user.id}">${user.name}</option>`;
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки пользователей:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Не удалось загрузить список пользователей',
-            buttons: [{ type: 'ok' }]
-        });
-    }
-}
-
-// Изменение роли пользователя
-async function changeUserRole() {
-    const userSelect = document.getElementById('roleUserSelect');
-    const roleSelect = document.getElementById('roleSelect');
-
-    const userId = userSelect.value;
-    const newRole = roleSelect.value;
-
-    if (!userId) {
-        tg.showPopup({
-            title: '⚠️ Выберите пользователя',
-            message: 'Пожалуйста, выберите пользователя для изменения роли',
-            buttons: [{ type: 'ok' }]
-        });
+    if (!levelInput || !coinsInput) {
+        alert('Ошибка: элементы управления не найдены');
         return;
     }
 
-    if (!newRole) {
-        tg.showPopup({
-            title: '⚠️ Выберите роль',
-            message: 'Пожалуйста, выберите новую роль',
-            buttons: [{ type: 'ok' }]
-        });
+    const newLevel = parseInt(levelInput.value);
+    const newCoins = parseInt(coinsInput.value);
+
+    if (isNaN(newLevel) || isNaN(newCoins) || newLevel < 1 || newCoins < 0) {
+        alert('Ошибка: некорректные значения. Уровень должен быть >= 1, кристаллы >= 0');
         return;
     }
 
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ role: newRole })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            tg.showPopup({
-                title: '✅ Роль изменена',
-                message: `Роль пользователя успешно изменена на "${result.user.roleInfo.name}"`,
-                buttons: [{ type: 'ok' }]
-            });
-
-            // Обновляем профиль если изменили свою роль
-            if (userId === (userData.telegramId || 'current')) {
-                userData.role = newRole;
-                updateUserProfile();
-            }
-
-            // Перезагружаем список пользователей
-            loadUsersForRoleManagement();
-        } else {
-            throw new Error(result.error || 'Неизвестная ошибка');
-        }
-    } catch (error) {
-        console.error('Ошибка изменения роли:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Не удалось изменить роль пользователя',
-            buttons: [{ type: 'ok' }]
-        });
+    // Обновляем данные пользователя
+    if (userId === 'current' || userId === userData.telegramId) {
+        userData.level = newLevel;
+        userData.coins = newCoins;
+        window.STORAGE.saveAllData(userData);
+        updateUserProfile();
     }
+
+    alert('Данные пользователя обновлены');
+    loadUsersAdmin();
 }
 
-// Изменение своей роли
-function setOwnRole() {
-    const roleSelect = document.getElementById('roleSelect');
-    const newRole = roleSelect.value;
 
-    if (!newRole) {
-        tg.showPopup({
-            title: '⚠️ Выберите роль',
-            message: 'Пожалуйста, выберите новую роль для себя',
-            buttons: [{ type: 'ok' }]
-        });
+// Функция загрузки авторов
+function loadAuthors(searchQuery = '') {
+    const authorsGrid = document.getElementById('authorsGrid');
+    const authorsCount = document.getElementById('authorsCount');
+
+    if (!authorsGrid || !authorsCount) return;
+
+    const authorBios = window.APP_DATA.AUTHOR_BIOS || {};
+    const authorNames = Object.keys(authorBios);
+
+    // Фильтруем авторов по поисковому запросу
+    const filteredAuthors = authorNames.filter(authorName =>
+        authorName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Обновляем счетчик
+    authorsCount.textContent = `${filteredAuthors.length} ${getAuthorsWord(filteredAuthors.length)}`;
+
+    // Очищаем контейнер
+    authorsGrid.innerHTML = '';
+
+    if (filteredAuthors.length === 0) {
+        authorsGrid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>Авторы не найдены</h3>
+                <p>Попробуйте изменить поисковый запрос</p>
+            </div>
+        `;
         return;
     }
 
-    // Автоматически выбираем текущего пользователя
-    const userSelect = document.getElementById('roleUserSelect');
-    const currentUserId = userData.telegramId || 'current';
-    userSelect.value = currentUserId;
-
-    // Вызываем функцию изменения роли
-    changeUserRole();
+    // Отображаем авторов
+    filteredAuthors.forEach(authorName => {
+        const authorData = authorBios[authorName];
+        const authorCard = createAuthorCard(authorName, authorData);
+        authorsGrid.appendChild(authorCard);
+    });
 }
+
+// Функция создания карточки автора
+function createAuthorCard(authorName, authorData) {
+    const card = document.createElement('div');
+    card.className = 'author-card';
+    card.onclick = () => openAuthorModal(authorName);
+
+    card.innerHTML = `
+        <div class="author-header">
+            <div class="author-avatar">
+                <img src="${authorData.image}" alt="${authorName}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 2em;">👤</div>
+            </div>
+            <div class="author-info">
+                <h3 class="author-name">${authorName}</h3>
+                <p class="author-bio">${authorData.bio.substring(0, 120)}...</p>
+                <div class="author-works">
+                    <strong>${authorData.famousWorks ? authorData.famousWorks.length : 0} произведений</strong>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return card;
+}
+
+// Функция поиска авторов
+function searchAuthors() {
+    const searchInput = document.getElementById('authorsSearchInput');
+    if (!searchInput) return;
+
+    const query = searchInput.value.trim();
+    loadAuthors(query);
+}
+
+// Функция для склонения слова "автор"
+function getAuthorsWord(count) {
+    if (count % 10 === 1 && count % 100 !== 11) return 'автор';
+    if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'автора';
+    return 'авторов';
+}
+
+// Функция открытия модального окна автора
+function openAuthorModal(authorName) {
+    const authorData = window.APP_DATA.AUTHOR_BIOS[authorName];
+    if (!authorData) return;
+
+    const modal = document.getElementById('authorModal');
+    const modalTitle = document.getElementById('authorModalTitle');
+    const modalBody = document.getElementById('authorModalBody');
+
+    if (!modal || !modalTitle || !modalBody) return;
+
+    modalTitle.textContent = `Биография ${authorName}`;
+
+    modalBody.innerHTML = `
+        <div class="author-modal-content">
+            <div class="author-modal-image">
+                <img src="${authorData.image}" alt="${authorName}" onerror="this.src='👤'">
+            </div>
+            <div class="author-modal-info">
+                <h3>${authorName}</h3>
+                <p class="author-bio">${authorData.bio}</p>
+
+                ${authorData.famousWorks ? `
+                    <div class="author-works">
+                        <h4>Известные произведения:</h4>
+                        <ul>
+                            ${authorData.famousWorks.map(work => `<li>${work}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${authorData.quotes ? `
+                    <div class="author-quotes">
+                        <h4>Цитаты:</h4>
+                        ${authorData.quotes.map(quote => `<blockquote>"${quote}"</blockquote>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+}
+
+// Функция закрытия модального окна автора
+function closeAuthorModal() {
+    const modal = document.getElementById('authorModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+// Добавляем обработчик для поиска при вводе текста
+document.addEventListener('DOMContentLoaded', function() {
+    const authorsSearchInput = document.getElementById('authorsSearchInput');
+    if (authorsSearchInput) {
+        authorsSearchInput.addEventListener('input', function() {
+            searchAuthors();
+        });
+    }
+});
 
 // Экспортируем новые функции
 window.exportBooksData = exportBooksData;
@@ -6000,11 +6202,12 @@ window.resetUsersToDefault = resetUsersToDefault;
 window.searchAdminBooks = searchAdminBooks;
 window.filterAdminBooks = filterAdminBooks;
 window.searchAdminUsers = searchAdminUsers;
-window.filterAdminUsers = filterAdminUsers;
 window.loadAdminPanel = loadAdminPanel;
-window.loadUsersForRoleManagement = loadUsersForRoleManagement;
-window.changeUserRole = changeUserRole;
-window.setOwnRole = setOwnRole;
+window.updateUserAdmin = updateUserAdmin;
+window.loadAuthors = loadAuthors;
+window.searchAuthors = searchAuthors;
+window.openAuthorModal = openAuthorModal;
+window.closeAuthorModal = closeAuthorModal;
 
 // Админ функции
 function openAdminModal() {
@@ -6041,6 +6244,12 @@ function adminLogin() {
 }
 
 function showAdminTab(tab) {
+    // Проверяем, что вкладка существует
+    if (tab !== 'books' && tab !== 'users') {
+        console.warn('Неизвестная вкладка админ-панели:', tab);
+        return;
+    }
+
     document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`[onclick="showAdminTab('${tab}')"]`).classList.add('active');
 
@@ -6055,64 +6264,6 @@ function showAdminTab(tab) {
     }
 }
 
-function loadBooksAdmin() {
-    const container = document.getElementById('booksAdminList');
-    if (!container) return;
-
-    const books = window.APP_DATA.MOCK_BOOKS || [];
-    container.innerHTML = books.map(book => `
-        <div class="admin-book-item">
-            <div class="book-info">
-                <strong>${book.title}</strong> - ${book.author} (${book.genre})
-            </div>
-            <div class="book-actions">
-                <button onclick="editBook(${book.id})" class="edit-btn">✏️ Редактировать</button>
-                <button onclick="deleteBook(${book.id})" class="delete-btn">🗑️ Удалить</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function loadUsersAdmin() {
-    const container = document.getElementById('usersAdminList');
-    if (!container) return;
-
-    // Для демонстрации, показываем текущего пользователя
-    const users = [userData];
-
-    // Функция для получения класса роли
-    function getRoleClass(role) {
-        switch(role) {
-            case 'Активный пользователь': return 'role-active';
-            case 'Модератор': return 'role-moderator';
-            case 'Администратор': return 'role-admin';
-            case 'VIP': return 'role-vip';
-            default: return 'role-active';
-        }
-    }
-
-    container.innerHTML = users.map(user => `
-        <div class="admin-user-item">
-            <div class="user-info">
-                <strong>${user.name}</strong> (ID: ${user.telegramId || 'Неизвестен'})
-                <br>Уровень: ${user.level}, Опыт: ${user.experience}, Кристаллы: ${user.coins}
-                <br><span class="user-role ${getRoleClass(user.role)}">${user.role}</span>
-            </div>
-            <div class="user-controls">
-                <input type="number" id="userLevel${user.telegramId || 'current'}" value="${user.level}" placeholder="Уровень">
-                <input type="number" id="userExp${user.telegramId || 'current'}" value="${user.experience}" placeholder="Опыт">
-                <input type="number" id="userCoins${user.telegramId || 'current'}" value="${user.coins}" placeholder="Кристаллы">
-                <select id="userRole${user.telegramId || 'current'}">
-                    <option value="Активный пользователь" ${user.role === 'Активный пользователь' ? 'selected' : ''}>Активный пользователь</option>
-                    <option value="Модератор" ${user.role === 'Модератор' ? 'selected' : ''}>Модератор</option>
-                    <option value="Администратор" ${user.role === 'Администратор' ? 'selected' : ''}>Администратор</option>
-                    <option value="VIP" ${user.role === 'VIP' ? 'selected' : ''}>VIP</option>
-                </select>
-                <button onclick="updateUserAdmin('${user.telegramId || 'current'}')" class="update-btn">Обновить</button>
-            </div>
-        </div>
-    `).join('');
-}
 
 function showAddBookForm() {
     document.getElementById('addBookModal').classList.remove('hidden');
@@ -6241,49 +6392,6 @@ function deleteBook(bookId) {
     }
 }
 
-// Функция для изменения роли пользователя через API
-async function updateUserRole(userId) {
-    const roleSelect = document.getElementById(`userRole${userId}`);
-    if (!roleSelect) {
-        alert('Ошибка: элемент выбора роли не найден');
-        return;
-    }
-
-    const newRole = roleSelect.value;
-
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ role: newRole })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Ошибка изменения роли');
-        }
-
-        tg.showPopup({
-            title: '✅ Роль изменена',
-            message: `Роль пользователя успешно изменена на "${data.user.roleInfo.name}"`,
-            buttons: [{ type: 'ok' }]
-        });
-
-        // Перезагружаем список пользователей
-        loadUsersAdmin();
-
-    } catch (error) {
-        console.error('Ошибка изменения роли:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Не удалось изменить роль пользователя',
-            buttons: [{ type: 'ok' }]
-        });
-    }
-}
 
 // Функция для удаления пользователя через API
 async function deleteUser(userId) {
