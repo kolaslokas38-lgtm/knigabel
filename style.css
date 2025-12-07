@@ -33,6 +33,7 @@
     --hero-bg:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#334155 100%);
     --hero-card-bg:linear-gradient(135deg,rgba(30,41,59,0.8),rgba(51,65,85,0.6));
 }
+[data-theme="dark"] .nav-btn.active{background:var(--nav-active);box-shadow:0 4px 15px rgba(6,182,212,0.4)}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:var(--line-height);font-size:var(--font-size-base);transition:all .3s ease;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .container{max-width:1200px;margin:0 auto;padding:0 var(--spacing-lg);min-height:100vh}
 
@@ -154,7 +155,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .nav-tabs{display:flex;justify-content:center;gap:var(--spacing-lg);flex-wrap:wrap}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:var(--spacing-xs);padding:var(--spacing-lg);background:var(--card);border:2px solid transparent;border-radius:var(--radius);cursor:pointer;transition:all .3s ease;font-size:14px;font-weight:500;color:var(--text);min-width:80px}
 .nav-btn:hover{background:var(--border-light);transform:translateY(-2px)}
-.nav-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-2px)}
+.nav-btn.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 15px rgba(99,102,241,0.4);position:relative;animation:activeTabGlow 2s ease-in-out infinite alternate}
+.nav-btn.active::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:60%;height:3px;background:linear-gradient(90deg,#fff,rgba(255,255,255,0.8));border-radius:2px;box-shadow:0 2px 4px rgba(0,0,0,0.2);animation:activeTabLine 1.5s ease-in-out infinite alternate}
+@keyframes activeTabGlow{0%{box-shadow:0 4px 15px rgba(99,102,241,0.4),0 0 0 1px rgba(99,102,241,0.3)}100%{box-shadow:0 6px 20px rgba(99,102,241,0.6),0 0 0 2px rgba(99,102,241,0.5)}}
+@keyframes activeTabLine{0%{width:60%;opacity:0.8}100%{width:70%;opacity:1}}
 .nav-icon{font-size:1.5em}
 .nav-text{font-size:0.8em;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
 
