@@ -673,6 +673,28 @@ async function initializeTelegramApp() {
         };
     }
 
+    // Инициализируем массивы, если они undefined
+    userData.myReviews = userData.myReviews || [];
+    userData.favorites = userData.favorites || [];
+    userData.borrowedBooks = userData.borrowedBooks || [];
+    userData.history = userData.history || [];
+    userData.bookedEvents = userData.bookedEvents || [];
+    userData.titles = userData.titles || [];
+    userData.achievementRewardsClaimed = userData.achievementRewardsClaimed || [];
+    userData.stats = userData.stats || {
+        totalBooks: 0,
+        activeBorrows: 0,
+        totalRead: 0,
+        readingDays: 0,
+        reviewsWritten: 0,
+        totalEvents: 0,
+        booksCompleted: 0,
+        achievementsUnlocked: 0,
+        dailyChallengesCompleted: 0,
+        weeklyChallengesCompleted: 0,
+        totalPagesRead: 0
+    };
+
     // Сбрасываем достижения и челленджи для нового старта
     userData.achievements = [];
     userData.challenges = {
@@ -682,10 +704,6 @@ async function initializeTelegramApp() {
     };
     userData.achievementRewardsClaimed = [];
     // Не сбрасываем отзывы, избранное, историю и бронирования - они должны сохраняться
-    // userData.myReviews = [];
-    // userData.favorites = [];
-    // userData.borrowedBooks = [];
-    // userData.history = [];
     // Сбрасываем уровень и опыт
     userData.level = 1;
     userData.experience = 0;
@@ -1372,8 +1390,9 @@ async function showBookDetails(bookId) {
         const bookReviews = await fetchReviews(bookId);
         const userId = userData.telegramId || 'anonymous';
         const userHasReviewed = bookReviews.some(review => review.userId === userId);
-        
+
         const modalBody = document.getElementById('modalBody');
+        if (!modalBody) return;
         modalBody.innerHTML = `
             <div class="book-details">
                 <div class="book-cover-large ${getGenreClass(book.genre)}">
@@ -5284,6 +5303,8 @@ function displayAllReviews() {
     const container = document.getElementById('allReviewsContainer');
     const emptyState = document.getElementById('reviewsEmptyState');
     const countElement = document.getElementById('allReviewsCount');
+
+    if (!container) return;
 
     if (!allReviews || allReviews.length === 0) {
         container.innerHTML = '';
