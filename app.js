@@ -374,6 +374,69 @@ function updateProfileStats() {
     }
 }
 
+// Функция для обновления списка моих отзывов в профиле
+function updateMyReviewsList() {
+    const container = document.getElementById('myReviewsList');
+    const countElement = document.getElementById('myReviewsCount');
+
+    if (!container || !userData) return;
+
+    const myReviews = userData.myReviews || [];
+
+    // Обновляем счетчик
+    if (countElement) {
+        countElement.textContent = myReviews.length;
+    }
+
+    if (myReviews.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-light);">У вас пока нет отзывов</p>';
+        return;
+    }
+
+    container.innerHTML = myReviews.map(review => {
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === review.bookId);
+        const bookTitle = book ? book.title : 'Неизвестная книга';
+        const bookAuthor = book ? book.author : 'Неизвестный автор';
+
+        return `
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-user-info">
+                        <div class="review-avatar">${review.userAvatar}</div>
+                        <div class="review-user-details">
+                            <div class="review-user-name">${escapeHtml(review.userName)}</div>
+                            <div class="review-book-info">
+                                <span class="review-book-title">${escapeHtml(bookTitle)}</span>
+                                <span class="review-book-author">${escapeHtml(bookAuthor)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        ${createRatingStars(review.rating)}
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p class="review-text">${escapeHtml(review.comment)}</p>
+                </div>
+                <div class="review-footer">
+                    <div class="review-date">${formatReviewDate(review.date)}</div>
+                    <div class="review-actions">
+                        <button class="like-review-btn" onclick="likeReview(${review.id})">
+                            ❤️ ${review.likes || 0}
+                        </button>
+                        <button class="view-book-btn" onclick="showBookDetails(${review.bookId})">
+                            📖 Посмотреть книгу
+                        </button>
+                        <button class="delete-review-btn" onclick="deleteReview(${review.id}, ${review.bookId})">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 // Функции для работы с API отзывов
 async function fetchReviews(bookId = null) {
     try {
@@ -401,9 +464,14 @@ async function fetchReviews(bookId = null) {
         if (error.name === 'AbortError') {
             console.log('Fetch aborted due to timeout');
         } else {
-            console.error('Ошибка загрузки отзывов:', error);
+            console.error('Ошибка загрузки отзывов с сервера, используем локальные данные:', error);
         }
-        return [];
+        // Возвращаем локальные отзывы при ошибке сервера
+        const localReviews = window.APP_DATA.BOOK_REVIEWS || [];
+        if (bookId) {
+            return localReviews.filter(review => review.bookId === bookId);
+        }
+        return localReviews;
     }
 }
 
@@ -532,8 +600,9 @@ async function initializeApp() {
 
 // Инициализация Telegram Web App
 async function initializeTelegramApp() {
-    // Отзывы загружаются по требованию
-    window.APP_DATA.BOOK_REVIEWS = [];
+    // Загружаем отзывы из localStorage
+    const savedReviews = localStorage.getItem('reviews');
+    window.APP_DATA.BOOK_REVIEWS = savedReviews ? JSON.parse(savedReviews) : [];
     if (window.STORAGE && window.STORAGE.loadAllData) {
         userData = window.STORAGE.loadAllData();
     } else {
@@ -612,11 +681,11 @@ async function initializeTelegramApp() {
         monthly: { lastReset: null, completed: [], claimed: [] }
     };
     userData.achievementRewardsClaimed = [];
-    // Сбрасываем отзывы и избранное
-    userData.myReviews = [];
-    userData.favorites = [];
-    userData.borrowedBooks = [];
-    userData.history = [];
+    // Не сбрасываем отзывы, избранное, историю и бронирования - они должны сохраняться
+    // userData.myReviews = [];
+    // userData.favorites = [];
+    // userData.borrowedBooks = [];
+    // userData.history = [];
     // Сбрасываем уровень и опыт
     userData.level = 1;
     userData.experience = 0;
@@ -892,6 +961,7 @@ function showSection(sectionName) {
 
     if (sectionName === 'profile') {
         updateUserProfile();
+        updateMyReviewsList();
         updateInventoryList();
     }
     if (sectionName === 'redbook') {
@@ -5110,6 +5180,58 @@ function showAuthorEducationDetails(authorId) {
 
 // Функции для работы с отзывами
 
+// Функция для удаления отзыва
+async function deleteReview(reviewId, bookId) {
+    if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+        return;
+    }
+
+    try {
+        // Попытка удалить с сервера
+        await deleteReviewFromServer(reviewId, userData.telegramId || 'anonymous');
+    } catch (error) {
+        console.error('Ошибка удаления отзыва с сервера:', error);
+    }
+
+    // Удаляем локально
+    if (window.APP_DATA.BOOK_REVIEWS) {
+        window.APP_DATA.BOOK_REVIEWS = window.APP_DATA.BOOK_REVIEWS.filter(review => review.id !== reviewId);
+        localStorage.setItem('reviews', JSON.stringify(window.APP_DATA.BOOK_REVIEWS));
+    }
+
+    // Удаляем из моих отзывов
+    if (userData.myReviews) {
+        userData.myReviews = userData.myReviews.filter(review => review.id !== reviewId);
+        userData.stats.reviewsWritten = Math.max(0, (userData.stats.reviewsWritten || 0) - 1);
+        window.STORAGE.saveAllData(userData);
+    }
+
+    // Обновляем счетчик отзывов книги
+    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
+    if (book) {
+        book.reviewsCount = Math.max(0, (book.reviewsCount || 0) - 1);
+        localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
+    }
+
+    // Обновляем отображение
+    if (document.getElementById('reviewsSection').classList.contains('active')) {
+        loadReviewsSection();
+    }
+    if (document.getElementById('profileSection').classList.contains('active')) {
+        updateMyReviewsList();
+        updateProfileStats();
+    }
+    if (document.getElementById('bookModal').classList.contains('hidden') === false) {
+        showBookDetails(bookId);
+    }
+
+    tg.showPopup({
+        title: '✅ Отзыв удален',
+        message: 'Отзыв успешно удален',
+        buttons: [{ type: 'ok' }]
+    });
+}
+
 // Глобальные переменные для отзывов
 let allReviews = [];
 let currentReviewsSort = 'newest';
@@ -5481,6 +5603,8 @@ window.closeReviewModal = closeReviewModal;
 window.setRating = setRating;
 window.updateCharCount = updateCharCount;
 window.submitReview = submitReview;
+window.updateMyReviewsList = updateMyReviewsList;
+window.deleteReview = deleteReview;
 window.toggleTheme = toggleTheme;
 window.loadRedBookAnimals = loadRedBookAnimals;
 window.showAnimalDetails = showAnimalDetails;

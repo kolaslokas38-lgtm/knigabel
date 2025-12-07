@@ -158,39 +158,39 @@
         <!-- Navigation Tabs -->
         <section class="navigation-section">
             <div class="nav-tabs">
-                <button class="nav-btn active" data-section="catalog" onclick="showSection('catalog')">
+                <button class="nav-btn active" onclick="showSection('catalog')">
                     <span class="nav-icon">📚</span>
                     <span class="nav-text">Каталог</span>
                 </button>
-                <button class="nav-btn" data-section="authors" onclick="showSection('authors')">
+                <button class="nav-btn" onclick="showSection('authors')">
                     <span class="nav-icon">👥</span>
                     <span class="nav-text">Авторы</span>
                 </button>
-                <button class="nav-btn" data-section="education" onclick="showSection('education')">
+                <button class="nav-btn" onclick="showSection('education')">
                     <span class="nav-icon">🎓</span>
                     <span class="nav-text">Обучение</span>
                 </button>
-                <button class="nav-btn" data-section="games" onclick="showSection('games')">
+                <button class="nav-btn" onclick="showSection('games')">
                     <span class="nav-icon">🎮</span>
                     <span class="nav-text">Игры</span>
                 </button>
-                <button class="nav-btn" data-section="events" onclick="showSection('events')">
+                <button class="nav-btn" onclick="showSection('events')">
                     <span class="nav-icon">📅</span>
                     <span class="nav-text">События</span>
                 </button>
-                <button class="nav-btn" data-section="redbook" onclick="showSection('redbook')">
+                <button class="nav-btn" onclick="showSection('redbook')">
                     <span class="nav-icon">🐾</span>
                     <span class="nav-text">Красная Книга</span>
                 </button>
-                <button class="nav-btn" data-section="reviews" onclick="showSection('reviews')">
+                <button class="nav-btn" onclick="showSection('reviews')">
                     <span class="nav-icon">💬</span>
                     <span class="nav-text">Отзывы</span>
                 </button>
-                <button class="nav-btn" data-section="achievements" onclick="showSection('achievements')">
+                <button class="nav-btn" onclick="showSection('achievements')">
                     <span class="nav-icon">🏆</span>
                     <span class="nav-text">Достижения</span>
                 </button>
-                <button class="nav-btn" data-section="profile" onclick="showSection('profile')">
+                <button class="nav-btn" onclick="showSection('profile')">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Мой профиль</span>
                 </button>
@@ -278,19 +278,6 @@
                 <h2>👥 Знаменитые авторы</h2>
                 <span class="authors-count" id="authorsCount">3 автора</span>
             </div>
-
-            <!-- Search Section for Authors -->
-            <section class="search-section" id="authorsSearchSection">
-                <div class="search-container">
-                    <input
-                        type="text"
-                        id="authorsSearchInput"
-                        placeholder="Поиск по имени автора..."
-                        class="search-input"
-                    >
-                    <button onclick="searchAuthors()" class="search-btn">🔍</button>
-                </div>
-            </section>
 
             <div class="authors-grid" id="authorsGrid">
                 <!-- Authors will be loaded here -->
@@ -822,6 +809,7 @@
                         <div class="admin-tabs">
                             <button class="admin-tab active" onclick="showAdminTab('books')">📚 Управление книгами</button>
                             <button class="admin-tab" onclick="showAdminTab('users')">👥 Управление пользователями</button>
+                            <button class="admin-tab" onclick="showAdminTab('roles')">👑 Управление ролями</button>
                         </div>
 
                         <div class="admin-content" id="adminBooksTab">
@@ -915,6 +903,13 @@
 
                             <div class="admin-search">
                                 <input type="text" id="adminUserSearch" class="admin-search-input" placeholder="Поиск пользователей..." oninput="searchAdminUsers()">
+                                <select id="adminRoleFilter" class="admin-filter-select" onchange="filterAdminUsers()">
+                                    <option value="">Все роли</option>
+                                    <option value="Активный пользователь">Активный пользователь</option>
+                                    <option value="Модератор">Модератор</option>
+                                    <option value="Администратор">Администратор</option>
+                                    <option value="VIP">VIP</option>
+                                </select>
                             </div>
 
                             <div class="users-admin-list" id="usersAdminList">
@@ -927,245 +922,80 @@
                             </div>
                         </div>
 
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <div class="admin-content hidden" id="adminRolesTab">
+                            <div class="admin-actions">
+                                <button onclick="loadUsersForRoleManagement()" class="admin-action-btn">
+                                    <span>🔄</span> Обновить список
+                                </button>
+                            </div>
 
-        <!-- Add Book Modal -->
-        <div class="modal hidden" id="addBookModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>➕ Добавить книгу</h3>
-                    <button onclick="closeAddBookModal()" class="close-btn">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="bookTitle">Название книги:</label>
-                        <input type="text" id="bookTitle" class="admin-input" placeholder="Введите название книги">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookAuthor">Автор:</label>
-                        <input type="text" id="bookAuthor" class="admin-input" placeholder="Введите имя автора">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookGenre">Жанр:</label>
-                        <select id="bookGenre" class="admin-filter-select">
-                            <option value="">Выберите жанр</option>
-                            <option value="Роман-эпопея">Роман-эпопея</option>
-                            <option value="Психологический роман">Психологический роман</option>
-                            <option value="Фантастика">Фантастика</option>
-                            <option value="Фэнтези">Фэнтези</option>
-                            <option value="Детектив">Детектив</option>
-                            <option value="Триллер">Триллер</option>
-                            <option value="Романтика">Романтика</option>
-                            <option value="Классика">Классика</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookYear">Год издания:</label>
-                        <input type="number" id="bookYear" class="admin-input" placeholder="Введите год">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookPages">Количество страниц:</label>
-                        <input type="number" id="bookPages" class="admin-input" placeholder="Введите количество страниц">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookRating">Рейтинг (0-5):</label>
-                        <input type="number" id="bookRating" class="admin-input" step="0.1" min="0" max="5" placeholder="Введите рейтинг">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookIcon">Иконка:</label>
-                        <input type="text" id="bookIcon" class="admin-input" placeholder="Введите emoji иконку">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookDescription">Описание:</label>
-                        <textarea id="bookDescription" class="admin-input" rows="4" placeholder="Введите описание книги"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="addBook()" class="admin-action-btn success">Добавить книгу</button>
-                        <button onclick="closeAddBookModal()" class="admin-action-btn">Отмена</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                            <div class="role-management-section">
+                                <h3>👑 Управление ролями пользователей</h3>
+                                <div class="role-form">
+                                    <div class="form-group">
+                                        <label>Выберите пользователя:</label>
+                                        <select id="roleUserSelect" class="admin-filter-select">
+                                            <option value="">Загрузка пользователей...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Новая роль:</label>
+                                        <select id="roleSelect" class="admin-filter-select">
+                                            <option value="user">Пользователь</option>
+                                            <option value="premium">Премиум</option>
+                                            <option value="vip">VIP</option>
+                                            <option value="moderator">Модератор</option>
+                                            <option value="administrator">Администратор</option>
+                                            <option value="owner">Владелец</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button onclick="changeUserRole()" class="admin-action-btn success">
+                                            <span>✅</span> Изменить роль
+                                        </button>
+                                        <button onclick="setOwnRole()" class="admin-action-btn">
+                                            <span>👤</span> Изменить свою роль
+                                        </button>
+                                    </div>
+                                </div>
 
-        <!-- Edit Book Modal -->
-        <div class="modal hidden" id="editBookModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>✏️ Редактировать книгу</h3>
-                    <button onclick="closeEditBookModal()" class="close-btn">×</button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="editBookId">
-                    <div class="form-group">
-                        <label for="editBookTitle">Название книги:</label>
-                        <input type="text" id="editBookTitle" class="admin-input" placeholder="Введите название книги">
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookAuthor">Автор:</label>
-                        <input type="text" id="editBookAuthor" class="admin-input" placeholder="Введите имя автора">
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookGenre">Жанр:</label>
-                        <select id="editBookGenre" class="admin-filter-select">
-                            <option value="">Выберите жанр</option>
-                            <option value="Роман-эпопея">Роман-эпопея</option>
-                            <option value="Психологический роман">Психологический роман</option>
-                            <option value="Фантастика">Фантастика</option>
-                            <option value="Фэнтези">Фэнтези</option>
-                            <option value="Детектив">Детектив</option>
-                            <option value="Триллер">Триллер</option>
-                            <option value="Романтика">Романтика</option>
-                            <option value="Классика">Классика</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookYear">Год издания:</label>
-                        <input type="number" id="editBookYear" class="admin-input" placeholder="Введите год">
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookPages">Количество страниц:</label>
-                        <input type="number" id="editBookPages" class="admin-input" placeholder="Введите количество страниц">
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookRating">Рейтинг (0-5):</label>
-                        <input type="number" id="editBookRating" class="admin-input" step="0.1" min="0" max="5" placeholder="Введите рейтинг">
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookIcon">Иконка:</label>
-                        <input type="text" id="editBookIcon" class="admin-input" placeholder="Введите emoji иконку">
-                    </div>
-                    <div class="form-group">
-                        <label for="editBookDescription">Описание:</label>
-                        <textarea id="editBookDescription" class="admin-input" rows="4" placeholder="Введите описание книги"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="updateBook()" class="admin-action-btn success">Сохранить изменения</button>
-                        <button onclick="closeEditBookModal()" class="admin-action-btn">Отмена</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                <div class="role-info">
+                                    <h4>📋 Информация о ролях:</h4>
+                                    <div class="role-descriptions">
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #666666; font-weight: bold;">Пользователь</span>
+                                            - Базовая роль для обычных пользователей
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #FFD700; font-weight: bold;">Премиум</span>
+                                            - Расширенные возможности и преимущества
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #FF6B6B; font-weight: bold;">VIP</span>
+                                            - Особые привилегии и доступ к эксклюзивному контенту
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #4ECDC4; font-weight: bold;">Модератор</span>
+                                            - Возможность модерировать контент и пользователей
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #45B7D1; font-weight: bold;">Администратор</span>
+                                            - Полный доступ к управлению системой
+                                        </div>
+                                        <div class="role-desc">
+                                            <span class="role-badge" style="color: #9B59B6; font-weight: bold;">Владелец</span>
+                                            - Максимальные права и полный контроль
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-        <!-- Add Book Modal -->
-        <div class="modal hidden" id="addBookModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>➕ Добавить книгу</h3>
-                    <button onclick="closeAddBookModal()" class="close-btn">×</button>
-                </div>
-                <div class="modal-body">
-                    <form class="book-form">
-                        <div class="form-group">
-                            <label for="bookTitle">Название книги:</label>
-                            <input type="text" id="bookTitle" required>
+                            <div class="admin-loading hidden" id="adminRolesLoading">
+                                <div class="admin-spinner"></div>
+                                <p>Загрузка данных...</p>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="bookAuthor">Автор:</label>
-                            <input type="text" id="bookAuthor" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookGenre">Жанр:</label>
-                            <select id="bookGenre" required>
-                                <option value="">Выберите жанр</option>
-                                <option value="Роман-эпопея">Роман-эпопея</option>
-                                <option value="Психологический роман">Психологический роман</option>
-                                <option value="Фэнтези">Фэнтези</option>
-                                <option value="Фантастика">Фантастика</option>
-                                <option value="Детектив">Детектив</option>
-                                <option value="Триллер">Триллер</option>
-                                <option value="Романтика">Романтика</option>
-                                <option value="Классика">Классика</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookYear">Год издания:</label>
-                            <input type="number" id="bookYear" min="1800" max="2024" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookPages">Количество страниц:</label>
-                            <input type="number" id="bookPages" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookRating">Рейтинг (0-5):</label>
-                            <input type="number" id="bookRating" min="0" max="5" step="0.1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookIcon">Иконка:</label>
-                            <input type="text" id="bookIcon" placeholder="📖" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookDescription">Описание:</label>
-                            <textarea id="bookDescription" rows="4" required></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" onclick="addBook()" class="admin-action-btn success">Добавить книгу</button>
-                            <button type="button" onclick="closeAddBookModal()" class="admin-action-btn">Отмена</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Book Modal -->
-        <div class="modal hidden" id="editBookModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>✏️ Редактировать книгу</h3>
-                    <button onclick="closeEditBookModal()" class="close-btn">×</button>
-                </div>
-                <div class="modal-body">
-                    <form class="book-form">
-                        <input type="hidden" id="editBookId">
-                        <div class="form-group">
-                            <label for="editBookTitle">Название книги:</label>
-                            <input type="text" id="editBookTitle" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookAuthor">Автор:</label>
-                            <input type="text" id="editBookAuthor" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookGenre">Жанр:</label>
-                            <select id="editBookGenre" required>
-                                <option value="">Выберите жанр</option>
-                                <option value="Роман-эпопея">Роман-эпопея</option>
-                                <option value="Психологический роман">Психологический роман</option>
-                                <option value="Фэнтези">Фэнтези</option>
-                                <option value="Фантастика">Фантастика</option>
-                                <option value="Детектив">Детектив</option>
-                                <option value="Триллер">Триллер</option>
-                                <option value="Романтика">Романтика</option>
-                                <option value="Классика">Классика</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookYear">Год издания:</label>
-                            <input type="number" id="editBookYear" min="1800" max="2024" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookPages">Количество страниц:</label>
-                            <input type="number" id="editBookPages" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookRating">Рейтинг (0-5):</label>
-                            <input type="number" id="editBookRating" min="0" max="5" step="0.1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookIcon">Иконка:</label>
-                            <input type="text" id="editBookIcon" placeholder="📖" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookDescription">Описание:</label>
-                            <textarea id="editBookDescription" rows="4" required></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" onclick="updateBook()" class="admin-action-btn success">Сохранить изменения</button>
-                            <button type="button" onclick="closeEditBookModal()" class="admin-action-btn">Отмена</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
