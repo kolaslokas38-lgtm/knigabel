@@ -834,12 +834,23 @@ async function initializeTelegramApp() {
     }
 
 function handleBackButton() {
-    if (document.getElementById('bookModal').classList.contains('hidden') && 
+    if (document.getElementById('bookModal').classList.contains('hidden') &&
         document.getElementById('reviewModal').classList.contains('hidden')) {
         tg.close();
     } else {
         closeModal();
         closeReviewModal();
+    }
+}
+
+function exitApp() {
+    if (tg) {
+        tg.close();
+    } else {
+        // Для браузера - просто закрыть вкладку или показать сообщение
+        if (confirm('Вы действительно хотите выйти из приложения?')) {
+            window.close();
+        }
     }
 }
 
@@ -5527,6 +5538,7 @@ window.openAdminModal = openAdminModal;
 window.closeAdminModal = closeAdminModal;
 window.adminLogin = adminLogin;
 window.showAdminTab = showAdminTab;
+window.exitApp = exitApp;
 window.showAddBookForm = showAddBookForm;
 window.closeAddBookModal = closeAddBookModal;
 window.addBook = addBook;
