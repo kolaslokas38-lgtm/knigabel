@@ -6092,6 +6092,49 @@ function loadAuthors(searchQuery = '') {
     });
 }
 
+<<<<<<< HEAD
+=======
+// Функция загрузки авторов
+function loadAuthors(searchQuery = '') {
+    const authorsGrid = document.getElementById('authorsGrid');
+    const authorsCount = document.getElementById('authorsCount');
+
+    if (!authorsGrid || !authorsCount) return;
+
+    const authorBios = window.APP_DATA.AUTHOR_BIOS || {};
+    const authorNames = Object.keys(authorBios);
+
+    // Фильтруем авторов по поисковому запросу
+    const filteredAuthors = authorNames.filter(authorName =>
+        authorName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Обновляем счетчик
+    authorsCount.textContent = `${filteredAuthors.length} ${getAuthorsWord(filteredAuthors.length)}`;
+
+    // Очищаем контейнер
+    authorsGrid.innerHTML = '';
+
+    if (filteredAuthors.length === 0) {
+        authorsGrid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>Авторы не найдены</h3>
+                <p>Попробуйте изменить поисковый запрос</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Отображаем авторов
+    filteredAuthors.forEach(authorName => {
+        const authorData = authorBios[authorName];
+        const authorCard = createAuthorCard(authorName, authorData);
+        authorsGrid.appendChild(authorCard);
+    });
+}
+
+>>>>>>> 5256fe91b01ae6595fe844b278f4b3ca6ddea68b
 // Функция создания карточки автора
 function createAuthorCard(authorName, authorData) {
     const card = document.createElement('div');
@@ -6203,7 +6246,13 @@ window.searchAdminBooks = searchAdminBooks;
 window.filterAdminBooks = filterAdminBooks;
 window.searchAdminUsers = searchAdminUsers;
 window.loadAdminPanel = loadAdminPanel;
+<<<<<<< HEAD
 window.updateUserAdmin = updateUserAdmin;
+=======
+window.loadUsersForRoleManagement = loadUsersForRoleManagement;
+window.changeUserRole = changeUserRole;
+window.setOwnRole = setOwnRole;
+>>>>>>> 5256fe91b01ae6595fe844b278f4b3ca6ddea68b
 window.loadAuthors = loadAuthors;
 window.searchAuthors = searchAuthors;
 window.openAuthorModal = openAuthorModal;
