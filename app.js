@@ -454,28 +454,10 @@ function fetchReviews(bookId = null) {
     }
 }
 
-// Функция для получения отзывов с сервера
+// Функция для получения отзывов (только локально)
 async function fetchReviewsFromServer(bookId = null) {
-    try {
-        const url = bookId ? `/api/reviews/book/${bookId}` : '/api/reviews';
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error('Server error');
-        }
-
-        try {
-            const data = await response.json();
-            return data.reviews || [];
-        } catch (jsonError) {
-            console.warn('Не удалось распарсить JSON ответ:', jsonError);
-            throw new Error('Invalid JSON response');
-        }
-    } catch (error) {
-        console.error('Ошибка получения отзывов с сервера:', error);
-        // Возвращаем локальные отзывы в случае ошибки
-        return fetchReviews(bookId);
-    }
+    // Используем только локальные отзывы для стабильности
+    return fetchReviews(bookId);
 }
 
 // Функция для обновления статистики книги после добавления отзыва
@@ -511,77 +493,62 @@ function updateBookAfterReview(bookId, newRating) {
 
 async function submitReview(reviewData) {
     try {
-        // Сначала пытаемся отправить на сервер
-        try {
-            const serverResult = await submitReviewToServer(reviewData);
-            console.log('Отзыв успешно отправлен на сервер:', serverResult);
+        // Используем только локальное хранение для стабильности
+        console.log('Добавляем отзыв локально');
 
+        // Генерируем ID для отзыва
+        const reviewId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+
+        const review = {
+            id: reviewId,
+            bookId: reviewData.bookId,
+            userId: userData.telegramId || 'anonymous',
+            userName: userData.name || 'Пользователь',
+            userAvatar: userData.avatar || '👤',
+            rating: reviewData.rating,
+            comment: reviewData.comment,
+            date: new Date().toISOString(),
+            likes: 0
+        };
+
+        // Добавляем отзыв через storage
+        const addedReview = window.STORAGE.addGlobalReview(review);
+
+        if (addedReview) {
             // Добавляем в личные отзывы пользователя
             if (!userData.myReviews) userData.myReviews = [];
-            userData.myReviews.unshift(serverResult.review);
+            userData.myReviews.unshift(addedReview);
             userData.stats.reviewsWritten = (userData.stats.reviewsWritten || 0) + 1;
 
             // Сохраняем данные пользователя
             window.STORAGE.saveAllData(userData);
 
-            return { success: true, review: serverResult.review };
-        } catch (serverError) {
-            console.warn('Ошибка отправки на сервер, используем локальное хранение:', serverError);
+            // Начисляем опыт за написание отзыва
+            handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
 
-            // Генерируем ID для отзыва
-            const reviewId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            // Обновляем прогресс заданий
+            updateQuestProgress('write_review');
 
-            const review = {
-                id: reviewId,
-                bookId: reviewData.bookId,
-                userId: userData.telegramId || 'anonymous',
-                userName: userData.name || 'Пользователь',
-                userAvatar: userData.avatar || '👤',
-                rating: reviewData.rating,
-                comment: reviewData.comment,
-                date: new Date().toISOString(),
-                likes: 0
-            };
+            updateUserProfile();
 
-            // Добавляем отзыв через storage
-            const addedReview = window.STORAGE.addGlobalReview(review);
+            tg.showPopup({
+                title: 'Спасибо за отзыв!',
+                message: 'Ваш отзыв успешно опубликован и виден всем пользователям Telegram Mini App',
+                buttons: [{ type: 'ok' }]
+            });
 
-            if (addedReview) {
-                // Добавляем в личные отзывы пользователя
-                if (!userData.myReviews) userData.myReviews = [];
-                userData.myReviews.unshift(addedReview);
-                userData.stats.reviewsWritten = (userData.stats.reviewsWritten || 0) + 1;
+            // Обновляем статистику книги
+            updateBookAfterReview(reviewData.bookId, reviewData.rating);
 
-                // Сохраняем данные пользователя
-                window.STORAGE.saveAllData(userData);
-
-                // Начисляем опыт за написание отзыва
-                handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
-
-                // Обновляем прогресс заданий
-                updateQuestProgress('write_review');
-
-                updateUserProfile();
-
-                tg.showPopup({
-                    title: 'Спасибо за отзыв!',
-                    message: 'Ваш отзыв успешно опубликован и виден всем пользователям Telegram Mini App',
-                    buttons: [{ type: 'ok' }]
-                });
-
-                // Обновляем статистику книги
-                updateBookAfterReview(reviewData.bookId, reviewData.rating);
-
-                // Если модальное окно книги открыто, обновляем отображение
-                if (document.getElementById('bookModal').classList.contains('hidden') === false) {
-                    showBookDetails(reviewData.bookId);
-                }
-
-                console.log('Отзыв успешно добавлен локально:', reviewId);
-                return { success: true, review: addedReview };
-            } else {
-                throw new Error('Не удалось добавить отзыв');
+            // Если модальное окно книги открыто, обновляем отображение
+            if (document.getElementById('bookModal').classList.contains('hidden') === false) {
+                showBookDetails(reviewData.bookId);
             }
+
+            console.log('Отзыв успешно добавлен локально:', reviewId);
+            return { success: true, review: addedReview };
+        } else {
+            throw new Error('Не удалось добавить отзыв');
         }
     } catch (error) {
         console.error('Ошибка отправки отзыва:', error);
@@ -592,25 +559,18 @@ async function submitReview(reviewData) {
 
 async function likeReview(reviewId) {
     try {
-        // Сначала пытаемся отправить на сервер
-        try {
-            const likes = await likeReviewOnServer(reviewId);
-            console.log('Лайк отправлен на сервер:', reviewId);
-            return likes;
-        } catch (serverError) {
-            console.warn('Ошибка лайка на сервере, используем локальное:', serverError);
+        // Используем только локальное хранение для стабильности
+        console.log('Добавляем лайк локально к отзыву:', reviewId);
 
-            // Локальная версия
-            const review = window.APP_DATA.BOOK_REVIEWS.find(r => r.id === reviewId);
-            if (review) {
-                review.likes = (review.likes || 0) + 1;
-                window.STORAGE.saveGlobalReviews();
-                window.STORAGE.syncReviewsAcrossTabs();
-                console.log('Лайк добавлен локально к отзыву:', reviewId);
-                return review.likes;
-            }
-            return 0;
+        const review = window.APP_DATA.BOOK_REVIEWS.find(r => r.id === reviewId);
+        if (review) {
+            review.likes = (review.likes || 0) + 1;
+            window.STORAGE.saveGlobalReviews();
+            window.STORAGE.syncReviewsAcrossTabs();
+            console.log('Лайк добавлен локально к отзыву:', reviewId);
+            return review.likes;
         }
+        return 0;
     } catch (error) {
         console.error('Ошибка лайка:', error);
         return 0;
@@ -631,6 +591,13 @@ async function submitReviewToServer(reviewData) {
 
         if (!response.ok) {
             throw new Error('Server error');
+        }
+
+        // Проверяем тип контента
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.warn('Сервер вернул не JSON ответ, тип контента:', contentType);
+            throw new Error('Server returned non-JSON response');
         }
 
         try {
@@ -5335,42 +5302,44 @@ async function deleteReview(reviewId, bookId) {
     }
 
     try {
-        // Попытка удалить с сервера
-        await deleteReviewFromServer(reviewId, userData.telegramId || 'anonymous');
+        // Удаляем локально через storage
+        window.STORAGE.deleteReview(reviewId);
+
+        // Удаляем из моих отзывов
+        if (userData.myReviews) {
+            userData.myReviews = userData.myReviews.filter(review => review.id !== reviewId);
+            userData.stats.reviewsWritten = Math.max(0, (userData.stats.reviewsWritten || 0) - 1);
+            window.STORAGE.saveAllData(userData);
+        }
+
+        // Обновляем счетчик отзывов книги
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
+        if (book) {
+            book.reviewsCount = Math.max(0, (book.reviewsCount || 0) - 1);
+            localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
+        }
+
+        if (document.getElementById('profileSection').classList.contains('active')) {
+            updateMyReviewsList();
+            updateProfileStats();
+        }
+        if (document.getElementById('bookModal').classList.contains('hidden') === false) {
+            showBookDetails(bookId);
+        }
+
+        tg.showPopup({
+            title: '✅ Отзыв удален',
+            message: 'Отзыв успешно удален',
+            buttons: [{ type: 'ok' }]
+        });
     } catch (error) {
-        console.error('Ошибка удаления отзыва с сервера:', error);
+        console.error('Ошибка удаления отзыва:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось удалить отзыв',
+            buttons: [{ type: 'ok' }]
+        });
     }
-
-    // Удаляем локально через storage
-    window.STORAGE.deleteReview(reviewId);
-
-    // Удаляем из моих отзывов
-    if (userData.myReviews) {
-        userData.myReviews = userData.myReviews.filter(review => review.id !== reviewId);
-        userData.stats.reviewsWritten = Math.max(0, (userData.stats.reviewsWritten || 0) - 1);
-        window.STORAGE.saveAllData(userData);
-    }
-
-    // Обновляем счетчик отзывов книги
-    const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
-    if (book) {
-        book.reviewsCount = Math.max(0, (book.reviewsCount || 0) - 1);
-        localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
-    }
-
-    if (document.getElementById('profileSection').classList.contains('active')) {
-        updateMyReviewsList();
-        updateProfileStats();
-    }
-    if (document.getElementById('bookModal').classList.contains('hidden') === false) {
-        showBookDetails(bookId);
-    }
-
-    tg.showPopup({
-        title: '✅ Отзыв удален',
-        message: 'Отзыв успешно удален',
-        buttons: [{ type: 'ok' }]
-    });
 }
 
 

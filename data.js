@@ -1793,6 +1793,7 @@ const DEFAULT_USER_DATA = {
         specialEvents: [],
         shopItems: []
     },
+    inventory: [],
     borrowedBooks: [],
     history: [],
     favorites: [],
