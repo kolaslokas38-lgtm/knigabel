@@ -234,6 +234,151 @@ function updateStats(stats) {
     console.log('Stats updated successfully');
 }
 
+// Функция для обновления прогресса заданий
+function updateQuestProgress(actionType, amount = 1) {
+    if (!userData) return;
+
+    // Инициализируем структуры прогресса, если они не существуют
+    if (!userData.challenges) {
+        userData.challenges = {
+            daily: { lastReset: null, completed: [], claimed: [], progress: {} },
+            weekly: { lastReset: null, completed: [], claimed: [], progress: {} },
+            monthly: { lastReset: null, completed: [], claimed: [], progress: {} }
+        };
+    }
+
+    // Сбрасываем челленджи, если нужно
+    resetChallengesIfNeeded();
+
+    // Обновляем прогресс для ежедневных заданий
+    updateDailyQuestProgress(actionType, amount);
+
+    // Обновляем прогресс для недельных челленджей
+    updateWeeklyChallengeProgress(actionType, amount);
+
+    // Обновляем прогресс для месячных челленджей
+    updateMonthlyChallengeProgress(actionType, amount);
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем интерфейс
+    loadGamesSection();
+}
+
+// Функция для сброса челленджей
+function resetChallengesIfNeeded() {
+    const now = new Date();
+    const today = now.toDateString();
+    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Сброс ежедневных
+    if (!userData.challenges.daily.lastReset || userData.challenges.daily.lastReset !== today) {
+        userData.challenges.daily.lastReset = today;
+        userData.challenges.daily.completed = [];
+        userData.challenges.daily.claimed = [];
+        userData.challenges.daily.progress = {};
+    }
+
+    // Сброс недельных
+    if (!userData.challenges.weekly.lastReset || userData.challenges.weekly.lastReset !== weekStart.toDateString()) {
+        userData.challenges.weekly.lastReset = weekStart.toDateString();
+        userData.challenges.weekly.completed = [];
+        userData.challenges.weekly.claimed = [];
+        userData.challenges.weekly.progress = {};
+    }
+
+    // Сброс месячных
+    if (!userData.challenges.monthly.lastReset || userData.challenges.monthly.lastReset !== monthStart.toDateString()) {
+        userData.challenges.monthly.lastReset = monthStart.toDateString();
+        userData.challenges.monthly.completed = [];
+        userData.challenges.monthly.claimed = [];
+        userData.challenges.monthly.progress = {};
+    }
+}
+
+// Функция для обновления прогресса ежедневных заданий
+function updateDailyQuestProgress(actionType, amount) {
+    const dailyQuests = window.APP_DATA.DAILY_CHALLENGES || [];
+    const userProgress = userData.challenges.daily.progress;
+
+    dailyQuests.forEach(quest => {
+        if (quest.category === actionType || quest.id === actionType) {
+            userProgress[quest.id] = (userProgress[quest.id] || 0) + amount;
+
+            // Проверяем, выполнено ли задание
+            if (userProgress[quest.id] >= quest.target && !userData.challenges.daily.completed.includes(quest.id)) {
+                userData.challenges.daily.completed.push(quest.id);
+
+                // Автоматически выдаем награду
+                claimQuestReward('daily', quest.id);
+
+                // Показываем уведомление
+                tg.showPopup({
+                    title: '🎉 Задание выполнено!',
+                    message: `Вы выполнили задание "${quest.title}" и получили награду!`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }
+        }
+    });
+}
+
+// Функция для обновления прогресса недельных челленджей
+function updateWeeklyChallengeProgress(actionType, amount) {
+    const weeklyChallenges = window.APP_DATA.WEEKLY_CHALLENGES || [];
+    const userProgress = userData.challenges.weekly.progress;
+
+    weeklyChallenges.forEach(challenge => {
+        if (challenge.category === actionType || challenge.id === actionType) {
+            userProgress[challenge.id] = (userProgress[challenge.id] || 0) + amount;
+
+            // Проверяем, выполнен ли челлендж
+            if (userProgress[challenge.id] >= challenge.target && !userData.challenges.weekly.completed.includes(challenge.id)) {
+                userData.challenges.weekly.completed.push(challenge.id);
+
+                // Автоматически выдаем награду
+                claimChallengeReward('weekly', challenge.id);
+
+                // Показываем уведомление
+                tg.showPopup({
+                    title: '🎉 Челлендж выполнен!',
+                    message: `Вы выполнили недельный челлендж "${challenge.title}" и получили награду!`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }
+        }
+    });
+}
+
+// Функция для обновления прогресса месячных челленджей
+function updateMonthlyChallengeProgress(actionType, amount) {
+    const monthlyChallenges = window.APP_DATA.GAME_DATA?.monthlyChallenges || [];
+    const userProgress = userData.challenges.monthly.progress;
+
+    monthlyChallenges.forEach(challenge => {
+        if (challenge.category === actionType || challenge.id === actionType) {
+            userProgress[challenge.id] = (userProgress[challenge.id] || 0) + amount;
+
+            // Проверяем, выполнен ли челлендж
+            if (userProgress[challenge.id] >= challenge.target && !userData.challenges.monthly.completed.includes(challenge.id)) {
+                userData.challenges.monthly.completed.push(challenge.id);
+
+                // Автоматически выдаем награду
+                claimChallengeReward('monthly', challenge.id);
+
+                // Показываем уведомление
+                tg.showPopup({
+                    title: '🎉 Месячный челлендж выполнен!',
+                    message: `Вы выполнили месячный челлендж "${challenge.title}" и получили награду!`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }
+        }
+    });
+}
+
 // Функция для обработки опыта и достижений
 function handleExperienceAndAchievements(userData, expGained) {
     if (!userData || !expGained) return;
@@ -1711,46 +1856,65 @@ async function submitReview() {
     };
 
     try {
-        // Отправляем отзыв на сервер
-        const result = await submitReviewToServer(reviewData);
+        // Используем только локальное хранение для стабильности
+        console.log('Добавляем отзыв локально');
 
-        // Добавляем отзыв в глобальный массив отзывов
-        window.STORAGE.addGlobalReview(result.review);
+        // Генерируем ID для отзыва
+        const reviewId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
-        // Добавляем в личные отзывы пользователя
-        userData.myReviews.unshift({
-            ...result.review,
-            bookTitle: book.title
-        });
-        userData.stats.reviewsWritten = userData.myReviews.length;
+        const review = {
+            id: reviewId,
+            bookId: reviewData.bookId,
+            userId: userData.telegramId || 'anonymous',
+            userName: userData.name || 'Пользователь',
+            userAvatar: userData.avatar || '👤',
+            rating: reviewData.rating,
+            comment: reviewData.comment,
+            date: new Date().toISOString(),
+            likes: 0
+        };
 
-        // Начисляем опыт за написание отзыва
-        handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
+        // Добавляем отзыв через storage
+        const addedReview = window.STORAGE.addGlobalReview(review);
 
-        // Обновляем прогресс заданий
-        updateQuestProgress('write_review');
+        if (addedReview) {
+            // Добавляем в личные отзывы пользователя
+            if (!userData.myReviews) userData.myReviews = [];
+            userData.myReviews.unshift(addedReview);
+            userData.stats.reviewsWritten = (userData.stats.reviewsWritten || 0) + 1;
 
-        window.STORAGE.saveAllData(userData);
-        updateUserProfile();
+            // Начисляем опыт за написание отзыва
+            handleExperienceAndAchievements(userData, 15); // 15 опыта за отзыв
 
-        // Уведомляем другие вкладки об обновлении отзывов
-        window.STORAGE.syncReviewsAcrossTabs();
+            // Обновляем прогресс заданий
+            updateQuestProgress('write_review');
 
-        tg.showPopup({
-            title: 'Спасибо за отзыв!',
-            message: 'Ваш отзыв успешно опубликован и виден всем пользователям Telegram Mini App',
-            buttons: [{ type: 'ok' }]
-        });
+            window.STORAGE.saveAllData(userData);
+            updateUserProfile();
 
-        closeReviewModal();
-        updateMyReviewsList();
+            // Уведомляем другие вкладки об обновлении отзывов
+            window.STORAGE.syncReviewsAcrossTabs();
 
-        // Обновляем отображение книги, если модал открыт
-        if (!document.getElementById('bookModal').classList.contains('hidden')) {
-            showBookDetails(currentReviewBookId);
+            tg.showPopup({
+                title: 'Спасибо за отзыв!',
+                message: 'Ваш отзыв успешно опубликован и виден всем пользователям Telegram Mini App',
+                buttons: [{ type: 'ok' }]
+            });
+
+            closeReviewModal();
+            updateMyReviewsList();
+
+            // Обновляем отображение книги, если модал открыт
+            if (!document.getElementById('bookModal').classList.contains('hidden')) {
+                showBookDetails(currentReviewBookId);
+            }
+
+            console.log('Отзыв успешно добавлен локально:', reviewId);
+        } else {
+            throw new Error('Не удалось добавить отзыв');
         }
-
     } catch (error) {
+        console.error('Ошибка отправки отзыва:', error);
         tg.showAlert('Ошибка при отправке отзыва: ' + error.message);
     }
 }
@@ -6388,6 +6552,326 @@ async function updateUserRole(userId) {
             buttons: [{ type: 'ok' }]
         });
     }
+}
+
+// Функции для работы с челленджами и играми
+
+// Загрузка раздела "Игры"
+function loadGamesSection() {
+    console.log('Загрузка раздела Игры');
+
+    // Загружаем ежедневные задания
+    loadDailyQuests();
+
+    // Загружаем недельные челленджи
+    loadWeeklyChallenges();
+
+    // Загружаем месячные челленджи
+    loadMonthlyChallenges();
+
+    // Загружаем специальные события
+    loadSpecialEvents();
+
+    // Обновляем статистику игрока
+    updatePlayerStats();
+}
+
+// Загрузка ежедневных заданий
+function loadDailyQuests() {
+    const container = document.getElementById('dailyQuestsGrid');
+    if (!container || !userData) return;
+
+    const dailyQuests = window.APP_DATA.DAILY_CHALLENGES || [];
+
+    container.innerHTML = dailyQuests.map(quest => {
+        const userProgress = userData.challenges?.daily?.progress?.[quest.id] || 0;
+        const isCompleted = userProgress >= quest.target;
+        const isClaimed = userData.challenges?.daily?.claimed?.includes(quest.id);
+
+        return `
+            <div class="quest-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}">
+                <div class="quest-header">
+                    <div class="quest-icon">${quest.icon}</div>
+                    <div class="quest-info">
+                        <h4>${quest.title}</h4>
+                        <p>${quest.description}</p>
+                    </div>
+                </div>
+                <div class="quest-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(userProgress / quest.target) * 100}%"></div>
+                    </div>
+                    <div class="progress-text">${userProgress}/${quest.target}</div>
+                </div>
+                <div class="quest-reward">
+                    <span class="reward-exp">+${quest.reward} опыта</span>
+                    ${isCompleted && !isClaimed ? '<button class="claim-btn" onclick="claimQuestReward(\'daily\', \'' + quest.id + '\')">Забрать награду</button>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Загрузка недельных челленджей
+function loadWeeklyChallenges() {
+    const container = document.getElementById('weeklyChallengesGrid');
+    if (!container || !userData) return;
+
+    const weeklyChallenges = window.APP_DATA.WEEKLY_CHALLENGES || [];
+
+    container.innerHTML = weeklyChallenges.map(challenge => {
+        const userProgress = userData.challenges?.weekly?.progress?.[challenge.id] || 0;
+        const isCompleted = userProgress >= challenge.target;
+        const isClaimed = userData.challenges?.weekly?.claimed?.includes(challenge.id);
+
+        return `
+            <div class="challenge-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}">
+                <div class="challenge-header">
+                    <div class="challenge-icon">${challenge.icon}</div>
+                    <div class="challenge-info">
+                        <h4>${challenge.title}</h4>
+                        <p>${challenge.description}</p>
+                    </div>
+                </div>
+                <div class="challenge-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(userProgress / challenge.target) * 100}%"></div>
+                    </div>
+                    <div class="progress-text">${userProgress}/${challenge.target}</div>
+                </div>
+                <div class="challenge-reward">
+                    <span class="reward-exp">+${challenge.reward} опыта</span>
+                    ${isCompleted && !isClaimed ? '<button class="claim-btn" onclick="claimChallengeReward(\'weekly\', \'' + challenge.id + '\')">Забрать награду</button>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Загрузка месячных челленджей
+function loadMonthlyChallenges() {
+    const container = document.getElementById('monthlyChallengesGrid');
+    if (!container || !userData) return;
+
+    const monthlyChallenges = window.APP_DATA.GAME_DATA?.monthlyChallenges || [];
+
+    container.innerHTML = monthlyChallenges.map(challenge => {
+        const userProgress = userData.challenges?.monthly?.progress?.[challenge.id] || 0;
+        const isCompleted = userProgress >= challenge.target;
+        const isClaimed = userData.challenges?.monthly?.claimed?.includes(challenge.id);
+
+        return `
+            <div class="challenge-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}">
+                <div class="challenge-header">
+                    <div class="challenge-icon">${challenge.icon}</div>
+                    <div class="challenge-info">
+                        <h4>${challenge.title}</h4>
+                        <p>${challenge.description}</p>
+                    </div>
+                </div>
+                <div class="challenge-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(userProgress / challenge.target) * 100}%"></div>
+                    </div>
+                    <div class="progress-text">${userProgress}/${challenge.target}</div>
+                </div>
+                <div class="challenge-reward">
+                    <span class="reward-exp">+${challenge.reward.exp} опыта</span>
+                    ${isCompleted && !isClaimed ? '<button class="claim-btn" onclick="claimChallengeReward(\'monthly\', \'' + challenge.id + '\')">Забрать награду</button>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Загрузка специальных событий
+function loadSpecialEvents() {
+    const container = document.getElementById('specialEventsGrid');
+    if (!container || !userData) return;
+
+    const specialEvents = window.APP_DATA.GAME_DATA?.specialEvents || [];
+
+    container.innerHTML = specialEvents.map(event => {
+        const isActive = event.active;
+        const isParticipated = userData.gameProgress?.specialEvents?.includes(event.id);
+
+        return `
+            <div class="event-card ${isActive ? 'active' : 'inactive'} ${isParticipated ? 'participated' : ''}">
+                <div class="event-header">
+                    <div class="event-icon">${event.icon}</div>
+                    <div class="event-info">
+                        <h4>${event.title}</h4>
+                        <p>${event.description}</p>
+                        ${event.endDate ? `<small>До ${new Date(event.endDate).toLocaleDateString('ru-RU')}</small>` : ''}
+                    </div>
+                </div>
+                <div class="event-reward">
+                    <span class="reward-exp">+${event.reward?.exp || 0} опыта</span>
+                    ${isActive && !isParticipated ? '<button class="join-btn" onclick="joinSpecialEvent(\'' + event.id + '\')">Участвовать</button>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Обновление статистики игрока
+function updatePlayerStats() {
+    if (!userData) return;
+
+    // Обновляем уровень
+    const levelEl = document.getElementById('playerLevel');
+    if (levelEl) levelEl.textContent = userData.level || 1;
+
+    // Обновляем дни подряд
+    const streakEl = document.getElementById('streakDays');
+    if (streakEl) streakEl.textContent = userData.readingStreak || 0;
+
+    // Обновляем количество достижений
+    const achievementsEl = document.getElementById('achievementsCount');
+    if (achievementsEl) achievementsEl.textContent = userData.achievements?.length || 0;
+
+    // Обновляем счетчик игр
+    const gamesCountEl = document.getElementById('gamesCount');
+    if (gamesCountEl) {
+        const totalChallenges = (userData.challenges?.daily?.completed?.length || 0) +
+                               (userData.challenges?.weekly?.completed?.length || 0) +
+                               (userData.challenges?.monthly?.completed?.length || 0);
+        gamesCountEl.textContent = `Уровень ${userData.level || 1} • ${totalChallenges} челленджей`;
+    }
+}
+
+// Функция для получения награды за ежедневное задание
+function claimQuestReward(type, questId) {
+    if (!userData) return;
+
+    const quest = window.APP_DATA.DAILY_CHALLENGES.find(q => q.id === questId);
+    if (!quest) return;
+
+    // Проверяем, выполнено ли задание
+    if (!userData.challenges?.[type]?.completed?.includes(questId)) {
+        tg.showPopup({
+            title: '⚠️ Задание не выполнено',
+            message: 'Сначала выполните задание, чтобы получить награду',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    // Проверяем, не забрана ли уже награда
+    if (userData.challenges?.[type]?.claimed?.includes(questId)) {
+        tg.showPopup({
+            title: '⚠️ Награда уже получена',
+            message: 'Вы уже получили награду за это задание',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    // Начисляем опыт
+    const expGained = quest.reward;
+    handleExperienceAndAchievements(userData, expGained);
+
+    // Отмечаем награду как полученную
+    if (!userData.challenges[type].claimed) {
+        userData.challenges[type].claimed = [];
+    }
+    userData.challenges[type].claimed.push(questId);
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем интерфейс
+    loadGamesSection();
+
+    tg.showPopup({
+        title: '🎉 Награда получена!',
+        message: `Вы получили ${expGained} опыта!`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+// Функция для получения награды за челлендж
+function claimChallengeReward(type, challengeId) {
+    if (!userData) return;
+
+    let challenge;
+    if (type === 'weekly') {
+        challenge = window.APP_DATA.WEEKLY_CHALLENGES.find(c => c.id === challengeId);
+    } else if (type === 'monthly') {
+        challenge = window.APP_DATA.GAME_DATA?.monthlyChallenges?.find(c => c.id === challengeId);
+    }
+
+    if (!challenge) return;
+
+    // Проверяем, выполнен ли челлендж
+    if (!userData.challenges?.[type]?.completed?.includes(challengeId)) {
+        tg.showPopup({
+            title: '⚠️ Челлендж не выполнен',
+            message: 'Сначала выполните челлендж, чтобы получить награду',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    // Проверяем, не забрана ли уже награда
+    if (userData.challenges?.[type]?.claimed?.includes(challengeId)) {
+        tg.showPopup({
+            title: '⚠️ Награда уже получена',
+            message: 'Вы уже получили награду за этот челлендж',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+
+    // Начисляем опыт
+    const expGained = challenge.reward?.exp || challenge.reward || 0;
+    handleExperienceAndAchievements(userData, expGained);
+
+    // Отмечаем награду как полученную
+    if (!userData.challenges[type].claimed) {
+        userData.challenges[type].claimed = [];
+    }
+    userData.challenges[type].claimed.push(challengeId);
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем интерфейс
+    loadGamesSection();
+
+    tg.showPopup({
+        title: '🎉 Награда получена!',
+        message: `Вы получили ${expGained} опыта!`,
+        buttons: [{ type: 'ok' }]
+    });
+}
+
+// Функция для участия в специальном событии
+function joinSpecialEvent(eventId) {
+    if (!userData) return;
+
+    const event = window.APP_DATA.GAME_DATA?.specialEvents?.find(e => e.id === eventId);
+    if (!event || !event.active) return;
+
+    // Добавляем пользователя к участникам
+    if (!userData.gameProgress.specialEvents) {
+        userData.gameProgress.specialEvents = [];
+    }
+    if (!userData.gameProgress.specialEvents.includes(eventId)) {
+        userData.gameProgress.specialEvents.push(eventId);
+    }
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем интерфейс
+    loadGamesSection();
+
+    tg.showPopup({
+        title: '✅ Участие подтверждено',
+        message: `Вы присоединились к событию "${event.title}"`,
+        buttons: [{ type: 'ok' }]
+    });
 }
 
 // Функция для удаления пользователя через API

@@ -767,89 +767,239 @@ const MOCK_GENRES = [
 ];
 
 const DAILY_CHALLENGES = [
-  {
-    id: 'read_pages',
-    title: 'Читатель дня',
-    description: 'Прочитайте 20 страниц сегодня',
-    type: 'daily',
-    target: 20,
-    reward: 25,
-    icon: '📖',
-    category: 'reading'
-  },
-  {
-    id: 'write_review',
-    title: 'Критик',
-    description: 'Напишите отзыв на книгу',
-    type: 'daily',
-    target: 1,
-    reward: 15,
-    icon: '✍️',
-    category: 'reviews'
-  },
-  {
-    id: 'borrow_book',
-    title: 'Исследователь',
-    description: 'Забронируйте новую книгу',
-    type: 'daily',
-    target: 1,
-    reward: 10,
-    icon: '📚',
-    category: 'borrowing'
-  },
-  {
-    id: 'visit_event',
-    title: 'Социофил',
-    description: 'Посетите мероприятие',
-    type: 'daily',
-    target: 1,
-    reward: 20,
-    icon: '🎭',
-    category: 'events'
-  }
+   {
+     id: 'read_pages',
+     title: 'Читатель дня',
+     description: 'Прочитайте 20 страниц сегодня',
+     type: 'daily',
+     target: 20,
+     reward: 25,
+     icon: '📖',
+     category: 'reading'
+   },
+   {
+     id: 'write_review',
+     title: 'Критик',
+     description: 'Напишите отзыв на книгу',
+     type: 'daily',
+     target: 1,
+     reward: 15,
+     icon: '✍️',
+     category: 'reviews'
+   },
+   {
+     id: 'borrow_book',
+     title: 'Исследователь',
+     description: 'Забронируйте новую книгу',
+     type: 'daily',
+     target: 1,
+     reward: 10,
+     icon: '📚',
+     category: 'borrowing'
+   },
+   {
+     id: 'visit_event',
+     title: 'Социофил',
+     description: 'Посетите мероприятие',
+     type: 'daily',
+     target: 1,
+     reward: 20,
+     icon: '🎭',
+     category: 'events'
+   },
+   {
+     id: 'view_author',
+     title: 'Любитель авторов',
+     description: 'Просмотрите профиль автора',
+     type: 'daily',
+     target: 1,
+     reward: 12,
+     icon: '👤',
+     category: 'authors'
+   },
+   {
+     id: 'add_favorite',
+     title: 'Коллекционер',
+     description: 'Добавьте книгу в избранное',
+     type: 'daily',
+     target: 1,
+     reward: 8,
+     icon: '❤️',
+     category: 'favorites'
+   },
+   {
+     id: 'finish_book',
+     title: 'Завершитель',
+     description: 'Завершите чтение книги',
+     type: 'daily',
+     target: 1,
+     reward: 30,
+     icon: '🏁',
+     category: 'completion'
+   },
+   {
+     id: 'read_genre',
+     title: 'Жанровый гурман',
+     description: 'Прочитайте книгу нового жанра',
+     type: 'daily',
+     target: 1,
+     reward: 18,
+     icon: '🎭',
+     category: 'genres'
+   },
+   {
+     id: 'visit_education',
+     title: 'Ученик',
+     description: 'Посетите раздел образования',
+     type: 'daily',
+     target: 1,
+     reward: 14,
+     icon: '🎓',
+     category: 'education'
+   },
+   {
+     id: 'read_classic',
+     title: 'Классик дня',
+     description: 'Прочитайте классическую литературу',
+     type: 'daily',
+     target: 1,
+     reward: 22,
+     icon: '📜',
+     category: 'genres'
+   },
+   {
+     id: 'social_share',
+     title: 'Делитель',
+     description: 'Поделитесь книгой в социальных сетях',
+     type: 'daily',
+     target: 1,
+     reward: 16,
+     icon: '📣',
+     category: 'social'
+   }
 ];
 
 const WEEKLY_CHALLENGES = [
-  {
-    id: 'read_books_week',
-    title: 'Недельный читатель',
-    description: 'Прочитайте 3 книги за неделю',
-    type: 'weekly',
-    target: 3,
-    reward: 100,
-    icon: '📚',
-    category: 'reading'
-  },
-  {
-    id: 'write_reviews_week',
-    title: 'Супер-критик',
-    description: 'Напишите 5 отзывов за неделю',
-    type: 'weekly',
-    target: 5,
-    reward: 75,
-    icon: '⭐',
-    category: 'reviews'
-  },
-  {
-    id: 'complete_genre',
-    title: 'Жанровый эксперт',
-    description: 'Прочитайте книги из 3 разных жанров',
-    type: 'weekly',
-    target: 3,
-    reward: 50,
-    icon: '🎭',
-    category: 'diversity'
-  },
-  {
-    id: 'social_butterfly',
-    title: 'Социальная бабочка',
-    description: 'Посетите 2 мероприятия за неделю',
-    type: 'weekly',
-    target: 2,
-    reward: 40,
-    icon: '🦋',
-    category: 'events'
-  }
+   {
+     id: 'read_books_week',
+     title: 'Недельный читатель',
+     description: 'Прочитайте 3 книги за неделю',
+     type: 'weekly',
+     target: 3,
+     reward: 100,
+     icon: '📚',
+     category: 'reading'
+   },
+   {
+     id: 'write_reviews_week',
+     title: 'Супер-критик',
+     description: 'Напишите 5 отзывов за неделю',
+     type: 'weekly',
+     target: 5,
+     reward: 75,
+     icon: '⭐',
+     category: 'reviews'
+   },
+   {
+     id: 'complete_genre',
+     title: 'Жанровый эксперт',
+     description: 'Прочитайте книги из 3 разных жанров',
+     type: 'weekly',
+     target: 3,
+     reward: 50,
+     icon: '🎭',
+     category: 'diversity'
+   },
+   {
+     id: 'social_butterfly',
+     title: 'Социальная бабочка',
+     description: 'Посетите 2 мероприятия за неделю',
+     type: 'weekly',
+     target: 2,
+     reward: 40,
+     icon: '🦋',
+     category: 'events'
+   },
+   {
+     id: 'author_explorer',
+     title: 'Исследователь авторов',
+     description: 'Изучите профили 5 разных авторов',
+     type: 'weekly',
+     target: 5,
+     reward: 60,
+     icon: '👥',
+     category: 'authors'
+   },
+   {
+     id: 'favorite_collector',
+     title: 'Коллекционер избранного',
+     description: 'Добавьте 7 книг в избранное',
+     type: 'weekly',
+     target: 7,
+     reward: 45,
+     icon: '❤️',
+     category: 'favorites'
+   },
+   {
+     id: 'reading_streak',
+     title: 'Стрик-мастер',
+     description: 'Поддерживайте серию чтения 7 дней',
+     type: 'weekly',
+     target: 7,
+     reward: 80,
+     icon: '🔥',
+     category: 'streak'
+   },
+   {
+     id: 'detailed_reviews',
+     title: 'Подробный критик',
+     description: 'Напишите 3 отзыва длиннее 100 символов',
+     type: 'weekly',
+     target: 3,
+     reward: 55,
+     icon: '📝',
+     category: 'reviews'
+   },
+   {
+     id: 'diverse_authors',
+     title: 'Разнообразие авторов',
+     description: 'Прочитайте книги 4 разных авторов',
+     type: 'weekly',
+     target: 4,
+     reward: 65,
+     icon: '👨‍🎨',
+     category: 'authors'
+   },
+   {
+     id: 'high_rating_reviews',
+     title: 'Мастер рецензий',
+     description: 'Напишите 3 отзыва с рейтингом 4+',
+     type: 'weekly',
+     target: 3,
+     reward: 70,
+     icon: '🌟',
+     category: 'reviews'
+   },
+   {
+     id: 'education_week',
+     title: 'Учебная неделя',
+     description: 'Пройдите 2 урока в разделе образования',
+     type: 'weekly',
+     target: 2,
+     reward: 50,
+     icon: '🎓',
+     category: 'education'
+   },
+   {
+     id: 'social_week',
+     title: 'Социальный лидер',
+     description: 'Поделитесь 5 книгами в социальных сетях',
+     type: 'weekly',
+     target: 5,
+     reward: 55,
+     icon: '📱',
+     category: 'social'
+   }
 ];
 
 const AUTHOR_BIOS = {
@@ -1148,7 +1298,6 @@ const TITLES = [
     description: 'Эксклюзивный статус для активных читателей',
     icon: '👑',
     type: 'purchase',
-    price: 500,
     rarity: 'legendary'
   },
   {
@@ -1157,7 +1306,6 @@ const TITLES = [
     description: 'Для истинных ценителей литературы',
     icon: '📚',
     type: 'purchase',
-    price: 300,
     rarity: 'epic'
   },
   {
@@ -1166,7 +1314,6 @@ const TITLES = [
     description: 'Статус для знатоков литературы',
     icon: '🎓',
     type: 'purchase',
-    price: 200,
     rarity: 'rare'
   },
   {
@@ -1175,7 +1322,6 @@ const TITLES = [
     description: 'Для тех, кто любит культурные мероприятия',
     icon: '🎪',
     type: 'purchase',
-    price: 150,
     rarity: 'uncommon'
   },
   {
@@ -1184,7 +1330,6 @@ const TITLES = [
     description: 'Благодарность за поддержку библиотеки',
     icon: '❤️',
     type: 'purchase',
-    price: 100,
     rarity: 'common'
   }
 ];
@@ -1427,7 +1572,7 @@ const GAME_DATA = {
             title: 'Читатель страниц',
             description: 'Прочитайте 10 страниц',
             icon: '📖',
-            reward: { exp: 20, coins: 5 },
+            reward: { exp: 20 },
             progress: 0,
             target: 10,
             completed: false
@@ -1437,7 +1582,7 @@ const GAME_DATA = {
             title: 'Книжный гурман',
             description: 'Забронируйте книгу',
             icon: '📚',
-            reward: { exp: 15, coins: 3 },
+            reward: { exp: 15 },
             progress: 0,
             target: 1,
             completed: false
@@ -1447,7 +1592,7 @@ const GAME_DATA = {
             title: 'Критик',
             description: 'Напишите отзыв о книге',
             icon: '✍️',
-            reward: { exp: 25, coins: 7 },
+            reward: { exp: 25 },
             progress: 0,
             target: 1,
             completed: false
@@ -1457,7 +1602,7 @@ const GAME_DATA = {
             title: 'Любитель книг',
             description: 'Добавьте книгу в избранное',
             icon: '❤️',
-            reward: { exp: 10, coins: 2 },
+            reward: { exp: 10 },
             progress: 0,
             target: 1,
             completed: false
@@ -1471,7 +1616,7 @@ const GAME_DATA = {
             title: 'Недельный читатель',
             description: 'Прочитайте 5 книг за неделю',
             icon: '📚',
-            reward: { exp: 100, coins: 25 },
+            reward: { exp: 100 },
             progress: 0,
             target: 5,
             completed: false
@@ -1481,7 +1626,7 @@ const GAME_DATA = {
             title: 'Марафонец чтения',
             description: 'Прочитайте 200 страниц за неделю',
             icon: '🏃',
-            reward: { exp: 80, coins: 20 },
+            reward: { exp: 80 },
             progress: 0,
             target: 200,
             completed: false
@@ -1491,7 +1636,7 @@ const GAME_DATA = {
             title: 'Супер-критик',
             description: 'Напишите 3 отзыва за неделю',
             icon: '⭐',
-            reward: { exp: 60, coins: 15 },
+            reward: { exp: 60 },
             progress: 0,
             target: 3,
             completed: false
@@ -1500,57 +1645,157 @@ const GAME_DATA = {
 
     // Месячные челленджи
     monthlyChallenges: [
-        {
-            id: 'read_books_month',
-            title: 'Месячный марафон',
-            description: 'Прочитайте 20 книг за месяц',
-            icon: '📚',
-            reward: { exp: 500, coins: 100 },
-            progress: 0,
-            target: 20,
-            completed: false
-        },
-        {
-            id: 'pages_month',
-            title: 'Мастер страниц',
-            description: 'Прочитайте 1000 страниц за месяц',
-            icon: '📄',
-            reward: { exp: 400, coins: 80 },
-            progress: 0,
-            target: 1000,
-            completed: false
-        },
-        {
-            id: 'reviews_month',
-            title: 'Критик месяца',
-            description: 'Напишите 10 отзывов за месяц',
-            icon: '✍️',
-            reward: { exp: 300, coins: 60 },
-            progress: 0,
-            target: 10,
-            completed: false
-        },
-        {
-            id: 'streak_month',
-            title: 'Несокрушимая серия',
-            description: 'Поддерживайте серию чтения 30 дней',
-            icon: '🔥',
-            reward: { exp: 350, coins: 70 },
-            progress: 0,
-            target: 30,
-            completed: false
-        },
-        {
-            id: 'genres_month',
-            title: 'Исследователь жанров',
-            description: 'Прочитайте книги из 10 разных жанров',
-            icon: '🗺️',
-            reward: { exp: 250, coins: 50 },
-            progress: 0,
-            target: 10,
-            completed: false
-        }
-    ],
+       {
+         id: 'read_books_month',
+         title: 'Месячный марафон',
+         description: 'Прочитайте 20 книг за месяц',
+         icon: '📚',
+         reward: { exp: 500 },
+         progress: 0,
+         target: 20,
+         completed: false
+       },
+       {
+         id: 'pages_month',
+         title: 'Мастер страниц',
+         description: 'Прочитайте 1000 страниц за месяц',
+         icon: '📄',
+         reward: { exp: 400 },
+         progress: 0,
+         target: 1000,
+         completed: false
+       },
+       {
+         id: 'reviews_month',
+         title: 'Критик месяца',
+         description: 'Напишите 10 отзывов за месяц',
+         icon: '✍️',
+         reward: { exp: 300 },
+         progress: 0,
+         target: 10,
+         completed: false
+       },
+       {
+         id: 'streak_month',
+         title: 'Несокрушимая серия',
+         description: 'Поддерживайте серию чтения 30 дней',
+         icon: '🔥',
+         reward: { exp: 350 },
+         progress: 0,
+         target: 30,
+         completed: false
+       },
+       {
+         id: 'genres_month',
+         title: 'Исследователь жанров',
+         description: 'Прочитайте книги из 10 разных жанров',
+         icon: '🗺️',
+         reward: { exp: 250 },
+         progress: 0,
+         target: 10,
+         completed: false
+       },
+       {
+         id: 'level_up_month',
+         title: 'Мастер уровней',
+         description: 'Получите 5 уровней за месяц',
+         icon: '⬆️',
+         reward: { exp: 200 },
+         progress: 0,
+         target: 5,
+         completed: false
+       },
+       {
+         id: 'favorites_month',
+         title: 'Коллекционер месяца',
+         description: 'Добавьте 25 книг в избранное',
+         icon: '❤️',
+         reward: { exp: 150 },
+         progress: 0,
+         target: 25,
+         completed: false
+       },
+       {
+         id: 'authors_month',
+         title: 'Знаток авторов',
+         description: 'Изучите профили 15 разных авторов',
+         icon: '👥',
+         reward: { exp: 180 },
+         progress: 0,
+         target: 15,
+         completed: false
+       },
+       {
+         id: 'events_month',
+         title: 'Социальный лидер',
+         description: 'Посетите 8 мероприятий за месяц',
+         icon: '🎪',
+         reward: { exp: 220 },
+         progress: 0,
+         target: 8,
+         completed: false
+       },
+       {
+         id: 'completion_month',
+         title: 'Завершитель месяца',
+         description: 'Завершите чтение 15 книг',
+         icon: '🏁',
+         reward: { exp: 300 },
+         progress: 0,
+         target: 15,
+         completed: false
+       },
+       {
+         id: 'education_month',
+         title: 'Ученый месяца',
+         description: 'Пройдите 8 уроков в разделе образования',
+         icon: '🎓',
+         reward: { exp: 280 },
+         progress: 0,
+         target: 8,
+         completed: false
+       },
+       {
+         id: 'social_month',
+         title: 'Социальный гуру',
+         description: 'Поделитесь 20 книгами в социальных сетях',
+         icon: '📱',
+         reward: { exp: 200 },
+         progress: 0,
+         target: 20,
+         completed: false
+       },
+       {
+         id: 'rating_month',
+         title: 'Мастер рейтингов',
+         description: 'Получите средний рейтинг отзывов 4.5+',
+         icon: '⭐',
+         reward: { exp: 320 },
+         progress: 0,
+         target: 4.5,
+         completed: false
+       },
+       {
+         id: 'diversity_month',
+         title: 'Мастер разнообразия',
+         description: 'Прочитайте книги 12 разных авторов',
+         icon: '🌍',
+         reward: { exp: 260 },
+         progress: 0,
+         target: 12,
+         completed: false
+       },
+       {
+         id: 'achievement_month',
+         title: 'Достиженец',
+         description: 'Получите 8 новых достижений',
+         icon: '🏆',
+         reward: { exp: 240 },
+         progress: 0,
+         target: 8,
+         completed: false
+       }
+     ],
 
     // Специальные события
     specialEvents: [
@@ -1561,7 +1806,7 @@ const GAME_DATA = {
             icon: '⏰',
             active: true,
             endDate: '2024-12-31',
-            reward: { exp: 50, coins: 10 }
+            reward: { exp: 50 }
         },
         {
             id: 'author_quiz',
@@ -1570,93 +1815,46 @@ const GAME_DATA = {
             icon: '🧠',
             active: true,
             endDate: '2024-12-31',
-            reward: { exp: 30, coins: 8 }
+            reward: { exp: 30 }
+        },
+        {
+            id: 'genre_marathon',
+            title: 'Жанровый марафон',
+            description: 'Прочитайте книги из всех жанров за неделю',
+            icon: '🎭',
+            active: true,
+            endDate: '2024-12-31',
+            reward: { exp: 75 }
+        },
+        {
+            id: 'review_contest',
+            title: 'Конкурс отзывов',
+            description: 'Напишите самые креативные отзывы',
+            icon: '✍️',
+            active: true,
+            endDate: '2024-12-31',
+            reward: { exp: 60 }
+        },
+        {
+            id: 'book_club_special',
+            title: 'Специальный книжный клуб',
+            description: 'Обсудите книгу месяца с другими читателями',
+            icon: '📚',
+            active: true,
+            endDate: '2024-12-31',
+            reward: { exp: 40 }
+        },
+        {
+            id: 'author_meet_greet',
+            title: 'Встреча с автором онлайн',
+            description: 'Присоединяйтесь к онлайн-встрече с популярным автором',
+            icon: '👤',
+            active: true,
+            endDate: '2024-12-31',
+            reward: { exp: 45 }
         }
     ],
 
-    // Магазин наград
-    rewardsShop: [
-        {
-            id: 'avatar_frame',
-            title: 'Золотая рамка аватара',
-            description: 'Роскошная золотая рамка для вашего профиля',
-            icon: '👑',
-            price: 50,
-            owned: false
-        },
-        {
-            id: 'theme_unlock',
-            title: 'Тёмная тема',
-            description: 'Разблокируйте стильную тёмную тему приложения',
-            icon: '🌙',
-            price: 100,
-            owned: false
-        },
-        {
-            id: 'special_badge',
-            title: 'Элитный значок',
-            description: 'Уникальный значок элитного читателя',
-            icon: '🏅',
-            price: 75,
-            owned: false
-        },
-        {
-            id: 'bonus_exp',
-            title: 'Бонус опыта',
-            description: '+50 опыта для быстрого роста уровня',
-            icon: '⚡',
-            price: 25,
-            consumable: true
-        },
-        {
-            id: 'reading_streak_booster',
-            title: 'Бустер серии чтения',
-            description: '+7 дней к серии чтения',
-            icon: '🔥',
-            price: 40,
-            consumable: true
-        },
-        {
-            id: 'coin_multiplier',
-            title: 'Множитель кристаллов',
-            description: 'Удваивает кристаллы за следующие 5 заданий',
-            icon: '💎',
-            price: 60,
-            consumable: true
-        },
-        {
-            id: 'exclusive_avatar',
-            title: 'Эксклюзивный аватар',
-            description: 'Редкий аватар "Мастер чтения"',
-            icon: '🎭',
-            price: 120,
-            owned: false
-        },
-        {
-            id: 'background_theme',
-            title: 'Фон профиля',
-            description: 'Красивый градиентный фон для профиля',
-            icon: '🎨',
-            price: 80,
-            owned: false
-        },
-        {
-            id: 'speed_reading',
-            title: 'Ускорение чтения',
-            description: '+20% к скорости чтения на неделю',
-            icon: '🚀',
-            price: 90,
-            consumable: true
-        },
-        {
-            id: 'achievement_unlocker',
-            title: 'Разблокировщик достижений',
-            description: 'Мгновенно разблокирует случайное достижение',
-            icon: '🎯',
-            price: 150,
-            consumable: true
-        }
-    ],
 
     // Система титулов
     titles: [
@@ -1665,7 +1863,6 @@ const GAME_DATA = {
             name: 'Начинающий читатель',
             description: 'Первый шаг в мир книг',
             icon: '📖',
-            price: 100,
             unlocked: false,
             condition: (user) => user.stats.booksCompleted >= 1
         },
@@ -1674,7 +1871,6 @@ const GAME_DATA = {
             name: 'Книжный червь',
             description: 'Любитель чтения',
             icon: '📚',
-            price: 250,
             unlocked: false,
             condition: (user) => user.stats.booksCompleted >= 10
         },
@@ -1683,7 +1879,6 @@ const GAME_DATA = {
             name: 'Эксперт литературы',
             description: 'Знаток книжного мира',
             icon: '🎓',
-            price: 500,
             unlocked: false,
             condition: (user) => user.stats.booksCompleted >= 25
         },
@@ -1692,7 +1887,6 @@ const GAME_DATA = {
             name: 'Библиофил',
             description: 'Истинный ценитель книг',
             icon: '🏛️',
-            price: 1000,
             unlocked: false,
             condition: (user) => user.stats.booksCompleted >= 50
         },
@@ -1701,7 +1895,6 @@ const GAME_DATA = {
             name: 'Легенда чтения',
             description: 'Мастер книжного искусства',
             icon: '👑',
-            price: 2000,
             unlocked: false,
             condition: (user) => user.stats.booksCompleted >= 100
         },
@@ -1710,7 +1903,6 @@ const GAME_DATA = {
             name: 'Критик',
             description: 'Знаток литературной критики',
             icon: '✍️',
-            price: 300,
             unlocked: false,
             condition: (user) => user.stats.reviewsWritten >= 10
         },
@@ -1719,7 +1911,6 @@ const GAME_DATA = {
             name: 'Социальный читатель',
             description: 'Общительный книголюб',
             icon: '👥',
-            price: 400,
             unlocked: false,
             condition: (user) => user.stats.totalEvents >= 5
         },
@@ -1728,7 +1919,6 @@ const GAME_DATA = {
             name: 'Скоростной демон',
             description: 'Быстрый читатель',
             icon: '⚡',
-            price: 600,
             unlocked: false,
             condition: (user) => user.stats.fastestRead <= 2
         },
@@ -1737,7 +1927,6 @@ const GAME_DATA = {
             name: 'Марафонец',
             description: 'Выносливый читатель',
             icon: '🏃',
-            price: 800,
             unlocked: false,
             condition: (user) => user.readingStreak >= 30
         },
@@ -1746,7 +1935,6 @@ const GAME_DATA = {
             name: 'Охотник за достижениями',
             description: 'Мастер достижений',
             icon: '🎯',
-            price: 1500,
             unlocked: false,
             condition: (user) => user.achievements.length >= 15
         }
@@ -1780,11 +1968,9 @@ const DEFAULT_USER_DATA = {
     role: 'Активный пользователь',
     bookProgress: {}, // {bookId: {pagesRead: number, completed: boolean, achievements: []}}
     // Игровые данные
-    coins: 0,
     gameStats: {
         dailyQuestsCompleted: 0,
         weeklyChallengesCompleted: 0,
-        totalCoinsEarned: 0,
         specialEventsParticipated: 0
     },
     gameProgress: {
@@ -1818,17 +2004,20 @@ const DEFAULT_USER_DATA = {
         daily: {
             lastReset: null,
             completed: [],
-            claimed: []
+            claimed: [],
+            progress: {}
         },
         weekly: {
             lastReset: null,
             completed: [],
-            claimed: []
+            claimed: [],
+            progress: {}
         },
         monthly: {
             lastReset: null,
             completed: [],
-            claimed: []
+            claimed: [],
+            progress: {}
         }
     }
 };
@@ -1870,83 +2059,83 @@ const RatingUtils = {
 // Система достижений
 const ACHIEVEMENTS = [
     // Достижения за чтение
-    { id: 'first_book', name: 'Первый шаг', description: 'Прочитайте первую книгу', icon: '📖', type: 'reading', condition: (user) => user.stats.booksCompleted >= 1, reward: { exp: 20, coins: 5 } },
-    { id: 'bookworm', name: 'Книжный червь', description: 'Прочитайте 5 книг', icon: '📚', type: 'reading', condition: (user) => user.stats.booksCompleted >= 5, reward: { exp: 50, coins: 10, title: 'Книжный червь' } },
-    { id: 'literature_lover', name: 'Любитель литературы', description: 'Прочитайте 10 книг', icon: '❤️', type: 'reading', condition: (user) => user.stats.booksCompleted >= 10, reward: { exp: 100, coins: 20, title: 'Любитель литературы' } },
-    { id: 'bibliophile', name: 'Библиофил', description: 'Прочитайте 25 книг', icon: '🏆', type: 'reading', condition: (user) => user.stats.booksCompleted >= 25, reward: { exp: 200, coins: 50, title: 'Библиофил' } },
+    { id: 'first_book', name: 'Первый шаг', description: 'Прочитайте первую книгу', icon: '📖', type: 'reading', condition: (user) => user.stats.booksCompleted >= 1, reward: { exp: 20 } },
+    { id: 'bookworm', name: 'Книжный червь', description: 'Прочитайте 5 книг', icon: '📚', type: 'reading', condition: (user) => user.stats.booksCompleted >= 5, reward: { exp: 50, title: 'Книжный червь' } },
+    { id: 'literature_lover', name: 'Любитель литературы', description: 'Прочитайте 10 книг', icon: '❤️', type: 'reading', condition: (user) => user.stats.booksCompleted >= 10, reward: { exp: 100, title: 'Любитель литературы' } },
+    { id: 'bibliophile', name: 'Библиофил', description: 'Прочитайте 25 книг', icon: '🏆', type: 'reading', condition: (user) => user.stats.booksCompleted >= 25, reward: { exp: 200, title: 'Библиофил' } },
 
     // Достижения за страницы
-    { id: 'page_master', name: 'Мастер страниц', description: 'Прочитайте 1000 страниц', icon: '📄', type: 'pages', condition: (user) => user.totalPagesRead >= 1000, reward: { exp: 75, coins: 15 } },
-    { id: 'page_legend', name: 'Легенда страниц', description: 'Прочитайте 5000 страниц', icon: '📜', type: 'pages', condition: (user) => user.totalPagesRead >= 5000, reward: { exp: 150, coins: 30, title: 'Легенда страниц' } },
+    { id: 'page_master', name: 'Мастер страниц', description: 'Прочитайте 1000 страниц', icon: '📄', type: 'pages', condition: (user) => user.totalPagesRead >= 1000, reward: { exp: 75 } },
+    { id: 'page_legend', name: 'Легенда страниц', description: 'Прочитайте 5000 страниц', icon: '📜', type: 'pages', condition: (user) => user.totalPagesRead >= 5000, reward: { exp: 150, title: 'Легенда страниц' } },
 
     // Достижения за отзывы
-    { id: 'first_review', name: 'Критик', description: 'Напишите первый отзыв', icon: '✍️', type: 'reviews', condition: (user) => user.stats.reviewsWritten >= 1, reward: { exp: 15, coins: 3, title: 'Критик' } },
-    { id: 'review_expert', name: 'Эксперт по отзывам', description: 'Напишите 10 отзывов', icon: '⭐', type: 'reviews', condition: (user) => user.stats.reviewsWritten >= 10, reward: { exp: 60, coins: 12 } },
+    { id: 'first_review', name: 'Критик', description: 'Напишите первый отзыв', icon: '✍️', type: 'reviews', condition: (user) => user.stats.reviewsWritten >= 1, reward: { exp: 15, title: 'Критик' } },
+    { id: 'review_expert', name: 'Эксперт по отзывам', description: 'Напишите 10 отзывов', icon: '⭐', type: 'reviews', condition: (user) => user.stats.reviewsWritten >= 10, reward: { exp: 60 } },
 
     // Достижения за уровень
-    { id: 'level_up', name: 'Рост уровня', description: 'Достигните 5 уровня', icon: '⬆️', type: 'level', condition: (user) => user.level >= 5, reward: { exp: 50, coins: 10 } },
-    { id: 'high_level', name: 'Высокий уровень', description: 'Достигните 10 уровня', icon: '🎯', type: 'level', condition: (user) => user.level >= 10, reward: { exp: 100, coins: 25 } },
-    { id: 'level_master', name: 'Мастер уровней', description: 'Достигните 15 уровня', icon: '⭐', type: 'level', condition: (user) => user.level >= 15, reward: { exp: 200, coins: 50, title: 'Мастер уровней' } },
+    { id: 'level_up', name: 'Рост уровня', description: 'Достигните 5 уровня', icon: '⬆️', type: 'level', condition: (user) => user.level >= 5, reward: { exp: 50 } },
+    { id: 'high_level', name: 'Высокий уровень', description: 'Достигните 10 уровня', icon: '🎯', type: 'level', condition: (user) => user.level >= 10, reward: { exp: 100 } },
+    { id: 'level_master', name: 'Мастер уровней', description: 'Достигните 15 уровня', icon: '⭐', type: 'level', condition: (user) => user.level >= 15, reward: { exp: 200, title: 'Мастер уровней' } },
 
     // Достижения за события
-    { id: 'first_event', name: 'Посетитель событий', description: 'Посетите первое мероприятие', icon: '🎫', type: 'events', condition: (user) => user.stats.totalEvents >= 1, reward: { exp: 25, coins: 5, title: 'Посетитель событий' } },
-    { id: 'event_regular', name: 'Постоянный посетитель', description: 'Посетите 5 мероприятий', icon: '🎪', type: 'events', condition: (user) => user.stats.totalEvents >= 5, reward: { exp: 75, coins: 15 } },
+    { id: 'first_event', name: 'Посетитель событий', description: 'Посетите первое мероприятие', icon: '🎫', type: 'events', condition: (user) => user.stats.totalEvents >= 1, reward: { exp: 25, title: 'Посетитель событий' } },
+    { id: 'event_regular', name: 'Постоянный посетитель', description: 'Посетите 5 мероприятий', icon: '🎪', type: 'events', condition: (user) => user.stats.totalEvents >= 5, reward: { exp: 75 } },
 
     // Специальные достижения
-    { id: 'early_bird', name: 'Ранняя пташка', description: 'Используйте приложение в первые 7 дней', icon: '🐦', type: 'special', condition: (user) => user.stats.readingDays >= 7, reward: { exp: 30, coins: 7 } },
-    { id: 'streak_master', name: 'Мастер серии', description: 'Поддерживайте серию чтения 7 дней', icon: '🔥', type: 'special', condition: (user) => user.readingStreak >= 7, reward: { exp: 40, coins: 10 } },
+    { id: 'early_bird', name: 'Ранняя пташка', description: 'Используйте приложение в первые 7 дней', icon: '🐦', type: 'special', condition: (user) => user.stats.readingDays >= 7, reward: { exp: 30 } },
+    { id: 'streak_master', name: 'Мастер серии', description: 'Поддерживайте серию чтения 7 дней', icon: '🔥', type: 'special', condition: (user) => user.readingStreak >= 7, reward: { exp: 40 } },
 
     // Достижения за жанры
-    { id: 'classic_reader', name: 'Классик', description: 'Прочитайте 5 классических произведений', icon: '📜', type: 'genres', condition: (user) => user.stats.booksCompleted >= 5, reward: { exp: 45, coins: 9 } },
-    { id: 'fantasy_explorer', name: 'Исследователь фантастики', description: 'Прочитайте 3 фантастических книги', icon: '🧙', type: 'genres', condition: (user) => user.stats.booksCompleted >= 3, reward: { exp: 35, coins: 7 } },
-    { id: 'mystery_solver', name: 'Разгадыватель тайн', description: 'Прочитайте 3 детективных книги', icon: '🕵️', type: 'genres', condition: (user) => user.stats.booksCompleted >= 3, reward: { exp: 35, coins: 7 } },
+    { id: 'classic_reader', name: 'Классик', description: 'Прочитайте 5 классических произведений', icon: '📜', type: 'genres', condition: (user) => user.stats.booksCompleted >= 5, reward: { exp: 45 } },
+    { id: 'fantasy_explorer', name: 'Исследователь фантастики', description: 'Прочитайте 3 фантастических книги', icon: '🧙', type: 'genres', condition: (user) => user.stats.booksCompleted >= 3, reward: { exp: 35 } },
+    { id: 'mystery_solver', name: 'Разгадыватель тайн', description: 'Прочитайте 3 детективных книги', icon: '🕵️', type: 'genres', condition: (user) => user.stats.booksCompleted >= 3, reward: { exp: 35 } },
 
     // Достижения за социальную активность
-    { id: 'social_butterfly', name: 'Социальная бабочка', description: 'Добавьте 10 друзей', icon: '🦋', type: 'social', condition: (user) => user.stats.friendsCount >= 10, reward: { exp: 40, coins: 8 } },
-    { id: 'review_master', name: 'Мастер отзывов', description: 'Получите 50 лайков на отзывы', icon: '👍', type: 'social', condition: (user) => user.stats.reviewLikes >= 50, reward: { exp: 60, coins: 12 } },
+    { id: 'social_butterfly', name: 'Социальная бабочка', description: 'Добавьте 10 друзей', icon: '🦋', type: 'social', condition: (user) => user.stats.friendsCount >= 10, reward: { exp: 40 } },
+    { id: 'review_master', name: 'Мастер отзывов', description: 'Получите 50 лайков на отзывы', icon: '👍', type: 'social', condition: (user) => user.stats.reviewLikes >= 50, reward: { exp: 60 } },
 
     // Достижения за события
-    { id: 'event_attendee', name: 'Посетитель', description: 'Посетите 10 мероприятий', icon: '🎭', type: 'events', condition: (user) => user.stats.totalEvents >= 10, reward: { exp: 80, coins: 16 } },
-    { id: 'event_organizer', name: 'Организатор', description: 'Организуйте мероприятие', icon: '🎪', type: 'events', condition: (user) => user.stats.eventsOrganized >= 1, reward: { exp: 100, coins: 20 } },
+    { id: 'event_attendee', name: 'Посетитель', description: 'Посетите 10 мероприятий', icon: '🎭', type: 'events', condition: (user) => user.stats.totalEvents >= 10, reward: { exp: 80 } },
+    { id: 'event_organizer', name: 'Организатор', description: 'Организуйте мероприятие', icon: '🎪', type: 'events', condition: (user) => user.stats.eventsOrganized >= 1, reward: { exp: 100 } },
 
     // Достижения за коллекционирование
-    { id: 'collection_starter', name: 'Коллекционер', description: 'Соберите 10 книг в избранное', icon: '⭐', type: 'collection', condition: (user) => user.favorites.length >= 10, reward: { exp: 30, coins: 6 } },
-    { id: 'collection_master', name: 'Мастер коллекций', description: 'Соберите 50 книг в избранное', icon: '🏆', type: 'collection', condition: (user) => user.favorites.length >= 50, reward: { exp: 90, coins: 18 } },
+    { id: 'collection_starter', name: 'Коллекционер', description: 'Соберите 10 книг в избранное', icon: '⭐', type: 'collection', condition: (user) => user.favorites.length >= 10, reward: { exp: 30 } },
+    { id: 'collection_master', name: 'Мастер коллекций', description: 'Соберите 50 книг в избранное', icon: '🏆', type: 'collection', condition: (user) => user.favorites.length >= 50, reward: { exp: 90 } },
 
     // Достижения за производительность
-    { id: 'speed_reader', name: 'Быстрый читатель', description: 'Прочитайте книгу за 1 день', icon: '⚡', type: 'performance', condition: (user) => user.stats.fastestRead <= 1, reward: { exp: 55, coins: 11 } },
-    { id: 'consistent_reader', name: 'Последовательный читатель', description: 'Чтение 30 дней подряд', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 30, reward: { exp: 120, coins: 25 } },
+    { id: 'speed_reader', name: 'Быстрый читатель', description: 'Прочитайте книгу за 1 день', icon: '⚡', type: 'performance', condition: (user) => user.stats.fastestRead <= 1, reward: { exp: 55 } },
+    { id: 'consistent_reader', name: 'Последовательный читатель', description: 'Чтение 30 дней подряд', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 30, reward: { exp: 120 } },
 
     // Достижения за викторины
-    { id: 'quiz_starter', name: 'Начинающий знаток', description: 'Пройдите первую викторину', icon: '🧠', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 1, reward: { exp: 25, coins: 5 } },
-    { id: 'quiz_expert', name: 'Эксперт викторин', description: 'Пройдите 5 викторин', icon: '🎓', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 5, reward: { exp: 75, coins: 15 } },
-    { id: 'quiz_master', name: 'Мастер викторин', description: 'Пройдите все викторины', icon: '👑', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 4, reward: { exp: 150, coins: 30, title: 'Мастер викторин' } },
-    { id: 'perfect_score', name: 'Идеальный балл', description: 'Получите 100% в любой викторине', icon: '💯', type: 'education', condition: (user) => user.educationProgress?.quizScores && Object.values(user.educationProgress.quizScores).some(score => score === 100), reward: { exp: 50, coins: 10 } },
+    { id: 'quiz_starter', name: 'Начинающий знаток', description: 'Пройдите первую викторину', icon: '🧠', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 1, reward: { exp: 25 } },
+    { id: 'quiz_expert', name: 'Эксперт викторин', description: 'Пройдите 5 викторин', icon: '🎓', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 5, reward: { exp: 75 } },
+    { id: 'quiz_master', name: 'Мастер викторин', description: 'Пройдите все викторины', icon: '👑', type: 'education', condition: (user) => user.educationProgress?.quizzes?.length >= 4, reward: { exp: 150, title: 'Мастер викторин' } },
+    { id: 'perfect_score', name: 'Идеальный балл', description: 'Получите 100% в любой викторине', icon: '💯', type: 'education', condition: (user) => user.educationProgress?.quizScores && Object.values(user.educationProgress.quizScores).some(score => score === 100), reward: { exp: 50 } },
     { id: 'high_scorer', name: 'Высокий балл', description: 'Получите средний балл выше 80%', icon: '⭐', type: 'education', condition: (user) => {
         const scores = user.educationProgress?.quizScores ? Object.values(user.educationProgress.quizScores) : [];
         return scores.length > 0 && (scores.reduce((a, b) => a + b, 0) / scores.length) >= 80;
-    }, reward: { exp: 40, coins: 8 } },
+    }, reward: { exp: 40 } },
 
     // Достижения за уроки
-    { id: 'lesson_learner', name: 'Учащийся', description: 'Пройдите первый урок', icon: '📖', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 1, reward: { exp: 20, coins: 4 } },
-    { id: 'knowledge_seeker', name: 'Искатель знаний', description: 'Пройдите 3 урока', icon: '🔍', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 3, reward: { exp: 60, coins: 12 } },
-    { id: 'scholar', name: 'Ученый', description: 'Пройдите все уроки', icon: '🎓', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 6, reward: { exp: 120, coins: 25, title: 'Ученый' } },
+    { id: 'lesson_learner', name: 'Учащийся', description: 'Пройдите первый урок', icon: '📖', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 1, reward: { exp: 20 } },
+    { id: 'knowledge_seeker', name: 'Искатель знаний', description: 'Пройдите 3 урока', icon: '🔍', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 3, reward: { exp: 60 } },
+    { id: 'scholar', name: 'Ученый', description: 'Пройдите все уроки', icon: '🎓', type: 'education', condition: (user) => user.educationProgress?.lessons?.length >= 6, reward: { exp: 120, title: 'Ученый' } },
 
     // Достижения за достижения
-    { id: 'achievement_hunter', name: 'Охотник за достижениями', description: 'Получите 10 достижений', icon: '🎯', type: 'meta', condition: (user) => user.achievements.length >= 10, reward: { exp: 70, coins: 15 } },
-    { id: 'achievement_master', name: 'Мастер достижений', description: 'Получите все достижения', icon: '👑', type: 'meta', condition: (user) => user.achievements.length >= ACHIEVEMENTS.length, reward: { exp: 300, coins: 100, title: 'Мастер достижений' } },
+    { id: 'achievement_hunter', name: 'Охотник за достижениями', description: 'Получите 10 достижений', icon: '🎯', type: 'meta', condition: (user) => user.achievements.length >= 10, reward: { exp: 70 } },
+    { id: 'achievement_master', name: 'Мастер достижений', description: 'Получите все достижения', icon: '👑', type: 'meta', condition: (user) => user.achievements.length >= ACHIEVEMENTS.length, reward: { exp: 300, title: 'Мастер достижений' } },
 
     // Новые достижения
-    { id: 'genre_explorer', name: 'Исследователь жанров', description: 'Прочитайте книги из 5 разных жанров', icon: '🗺️', type: 'genres', condition: (user) => user.stats.booksCompleted >= 5, reward: { exp: 50, coins: 10 } },
-    { id: 'night_owl', name: 'Ночная сова', description: 'Чтение после полуночи 10 раз', icon: '🦉', type: 'special', condition: (user) => user.stats.nightReading >= 10, reward: { exp: 35, coins: 7 } },
-    { id: 'social_reader', name: 'Социальный читатель', description: 'Поделитесь 20 отзывами', icon: '📣', type: 'social', condition: (user) => user.stats.reviewsWritten >= 20, reward: { exp: 65, coins: 13 } },
-    { id: 'book_collector', name: 'Коллекционер', description: 'Добавьте 100 книг в избранное', icon: '📚', type: 'collection', condition: (user) => user.favorites.length >= 100, reward: { exp: 110, coins: 22 } },
-    { id: 'marathon_reader', name: 'Марафонец чтения', description: 'Прочитайте 1000 страниц за месяц', icon: '🏃‍♂️', type: 'performance', condition: (user) => user.stats.monthlyPages >= 1000, reward: { exp: 85, coins: 17 } },
-    { id: 'review_quality', name: 'Критик качества', description: 'Получите 50 лайков на отзывы', icon: '👍', type: 'social', condition: (user) => user.stats.reviewLikes >= 50, reward: { exp: 60, coins: 12 } },
-    { id: 'early_adopter', name: 'Ранний пользователь', description: 'Используйте приложение в первые 30 дней', icon: '🚀', type: 'special', condition: (user) => user.stats.readingDays >= 30, reward: { exp: 45, coins: 9 } },
-    { id: 'perfect_week', name: 'Идеальная неделя', description: 'Чтение каждый день в течение недели', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 7, reward: { exp: 40, coins: 8 } },
-    { id: 'author_fan', name: 'Фанат автора', description: 'Прочитайте все книги одного автора', icon: '👨‍🎨', type: 'genres', condition: (user) => user.stats.authorComplete >= 1, reward: { exp: 55, coins: 11 } },
-    { id: 'reading_champion', name: 'Чемпион чтения', description: 'Прочитайте 500 книг', icon: '🏆', type: 'reading', condition: (user) => user.stats.booksCompleted >= 500, reward: { exp: 500, coins: 200, title: 'Чемпион чтения' } }
+    { id: 'genre_explorer', name: 'Исследователь жанров', description: 'Прочитайте книги из 5 разных жанров', icon: '🗺️', type: 'genres', condition: (user) => user.stats.booksCompleted >= 5, reward: { exp: 50 } },
+    { id: 'night_owl', name: 'Ночная сова', description: 'Чтение после полуночи 10 раз', icon: '🦉', type: 'special', condition: (user) => user.stats.nightReading >= 10, reward: { exp: 35 } },
+    { id: 'social_reader', name: 'Социальный читатель', description: 'Поделитесь 20 отзывами', icon: '📣', type: 'social', condition: (user) => user.stats.reviewsWritten >= 20, reward: { exp: 65 } },
+    { id: 'book_collector', name: 'Коллекционер', description: 'Добавьте 100 книг в избранное', icon: '📚', type: 'collection', condition: (user) => user.favorites.length >= 100, reward: { exp: 110 } },
+    { id: 'marathon_reader', name: 'Марафонец чтения', description: 'Прочитайте 1000 страниц за месяц', icon: '🏃‍♂️', type: 'performance', condition: (user) => user.stats.monthlyPages >= 1000, reward: { exp: 85 } },
+    { id: 'review_quality', name: 'Критик качества', description: 'Получите 50 лайков на отзывы', icon: '👍', type: 'social', condition: (user) => user.stats.reviewLikes >= 50, reward: { exp: 60 } },
+    { id: 'early_adopter', name: 'Ранний пользователь', description: 'Используйте приложение в первые 30 дней', icon: '🚀', type: 'special', condition: (user) => user.stats.readingDays >= 30, reward: { exp: 45 } },
+    { id: 'perfect_week', name: 'Идеальная неделя', description: 'Чтение каждый день в течение недели', icon: '📅', type: 'performance', condition: (user) => user.readingStreak >= 7, reward: { exp: 40 } },
+    { id: 'author_fan', name: 'Фанат автора', description: 'Прочитайте все книги одного автора', icon: '👨‍🎨', type: 'genres', condition: (user) => user.stats.authorComplete >= 1, reward: { exp: 55 } },
+    { id: 'reading_champion', name: 'Чемпион чтения', description: 'Прочитайте 500 книг', icon: '🏆', type: 'reading', condition: (user) => user.stats.booksCompleted >= 500, reward: { exp: 500, title: 'Чемпион чтения' } }
 ];
 
 // Функции для работы с достижениями
