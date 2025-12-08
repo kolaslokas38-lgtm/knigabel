@@ -459,13 +459,18 @@ async function fetchReviewsFromServer(bookId = null) {
     try {
         const url = bookId ? `/api/reviews/book/${bookId}` : '/api/reviews';
         const response = await fetch(url);
-        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка получения отзывов');
+            throw new Error('Server error');
         }
 
-        return data.reviews || [];
+        try {
+            const data = await response.json();
+            return data.reviews || [];
+        } catch (jsonError) {
+            console.warn('Не удалось распарсить JSON ответ:', jsonError);
+            throw new Error('Invalid JSON response');
+        }
     } catch (error) {
         console.error('Ошибка получения отзывов с сервера:', error);
         // Возвращаем локальные отзывы в случае ошибки
@@ -624,13 +629,17 @@ async function submitReviewToServer(reviewData) {
             body: JSON.stringify(reviewData)
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка отправки отзыва');
+            throw new Error('Server error');
         }
 
-        return data;
+        try {
+            const data = await response.json();
+            return data;
+        } catch (jsonError) {
+            console.warn('Не удалось распарсить JSON ответ:', jsonError);
+            throw new Error('Invalid JSON response');
+        }
     } catch (error) {
         console.error('Ошибка отправки отзыва на сервер:', error);
         throw error;
@@ -647,13 +656,17 @@ async function deleteReviewFromServer(reviewId, userId) {
             body: JSON.stringify({ userId })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка удаления отзыва');
+            throw new Error('Server error');
         }
 
-        return data;
+        try {
+            const data = await response.json();
+            return data;
+        } catch (jsonError) {
+            console.warn('Не удалось распарсить JSON ответ:', jsonError);
+            throw new Error('Invalid JSON response');
+        }
     } catch (error) {
         console.error('Ошибка удаления отзыва с сервера:', error);
         throw error;
@@ -669,13 +682,17 @@ async function likeReviewOnServer(reviewId) {
             }
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка лайка');
+            throw new Error('Server error');
         }
 
-        return data.likes;
+        try {
+            const data = await response.json();
+            return data.likes;
+        } catch (jsonError) {
+            console.warn('Не удалось распарсить JSON ответ:', jsonError);
+            throw new Error('Invalid JSON response');
+        }
     } catch (error) {
         console.error('Ошибка лайка на сервере:', error);
         throw error;
@@ -6073,6 +6090,49 @@ function setOwnRole() {
     changeUserRole();
 }
 
+// Функция для обновления уровня и кристаллов пользователя в админ-панели
+function updateUserAdmin(userId) {
+    const levelInput = document.getElementById(`userLevel${userId}`);
+    const coinsInput = document.getElementById(`userCoins${userId}`);
+
+    if (!levelInput || !coinsInput) {
+        tg.showAlert('Ошибка: поля ввода не найдены');
+        return;
+    }
+
+    const newLevel = parseInt(levelInput.value);
+    const newCoins = parseInt(coinsInput.value);
+
+    if (isNaN(newLevel) || newLevel < 1) {
+        tg.showAlert('Уровень должен быть положительным числом');
+        return;
+    }
+
+    if (isNaN(newCoins) || newCoins < 0) {
+        tg.showAlert('Количество кристаллов не может быть отрицательным');
+        return;
+    }
+
+    // Обновляем данные пользователя
+    userData.level = newLevel;
+    userData.coins = newCoins;
+
+    // Сохраняем данные
+    window.STORAGE.saveAllData(userData);
+
+    // Обновляем профиль
+    updateUserProfile();
+
+    tg.showPopup({
+        title: '✅ Данные обновлены',
+        message: `Уровень: ${newLevel}, Кристаллы: ${newCoins}`,
+        buttons: [{ type: 'ok' }]
+    });
+
+    // Перезагружаем список пользователей
+    loadUsersAdmin();
+}
+
 // Экспортируем новые функции
 window.exportBooksData = exportBooksData;
 window.importBooksData = importBooksData;
@@ -6087,6 +6147,7 @@ window.loadAdminPanel = loadAdminPanel;
 window.loadUsersForRoleManagement = loadUsersForRoleManagement;
 window.changeUserRole = changeUserRole;
 window.setOwnRole = setOwnRole;
+window.updateUserAdmin = updateUserAdmin;
 
 // Админ функции
 function openAdminModal() {
@@ -6182,14 +6243,7 @@ function loadUsersAdmin() {
             </div>
             <div class="user-controls">
                 <input type="number" id="userLevel${user.telegramId || 'current'}" value="${user.level}" placeholder="Уровень">
-                <input type="number" id="userExp${user.telegramId || 'current'}" value="${user.experience}" placeholder="Опыт">
                 <input type="number" id="userCoins${user.telegramId || 'current'}" value="${user.coins}" placeholder="Кристаллы">
-                <select id="userRole${user.telegramId || 'current'}">
-                    <option value="Активный пользователь" ${user.role === 'Активный пользователь' ? 'selected' : ''}>Активный пользователь</option>
-                    <option value="Модератор" ${user.role === 'Модератор' ? 'selected' : ''}>Модератор</option>
-                    <option value="Администратор" ${user.role === 'Администратор' ? 'selected' : ''}>Администратор</option>
-                    <option value="VIP" ${user.role === 'VIP' ? 'selected' : ''}>VIP</option>
-                </select>
                 <button onclick="updateUserAdmin('${user.telegramId || 'current'}')" class="update-btn">Обновить</button>
             </div>
         </div>
