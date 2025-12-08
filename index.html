@@ -182,10 +182,6 @@
                     <span class="nav-icon">🐾</span>
                     <span class="nav-text">Красная Книга</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('reviews')">
-                    <span class="nav-icon">💬</span>
-                    <span class="nav-text">Отзывы</span>
-                </button>
                 <button class="nav-btn" onclick="showSection('achievements')">
                     <span class="nav-icon">🏆</span>
                     <span class="nav-text">Достижения</span>
@@ -668,42 +664,6 @@
             </div>
         </section>
 
-        <!-- Reviews Section -->
-        <section class="content-section" id="reviewsSection">
-            <div class="section-header">
-                <h2>💬 Отзывы читателей</h2>
-                <span class="reviews-count" id="allReviewsCount">0 отзывов</span>
-            </div>
-
-            <div class="reviews-filter">
-                <select id="reviewsSort" class="reviews-sort" onchange="sortReviews()">
-                    <option value="newest">Сначала новые</option>
-                    <option value="oldest">Сначала старые</option>
-                    <option value="rating-high">Высокий рейтинг</option>
-                    <option value="rating-low">Низкий рейтинг</option>
-                    <option value="most-liked">Больше всего лайков</option>
-                </select>
-                <select id="reviewsBookFilter" class="reviews-book-filter" onchange="filterReviewsByBook()">
-                    <option value="">Все книги</option>
-                    <!-- Книги будут загружены динамически -->
-                </select>
-            </div>
-
-            <div class="all-reviews-container" id="allReviewsContainer">
-                <!-- Все отзывы будут загружены здесь -->
-            </div>
-
-            <div class="loading hidden" id="reviewsLoading">
-                <div class="spinner"></div>
-                <p>Загрузка отзывов...</p>
-            </div>
-
-            <div class="empty-state hidden" id="reviewsEmptyState">
-                <div class="empty-icon">💬</div>
-                <h3>Отзывов пока нет</h3>
-                <p>Будьте первым, кто поделится мнением о прочитанных книгах!</p>
-            </div>
-        </section>
 
         <!-- Achievements Section -->
         <section class="content-section" id="achievementsSection">

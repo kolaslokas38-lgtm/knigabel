@@ -50,15 +50,22 @@ function initializeGlobalReviews() {
     if (saved && Array.isArray(saved)) {
         // Загружаем сохраненные отзывы
         window.APP_DATA.BOOK_REVIEWS = saved;
+        console.log('Загружено отзывов из localStorage:', saved.length);
     } else {
         // Если нет сохраненных отзывов, начинаем с пустого массива
         window.APP_DATA.BOOK_REVIEWS = [];
-        saveGlobalReviews();
+        console.log('Инициализирован пустой массив отзывов');
     }
 }
 
 function addGlobalReview(review) {
-    // Добавляем отзыв в глобальный массив
+    // Проверяем, что отзыв имеет все необходимые поля
+    if (!review.id || !review.bookId || !review.userId || !review.rating) {
+        console.error('Некорректный отзыв:', review);
+        return null;
+    }
+
+    // Добавляем отзыв в глобальный массив (в начало для показа свежих)
     window.APP_DATA.BOOK_REVIEWS.unshift(review);
 
     // Обновляем рейтинг книги
@@ -68,15 +75,80 @@ function addGlobalReview(review) {
     saveGlobalReviews();
     saveBooksData();
 
+    // Синхронизируем между вкладками
+    syncReviewsAcrossTabs();
+
+    console.log('Добавлен новый отзыв:', review.id);
     return review;
 }
 
 function saveGlobalReviews() {
-    return saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
+    const success = saveToStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, window.APP_DATA.BOOK_REVIEWS);
+    if (success) {
+        console.log('Отзывы сохранены в localStorage');
+    } else {
+        console.error('Ошибка сохранения отзывов');
+    }
+    return success;
 }
 
 function loadGlobalReviews() {
     return loadFromStorage(window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS, []);
+}
+
+// Синхронизация отзывов между вкладками
+function syncReviewsAcrossTabs() {
+    try {
+        // Используем BroadcastChannel для синхронизации
+        if (window.BroadcastChannel) {
+            const channel = new BroadcastChannel('reviews-sync');
+            channel.postMessage({
+                type: 'reviews-updated',
+                reviews: window.APP_DATA.BOOK_REVIEWS,
+                timestamp: Date.now()
+            });
+            channel.close();
+        }
+
+        // Также используем localStorage event для дополнительной синхронизации
+        localStorage.setItem('reviews-sync-timestamp', Date.now().toString());
+    } catch (error) {
+        console.error('Ошибка синхронизации отзывов:', error);
+    }
+}
+
+// Инициализация синхронизации между вкладками
+function initializeReviewsSync() {
+    // Слушаем изменения в localStorage от других вкладок
+    window.addEventListener('storage', function(e) {
+        if (e.key === window.APP_DATA.STORAGE_KEYS.BOOK_REVIEWS) {
+            try {
+                const newReviews = JSON.parse(e.newValue || '[]');
+                if (JSON.stringify(window.APP_DATA.BOOK_REVIEWS) !== JSON.stringify(newReviews)) {
+                    window.APP_DATA.BOOK_REVIEWS = newReviews;
+                    console.log('Отзывы синхронизированы из другой вкладки');
+                    // Можно добавить обновление UI здесь, если нужно
+                }
+            } catch (error) {
+                console.error('Ошибка синхронизации отзывов из storage:', error);
+            }
+        }
+    });
+
+    // Слушаем BroadcastChannel
+    if (window.BroadcastChannel) {
+        const channel = new BroadcastChannel('reviews-sync');
+        channel.onmessage = function(e) {
+            if (e.data.type === 'reviews-updated') {
+                const newReviews = e.data.reviews;
+                if (JSON.stringify(window.APP_DATA.BOOK_REVIEWS) !== JSON.stringify(newReviews)) {
+                    window.APP_DATA.BOOK_REVIEWS = newReviews;
+                    console.log('Отзывы синхронизированы через BroadcastChannel');
+                    // Можно добавить обновление UI здесь, если нужно
+                }
+            }
+        };
+    }
 }
 
 // Функции для загрузки данных
@@ -271,7 +343,7 @@ window.STORAGE = {
     loadTheme,
     saveAllData,
     loadAllData,
-    
+
     // Функции для отзывов
     addNewReview,
     getUserReviews,
@@ -283,7 +355,9 @@ window.STORAGE = {
     loadGlobalReviews,
     initializeGlobalReviews,
     saveGlobalReviews,
-    
+    initializeReviewsSync,
+    syncReviewsAcrossTabs,
+
     // Сервисные функции
     clearAllData,
     getStorageStats
