@@ -325,6 +325,9 @@ function updateUserProfile() {
 
     // Обновляем статистику
     updateProfileStats();
+
+    // Обновляем список моих отзывов
+    updateMyReviewsList();
 }
 
 // Функция для обновления статистики профиля
@@ -470,6 +473,37 @@ async function fetchReviewsFromServer(bookId = null) {
     }
 }
 
+// Функция для обновления статистики книги после добавления отзыва
+function updateBookAfterReview(bookId, newRating) {
+    try {
+        // Находим книгу
+        const book = window.APP_DATA.MOCK_BOOKS.find(b => b.id === bookId);
+        if (!book) {
+            console.warn('Книга не найдена для обновления статистики:', bookId);
+            return;
+        }
+
+        // Получаем все отзывы для этой книги
+        const bookReviews = window.APP_DATA.BOOK_REVIEWS.filter(review => review.bookId === bookId);
+
+        // Пересчитываем средний рейтинг
+        if (bookReviews.length > 0) {
+            const totalRating = bookReviews.reduce((sum, review) => sum + review.rating, 0);
+            book.rating = Math.round((totalRating / bookReviews.length) * 10) / 10; // Округляем до 1 знака
+        }
+
+        // Обновляем количество отзывов
+        book.reviewsCount = bookReviews.length;
+
+        // Сохраняем изменения в localStorage
+        localStorage.setItem('books', JSON.stringify(window.APP_DATA.MOCK_BOOKS));
+
+        console.log('Статистика книги обновлена:', { bookId, rating: book.rating, reviewsCount: book.reviewsCount });
+    } catch (error) {
+        console.error('Ошибка обновления статистики книги:', error);
+    }
+}
+
 async function submitReview(reviewData) {
     try {
         // Сначала пытаемся отправить на сервер
@@ -524,14 +558,19 @@ async function submitReview(reviewData) {
 
                 updateUserProfile();
 
-                // Уведомляем другие вкладки об обновлении отзывов
-                notifyReviewsUpdate();
-
                 tg.showPopup({
                     title: 'Спасибо за отзыв!',
                     message: 'Ваш отзыв успешно опубликован и виден всем пользователям Telegram Mini App',
                     buttons: [{ type: 'ok' }]
                 });
+
+                // Обновляем статистику книги
+                updateBookAfterReview(reviewData.bookId, reviewData.rating);
+
+                // Если модальное окно книги открыто, обновляем отображение
+                if (document.getElementById('bookModal').classList.contains('hidden') === false) {
+                    showBookDetails(reviewData.bookId);
+                }
 
                 console.log('Отзыв успешно добавлен локально:', reviewId);
                 return { success: true, review: addedReview };
@@ -1711,7 +1750,7 @@ async function submitReview() {
         updateUserProfile();
 
         // Уведомляем другие вкладки об обновлении отзывов
-        notifyReviewsUpdate();
+        window.STORAGE.syncReviewsAcrossTabs();
 
         tg.showPopup({
             title: 'Спасибо за отзыв!',
