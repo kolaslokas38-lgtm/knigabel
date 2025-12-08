@@ -311,13 +311,10 @@ function updateDailyQuestProgress(actionType, amount) {
             if (userProgress[quest.id] >= quest.target && !userData.challenges.daily.completed.includes(quest.id)) {
                 userData.challenges.daily.completed.push(quest.id);
 
-                // Автоматически выдаем награду
-                claimQuestReward('daily', quest.id);
-
-                // Показываем уведомление
+                // Показываем уведомление о выполнении
                 tg.showPopup({
                     title: '🎉 Задание выполнено!',
-                    message: `Вы выполнили задание "${quest.title}" и получили награду!`,
+                    message: `Вы выполнили задание "${quest.title}". Заберите награду в разделе Игры!`,
                     buttons: [{ type: 'ok' }]
                 });
             }
@@ -338,13 +335,10 @@ function updateWeeklyChallengeProgress(actionType, amount) {
             if (userProgress[challenge.id] >= challenge.target && !userData.challenges.weekly.completed.includes(challenge.id)) {
                 userData.challenges.weekly.completed.push(challenge.id);
 
-                // Автоматически выдаем награду
-                claimChallengeReward('weekly', challenge.id);
-
-                // Показываем уведомление
+                // Показываем уведомление о выполнении
                 tg.showPopup({
                     title: '🎉 Челлендж выполнен!',
-                    message: `Вы выполнили недельный челлендж "${challenge.title}" и получили награду!`,
+                    message: `Вы выполнили недельный челлендж "${challenge.title}". Заберите награду в разделе Игры!`,
                     buttons: [{ type: 'ok' }]
                 });
             }
@@ -365,13 +359,10 @@ function updateMonthlyChallengeProgress(actionType, amount) {
             if (userProgress[challenge.id] >= challenge.target && !userData.challenges.monthly.completed.includes(challenge.id)) {
                 userData.challenges.monthly.completed.push(challenge.id);
 
-                // Автоматически выдаем награду
-                claimChallengeReward('monthly', challenge.id);
-
-                // Показываем уведомление
+                // Показываем уведомление о выполнении
                 tg.showPopup({
                     title: '🎉 Месячный челлендж выполнен!',
-                    message: `Вы выполнили месячный челлендж "${challenge.title}" и получили награду!`,
+                    message: `Вы выполнили месячный челлендж "${challenge.title}". Заберите награду в разделе Игры!`,
                     buttons: [{ type: 'ok' }]
                 });
             }
@@ -1218,7 +1209,6 @@ function showSection(sectionName) {
     if (sectionName === 'profile') {
         updateUserProfile();
         updateMyReviewsList();
-        updateInventoryList();
     }
     if (sectionName === 'redbook') {
         loadRedBookAnimals();
@@ -5655,7 +5645,6 @@ function updateAchievementStats() {
     const titlesCount = userData.titles ? userData.titles.length : 0;
 
     document.getElementById('unlockedAchievements').textContent = unlockedCount;
-    document.getElementById('totalCoinsEarned').textContent = totalCoins;
     document.getElementById('totalExpEarned').textContent = totalExp;
     document.getElementById('titlesEarned').textContent = titlesCount;
 }
